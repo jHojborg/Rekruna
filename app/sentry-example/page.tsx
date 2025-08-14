@@ -27,6 +27,15 @@ export default function SentryExamplePage() {
           >
             Send captured fejl
           </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              await fetch('/api/sentry-test')
+              alert('Server-fejl sendt (captured)')
+            }}
+          >
+            Send server-fejl
+          </Button>
         </div>
       </div>
     </main>
