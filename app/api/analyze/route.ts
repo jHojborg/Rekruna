@@ -15,6 +15,36 @@ type AnalyzeRequest = {
 
 // OpenAI client oprettes inde i handleren efter validering af API key
 
+// Simpel in-memory rate limiter (per process). Beskytter mod misbrug.
+// Model: max 5 analyseruns per 10 minutter per bruger/IP.
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
+const RATE_LIMIT_MAX_RUNS = 5
+type BucketKey = string
+const rateBuckets: Map<BucketKey, number[]> = new Map()
+
+function getClientIp(req: Request): string {
+  const hdr = (name: string) => req.headers.get(name) || ''
+  const xff = hdr('x-forwarded-for')
+  if (xff) return xff.split(',')[0].trim()
+  const rip = hdr('x-real-ip')
+  if (rip) return rip
+  // Fallback i dev
+  return 'local'
+}
+
+function allowRun(key: BucketKey): boolean {
+  const now = Date.now()
+  const arr = rateBuckets.get(key) || []
+  const pruned = arr.filter((t) => now - t < RATE_LIMIT_WINDOW_MS)
+  if (pruned.length >= RATE_LIMIT_MAX_RUNS) {
+    rateBuckets.set(key, pruned)
+    return false
+  }
+  pruned.push(now)
+  rateBuckets.set(key, pruned)
+  return true
+}
+
 async function extractPdfText(buf: ArrayBuffer): Promise<string> {
   try {
     if (!buf || (buf as ArrayBuffer).byteLength === 0) return ''
@@ -99,6 +129,14 @@ export async function POST(req: Request) {
     if (!body?.userId || !body?.analysisId) {
       return NextResponse.json({ ok: false, error: 'Missing userId or analysisId' }, { status: 400 })
     }
+
+    // Rate limit: per bruger og per IP
+    const ip = getClientIp(req)
+    const userKey: BucketKey = `u:${body.userId}`
+    const ipKey: BucketKey = `ip:${ip}`
+    if (!allowRun(userKey) || !allowRun(ipKey)) {
+      return NextResponse.json({ ok: false, error: 'For mange analyser. Prøv igen om lidt.' }, { status: 429 })
+    }
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ ok: false, error: 'Missing OPENAI_API_KEY on server' }, { status: 500 })
     }
@@ -135,7 +173,9 @@ export async function POST(req: Request) {
     })
     if (cvErr) throw cvErr
 
-    const files = (cvFiles || []).filter((f) => f.name.toLowerCase().endsWith('.pdf'))
+    let files = (cvFiles || []).filter((f) => f.name.toLowerCase().endsWith('.pdf'))
+    // Maks 10 CV'er per run
+    if (files.length > 10) files = files.slice(0, 10)
 
     const sys = `Du er en dansk HR-analytiker. Vurder en kandidat ift. en jobbeskrivelse og tre MUST-HAVE krav.
 Returnér KUN JSON i dette schema:
