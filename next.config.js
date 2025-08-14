@@ -3,11 +3,6 @@ const nextConfig = {
   experimental: {
     // appDir is now default in Next.js 15
   },
-  sentry: {
-    // Upload sourcemaps only if DSN present
-    hideSourceMaps: true,
-    autoInstrumentServerFunctions: true,
-  },
   images: {
     // "domains" is deprecated; use remotePatterns
     remotePatterns: [
