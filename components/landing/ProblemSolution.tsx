@@ -1,0 +1,69 @@
+import { Clock, Target, BarChart3, DollarSign } from 'lucide-react'
+import { IconBadge } from '@/components/shared/IconBadge'
+
+export function ProblemSolution() {
+  const items = [
+    {
+      icon: Clock,
+      title: 'Reduceret tidsforbrug',
+      description:
+        'Analyser alle ansøgninger på under 5 minutter uanset antal kandidater.'
+    },
+    {
+      icon: BarChart3,
+      title: 'Objektiv sammenligning uden bias',
+      description:
+        'AI-drevet analyse sikrer objektiv vurdering med granuleret pointsystem.'
+    },
+    {
+      icon: Target,
+      title: 'Prioriteret kandidatliste ud fra ansættelseskrav',
+      description:
+        'Kandidater rangeret efter ansættelseskrav med detaljeret scoring.'
+    },
+    {
+      icon: DollarSign,
+      title: 'Spar udgifter til bureauer',
+      description:
+        'Undgå dyre rekrutteringsbureauer med intern AI-analyse.'
+    }
+  ]
+
+  return (
+    <section className="py-24 bg-brand-base">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-2 gap-16 items-start">
+          {/* Left: Heading + intro */}
+          <div>
+            <h2 className="text-5xl font-extrabold tracking-tight text-gray-900 leading-tight">
+              Hvorfor vi er dit
+              <br />
+              bedste valg
+            </h2>
+            <p className="mt-8 text-xl text-gray-700 max-w-2xl">
+              Specialdesignet til rekrutteringsansvarlige der ønsker effektiv analyse og prioritering af
+              ansøgninger med granuleret pointsystem og objektiv vurdering.
+            </p>
+          </div>
+
+          {/* Right: 2x2 grid of value points */}
+          <div className="grid sm:grid-cols-2 gap-12">
+            {items.map((item, idx) => (
+              <div key={idx}>
+                <div className="flex items-center gap-5 mb-2">
+                  <IconBadge Icon={item.icon} size="md" />
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {item.title}
+                  </h3>
+                </div>
+                <p className="text-gray-600 leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+} 

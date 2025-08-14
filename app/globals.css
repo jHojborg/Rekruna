@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Base palette */
+    --background: 45 14% 96%; /* #F5F5F0 in HSL-ish approximation */
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Primary: Warm coral #FF6F61 */
+    --primary: 7 100% 69%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary / Soft greys */
+    --secondary: 48 12% 93%; /* ~ #EDEDE7 */
+    --secondary-foreground: 222.2 84% 4.9%;
+
+    --muted: 48 12% 93%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 7 100% 69%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 7 100% 69%; /* use coral for destructive too to match brand */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 7 100% 69%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 20% 10%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 20% 12%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 20% 12%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 7 100% 69%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222.2 18% 15%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 222.2 18% 15%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 7 100% 69%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 7 100% 55%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 222.2 18% 18%;
+    --input: 222.2 18% 18%;
+    --ring: 7 100% 69%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom Danish typography */
+@layer components {
+  .h1 { 
+    @apply text-4xl font-bold text-gray-900; 
+  }
+  .h2 { 
+    @apply text-3xl font-semibold text-gray-900; 
+  }
+  .h3 { 
+    @apply text-2xl font-semibold text-gray-800; 
+  }
+  .h4 { 
+    @apply text-xl font-medium text-gray-800; 
+  }
+  
+  .body-large { 
+    @apply text-lg text-gray-700; 
+  }
+  .body { 
+    @apply text-base text-gray-700; 
+  }
+  .body-small { 
+    @apply text-sm text-gray-600; 
+  }
+
+  /* Quick Action Button styling from specifications */
+  .quick-action-btn {
+    @apply flex flex-col items-center justify-center p-8 
+           bg-white rounded-lg shadow-sm hover:shadow-md 
+           transition-shadow cursor-pointer border border-gray-200;
+  }
+
+  .quick-action-btn-primary {
+    @apply bg-primary/10 border-primary/30 hover:bg-primary/15;
+  }
+} 

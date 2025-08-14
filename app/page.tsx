@@ -1,0 +1,58 @@
+import { HeroSection } from '@/components/landing/HeroSection'
+import { ProblemSolution } from '@/components/landing/ProblemSolution'
+import { TimeSavingsCalculator } from '@/components/landing/TimeSavingsCalculator'
+import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
+import { PricingCard } from '@/components/landing/PricingCard'
+import { FAQAccordion } from '@/components/landing/FAQAccordion'
+import { CTASection } from '@/components/landing/CTASection'
+
+export default function LandingPage() {
+  return (
+    <main className="min-h-screen">
+      <HeroSection 
+        title="Screen kandidater 80% hurtigere med AI"
+        subtitle="Lad AI analysere CV'er mod dine jobkrav og få en prioriteret kandidatliste på minutter"
+        ctaText="Start allerede i dag"
+      />
+      
+      <ProblemSolution />
+
+      <TimeSavingsCalculator />
+      
+      <FeaturesGrid />
+      
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Simpel og transparent prissætning
+            </h2>
+            <p className="text-xl text-gray-600">
+              Alt hvad du behøver for at optimere din rekrutteringsproces
+            </p>
+          </div>
+          
+          <div className="max-w-md mx-auto">
+            <PricingCard
+              title="Rekruna One"
+              price="249 kr/måned"
+              features={[
+                "Ubegrænset antal analyser",
+                "Opsig når det passer - dog min. 1 måned",
+                "AI-drevet scorecard model",
+                "PDF rapporter med detaljeret begrundelse",
+                "GDPR compliant datasikkerhed"
+              ]}
+              ctaText="Kom i gang i dag"
+              highlighted={true}
+            />
+          </div>
+        </div>
+      </section>
+
+      <FAQAccordion />
+      
+      <CTASection />
+    </main>
+  )
+} 

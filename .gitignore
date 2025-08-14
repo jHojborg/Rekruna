@@ -1,0 +1,19 @@
+# Build/cache
+.next/
+node_modules/
+dist/
+out/
+coverage/
+.vercel/
+
+# OS/editor/temp
+.DS_Store
+*.log
+
+# Env & lokale filer (behold kun env.example i git)
+.env*
+*.local
+!.env.example
+
+# Supabase lokale artefakter
+supabase/.temp/
