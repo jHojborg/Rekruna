@@ -18,23 +18,28 @@ const nextConfig = {
   },
   // Security headers for production
   async headers() {
+    const allowIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === '1'
+    const baseHeaders = [
+      {
+        key: 'X-Frame-Options',
+        value: 'DENY',
+      },
+      {
+        key: 'X-Content-Type-Options',
+        value: 'nosniff',
+      },
+      {
+        key: 'Referrer-Policy',
+        value: 'strict-origin-when-cross-origin',
+      },
+    ]
+    if (!allowIndexing) {
+      baseHeaders.push({ key: 'X-Robots-Tag', value: 'noindex, nofollow' })
+    }
     return [
       {
         source: '/(.*)',
-        headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-        ],
+        headers: baseHeaders,
       },
     ]
   },
