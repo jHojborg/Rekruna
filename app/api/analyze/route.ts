@@ -11,6 +11,8 @@ type AnalyzeRequest = {
   analysisId: string
   requirements?: string[] // 3 valgte must-haves
   title?: string
+  offset?: number // valgfrit: startindeks i sorteret fil-liste (for batching)
+  limit?: number  // valgfrit: maks antal filer i dette run (default 10, max 10)
 }
 
 // OpenAI client oprettes inde i handleren efter validering af API key
@@ -174,8 +176,11 @@ export async function POST(req: Request) {
     if (cvErr) throw cvErr
 
     let files = (cvFiles || []).filter((f) => f.name.toLowerCase().endsWith('.pdf'))
-    // Maks 10 CV'er per run
-    if (files.length > 10) files = files.slice(0, 10)
+    // Batch-udsnit (offset/limit) for at kunne køre flere runs i træk uden overlap
+    const offset = Math.max(0, Number.isFinite(body.offset as number) ? Number(body.offset) : 0)
+    const limitReq = Math.max(1, Number.isFinite(body.limit as number) ? Number(body.limit) : 10)
+    const limit = Math.min(10, limitReq) // hårdt loft 10
+    files = files.slice(offset, offset + limit)
 
     const sys = `Du er en dansk HR-analytiker. Vurder en kandidat ift. en jobbeskrivelse og tre MUST-HAVE krav.
 Returnér KUN JSON i dette schema:

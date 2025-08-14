@@ -102,7 +102,13 @@ export default function DashboardPage() {
   const toggleReq = (id: string) => setRequirements(prev => prev.map(r => r.id === id ? { ...r, selected: !r.selected } : r))
   const contFromReq = () => setStep(3)
 
-  const onFiles = (files: File[]) => setCvFiles(files)
+  const onFiles = (files: File[]) => {
+    if (files.length > 50) {
+      alert('Maks 50 CV\'er pr. analyse. Vælg færre filer.')
+      return
+    }
+    setCvFiles(files)
+  }
 
   const analyze = async () => {
     const analysisId = (window as any).__analysisId as string
@@ -115,6 +121,7 @@ export default function DashboardPage() {
     setTotal(cvFiles.length)
     setProcessed(0)
     try {
+      // Upload alle valgte CV'er (op til 50) til Storage
       await uploadCVsInBatches(cvFiles, {
         userId,
         analysisId,
@@ -126,25 +133,34 @@ export default function DashboardPage() {
           setCurrentFile(current)
         }
       })
-      // Call server-side AI analyzer
-      const res = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          analysisId,
-          requirements: requirements.filter((r) => r.selected).map((r) => r.text),
-          title: jobFile?.name?.replace(/\.pdf$/i, '') || 'Analyse',
-        }),
-      })
-      const ct = res.headers.get('content-type') || ''
-      if (!ct.includes('application/json')) {
-        const txt = await res.text()
-        throw new Error(`Serverfejl (${res.status}). ${txt.slice(0, 120)}`)
+      // Kald backend i batches á 10 indtil alle er behandlet
+      const selectedReqs = requirements.filter((r) => r.selected).map((r) => r.text)
+      const allResults: any[] = []
+      for (let offset = 0; offset < cvFiles.length; offset += 10) {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            analysisId,
+            requirements: selectedReqs,
+            title: jobFile?.name?.replace(/\.pdf$/i, '') || 'Analyse',
+            offset,
+            limit: 10,
+          }),
+        })
+        const ct = res.headers.get('content-type') || ''
+        if (!ct.includes('application/json')) {
+          const txt = await res.text()
+          throw new Error(`Serverfejl (${res.status}). ${txt.slice(0, 120)}`)
+        }
+        const data = await res.json()
+        if (!res.ok || !data?.ok) throw new Error(data?.error || 'Analyse fejlede')
+        if (Array.isArray(data.results)) allResults.push(...data.results)
+        setProcessed(Math.min(cvFiles.length, offset + 10))
       }
-      const data = await res.json()
-      if (!res.ok || !data?.ok) throw new Error(data?.error || 'Analyse fejlede')
-      setResults(Array.isArray(data.results) ? data.results : [])
+      // Saml alle batch-resultater
+      setResults(allResults)
       const title = jobFile?.name?.replace(/\.pdf$/i, '') || 'Analyse'
       recordAnalysis(title)
     } catch (e: any) {
