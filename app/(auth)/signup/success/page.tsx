@@ -1,11 +1,26 @@
 "use client"
 
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { CheckCircle2, Receipt } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function SignupSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-brand-base py-16 px-4">
+          <div className="max-w-3xl mx-auto text-center text-gray-700">Indlæser…</div>
+        </main>
+      }
+    >
+      <SignupSuccessInner />
+    </Suspense>
+  )
+}
+
+function SignupSuccessInner() {
   const search = useSearchParams()
   const name = search.get('name') || 'Din konto'
   const receiptUrl = search.get('receipt_url') || undefined
