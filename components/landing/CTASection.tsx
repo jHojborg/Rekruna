@@ -10,7 +10,7 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
   return (
     <section className="py-20 bg-brand-softGrey">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+        <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
         Effektivt og hurtig proces til moderne rekruttering!
         </h2>
         
