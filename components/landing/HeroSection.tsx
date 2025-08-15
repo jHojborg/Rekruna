@@ -14,21 +14,21 @@ interface HeroSectionProps {
 
 export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectionProps) {
   return (
-    <section className="relative h-screen flex items-center">
+    <section className="relative min-h-screen h-screen flex items-center">
       {/* Background image */}
       <Image
         src="/images/Hero-Temp-Image.jpeg"
         alt="Rekruna hero"
         fill
         priority
-        className="absolute inset-0 -z-10 object-cover"
+        className="absolute inset-0 -z-10 object-cover object-center"
       />
       {/* Dark overlay */}
       <div className="absolute inset-0 -z-10 bg-black/35" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="max-w-3xl">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight text-white">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight text-white">
             {title.split('80%').map((part, index) => (
               <span key={index}>
                 {part}
@@ -39,7 +39,7 @@ export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectio
             ))}
           </h1>
           
-          <p className="text-xl md:text-2xl mb-8 leading-relaxed text-white/90 max-w-2xl">
+          <p className="text-lg sm:text-xl md:text-2xl mb-8 leading-relaxed text-white/90 max-w-2xl">
             {subtitle}
           </p>
           
@@ -59,7 +59,7 @@ export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectio
             )}
           </div>
           
-          <div className="mt-8 flex items-center gap-6 text-sm text-white/90">
+          <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-sm text-white/90">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               <span>Opsig når det passer</span>
