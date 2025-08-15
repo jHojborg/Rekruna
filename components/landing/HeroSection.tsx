@@ -21,12 +21,12 @@ export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectio
         alt="Rekruna hero"
         fill
         priority
-        className="absolute inset-0 -z-10 object-cover object-center w-full h-full sm:object-contain"
+        className="absolute inset-0 z-0 object-cover object-center"
       />
       {/* Dark overlay */}
-      <div className="absolute inset-0 -z-10 bg-black/35" />
+      <div className="absolute inset-0 z-10 bg-black/35" />
       
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="max-w-3xl">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 leading-tight text-white">
             {title.split('80%').map((part, index) => (
