@@ -11,11 +11,11 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
     <section className="py-20 bg-primary-600">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-          Klar til at effektivisere din rekruttering?
+        Effektivt og hurtig proces til moderne rekruttering!
         </h2>
         
         <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
-          Bliv en del af de HR-professionelle som allerede sparer 80% af deres screeningstid med Rekruna
+        Alt hvad du har brug for til effektivt at screene kandidater og opnå bedre beslutningsgrundlag til den videre proces.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -45,7 +45,7 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
           <div className="flex justify-center items-center gap-8 opacity-60">
             <div className="text-primary-200 font-semibold">GDPR Compliant</div>
             <div className="text-primary-200 font-semibold">🇩🇰 Dansk Support</div>
-            <div className="text-primary-200 font-semibold">Sikker Hosting</div>
+            <div className="text-primary-200 font-semibold">Hosting i EU</div>
           </div>
         </div>
       </div>
