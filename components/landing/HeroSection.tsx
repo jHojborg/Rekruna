@@ -14,14 +14,14 @@ interface HeroSectionProps {
 
 export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectionProps) {
   return (
-    <section className="relative min-h-screen h-screen flex items-center">
+    <section className="relative min-h-[100vh] min-h-[100dvh] flex items-center bg-gray-900 overflow-hidden">
       {/* Background image */}
       <Image
         src="/images/Hero-Temp-Image.jpeg"
         alt="Rekruna hero"
         fill
         priority
-        className="absolute inset-0 -z-10 object-cover object-center"
+        className="absolute inset-0 -z-10 object-cover object-center w-full h-full sm:object-contain"
       />
       {/* Dark overlay */}
       <div className="absolute inset-0 -z-10 bg-black/35" />
