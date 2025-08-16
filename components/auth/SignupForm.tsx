@@ -141,10 +141,8 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
                 <div className="grid grid-cols-2 gap-y-3 items-baseline">
                   <p className="text-gray-600">Månedlig normal pris:</p>
                   <p className="text-right text-gray-500 line-through">249 kr.</p>
-
                   <p className="text-green-700">Din rabat:</p>
                   <p className="text-right text-green-700">100 kr.</p>
-
                   <p className="text-lg font-semibold text-gray-900">Din månedlige pris:</p>
                   <p className="text-right text-2xl font-bold text-gray-900">149 kr.</p>
                 </div>
