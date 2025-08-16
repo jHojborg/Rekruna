@@ -1,6 +1,6 @@
 "use client"
 
-import { Calculator } from 'lucide-react'
+import { Calculator, Clock } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { IconBadge } from '@/components/shared/IconBadge'
 
@@ -32,7 +32,7 @@ export function TimeSavingsCalculator() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <div className="mx-auto mb-4 flex items-center justify-center">
-            <IconBadge Icon={Calculator} size="md" />
+            <IconBadge Icon={Clock} size="md" />
           </div>
           <h2 className="text-4xl font-bold text-gray-900">Så meget tid kan du spare med Rekruna</h2>
           <p className="text-lg text-gray-600 mt-3">
