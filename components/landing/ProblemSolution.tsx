@@ -36,13 +36,12 @@ export function ProblemSolution() {
           {/* Left: Heading + intro */}
           <div>
             <h2 className="text-5xl font-extrabold tracking-tight text-gray-900 leading-tight">
-              Hvorfor vi er dit
+              Hvorfor vælge
               <br />
-              bedste valg
+              Rekruna?
             </h2>
             <p className="mt-8 text-xl text-gray-700 max-w-2xl">
-              Specialdesignet til rekrutteringsansvarlige der ønsker effektiv analyse og prioritering af
-              ansøgninger med granuleret pointsystem og objektiv vurdering.
+            Rekruna er udviklet til dig, der har rekrutteringsansvar og ønsker en hurtig, præcis og objektiv vurdering af alle ansøgninger op mod dine jobkrav. Vores AI-baserede system analyserer alle kandidater, scorer dem ud fra et detaljeret vurderingssystem og giver dig en prioriteret liste med konkrete kommentarer – så du straks kan se, hvem der bedst matcher jobbet..
             </p>
           </div>
 

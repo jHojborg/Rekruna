@@ -1,0 +1,5 @@
+[33mc579f0e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m content update
+[33mbaab3f9[m fix: improve hero section responsiveness for mobile devices - Add min-h-screen for better mobile viewport handling - Add object-center for better image centering - Improve responsive text sizes (h1 and subtitle) - Make footer indicators stack vertically on mobile
+[33m08a642c[m chore: remove Sentry test routes/pages and fix invalid next.config option
+[33m7eae51d[m chore(sentry): verbose diagnostics in /api/sentry-test (dsn, client state, flushed)
+[33m134774d[m fix(sentry): ensure Sentry init via instrumentation.ts for App Router

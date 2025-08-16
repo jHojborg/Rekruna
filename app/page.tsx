@@ -28,7 +28,7 @@ export default function LandingPage() {
               Simpel og transparent prissætning
             </h2>
             <p className="text-xl text-gray-600">
-              Alt hvad du behøver for at optimere din rekrutteringsproces
+            Alt hvad du har brug for til effektivt at screene og priotitere kandidater.
             </p>
           </div>
           
@@ -38,7 +38,7 @@ export default function LandingPage() {
               price="249 kr/måned"
               features={[
                 "Ubegrænset antal analyser",
-                "Opsig når det passer - dog min. 1 måned",
+                "Opsig når det passer",
                 "AI-drevet scorecard model",
                 "PDF rapporter med detaljeret begrundelse",
                 "GDPR compliant datasikkerhed"

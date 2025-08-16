@@ -49,7 +49,7 @@ export function FeaturesGrid() {
           Effektivt og hurtig proces til moderne rekruttering
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Alt hvad du har brug for til effektivt at screene kandidater og opnå bedre beslutningsgrundlag til den videre proces.
+          Alt hvad du har brug for til effektivt at screene kandidater og opnå bedste beslutningsgrundlag til den videre proces.
           </p>
         </div>
 

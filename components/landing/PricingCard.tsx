@@ -24,22 +24,22 @@ export function PricingCard({
       highlighted ? 'border-2 border-primary-500 relative' : 'border border-gray-200'
     }`}>
       {highlighted && (
-        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
           <span className="bg-primary-500 text-white px-4 py-2 rounded-full text-sm font-medium">
-            Mest populære
+            Kampagnepris
           </span>
         </div>
       )}
       
       <div className="text-center mb-8">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">{title}</h3>
-        <div className="flex items-baseline justify-center">
-          <span className="text-5xl font-bold text-gray-900">
-            {price.split(' ')[0]}
-          </span>
-          <span className="text-xl text-gray-600 ml-2">
-            {price.split(' ').slice(1).join(' ')}
-          </span>
+        <div className="flex flex-col items-center justify-center gap-2">
+          <div className="text-gray-500 line-through text-xl">249 kr/måned</div>
+          <div className="flex items-baseline justify-center">
+            <span className="text-5xl font-bold text-gray-900">149</span>
+            <span className="text-xl text-gray-600 ml-2">kr/måned</span>
+          </div>
+          <span className="text-sm bg-green-100 text-green-700 rounded-full px-3 py-1">Spar 100 kr./måned</span>
         </div>
       </div>
       
@@ -64,6 +64,10 @@ export function PricingCard({
         <Button asChild className="w-full py-4 text-lg font-semibold h-auto" variant={highlighted ? 'default' : 'outline'}>
           <Link href="/signup">{ctaText}</Link>
         </Button>
+      )}
+
+      {highlighted && (
+        <p className="mt-4 text-center text-sm text-gray-500">*Tilbuddet gælder de først 50 nye kunder</p>
       )}
     </div>
   )
