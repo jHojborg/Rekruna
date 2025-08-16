@@ -127,22 +127,26 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
 
         <div className="space-y-6">
           {/* Plan */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Rekruna One Abonnement</CardTitle>
+          <Card className="relative">
+            <CardHeader className="text-center">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium shadow-sm">
+                  Begrænset tilbud
+                </span>
+              </div>
+              <CardTitle className="text-3xl font-bold text-gray-900">Rekruna One</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="p-4 border-2 rounded-lg border-primary">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-gray-900">Månedligt</p>
-                    <p className="text-gray-600">Fleksibel betaling hver måned</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-gray-600 line-through">Månedlig normal pris: 249 kr.</p>
-                    <p className="text-green-700">Din rabat: 100 kr.</p>
-                    <p className="text-xl font-bold text-gray-900">Din månedlige pris: 149 kr.</p>
-                  </div>
+                <div className="grid grid-cols-2 gap-y-3 items-baseline">
+                  <p className="text-gray-600">Månedlig normal pris:</p>
+                  <p className="text-right text-gray-500 line-through">249 kr.</p>
+
+                  <p className="text-green-700">Din rabat:</p>
+                  <p className="text-right text-green-700">100 kr.</p>
+
+                  <p className="text-lg font-semibold text-gray-900">Din månedlige pris:</p>
+                  <p className="text-right text-2xl font-bold text-gray-900">149 kr.</p>
                 </div>
               </div>
             </CardContent>
