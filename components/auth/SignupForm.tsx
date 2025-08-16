@@ -139,9 +139,9 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
                     <p className="text-gray-600">Fleksibel betaling hver måned</p>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-bold text-gray-900">299</span>
-                    <span className="text-lg text-gray-900 ml-1">kr</span>
-                    <p className="text-gray-600">/måned</p>
+                    <p className="text-gray-600 line-through">Månedlig normal pris: 249 kr.</p>
+                    <p className="text-green-700">Din rabat: 100 kr.</p>
+                    <p className="text-xl font-bold text-gray-900">Din månedlige pris: 149 kr.</p>
                   </div>
                 </div>
               </div>
