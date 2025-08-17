@@ -41,7 +41,7 @@ export function ProblemSolution() {
               Rekruna?
             </h2>
             <p className="mt-8 text-xl text-gray-700 max-w-2xl">
-            Rekruna er udviklet til dig, der har rekrutteringsansvar og ønsker en hurtig, præcis og objektiv vurdering af alle ansøgninger op mod dine jobkrav. Vores AI-baserede system analyserer alle kandidater, scorer dem ud fra et detaljeret vurderingssystem og giver dig en prioriteret liste med konkrete kommentarer – så du straks kan se, hvem der bedst matcher jobbet..
+            Rekruna er udviklet til dig, der har rekrutteringsansvar og ønsker en hurtig og objektiv vurdering af alle ansøgninger op mod dine jobkrav. Vores AI-baserede system analyserer alle kandidater, scorer dem ud fra et detaljeret vurderingssystem og giver dig en prioriteret liste med konkrete kommentarer – så du straks kan se, hvem der bedst matcher jobbet.  
             </p>
           </div>
 
