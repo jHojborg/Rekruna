@@ -1,4 +1,4 @@
-import { Upload, Brain, ListOrdered, FileText, Globe, Shield, Save } from 'lucide-react'
+import { Upload, Brain, ListOrdered, FileText, Globe, Shield, Save, LandPlot } from 'lucide-react'
 import { IconBadge } from '@/components/shared/IconBadge'
 
 interface Feature {
@@ -35,7 +35,7 @@ export function FeaturesGrid() {
       description: "Rekruna er for alle – samme hurtige analyse, uanset antal CV´r og stillingsopslag."
     },
     {
-      icon: Shield,
+      icon: LandPlot,
       title: "Stærkt beslutningsgrundlag",
       description: "Med Rekruna kan I analysere og prioriter og få et bedre beslutningsgrundlag til den videre proces."
     }

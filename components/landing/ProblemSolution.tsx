@@ -1,4 +1,4 @@
-import { Clock, Target, BarChart3, DollarSign } from 'lucide-react'
+import { Clock, Target, BarChart3, DollarSign, HeartHandshakeIcon, HandCoins } from 'lucide-react'
 import { IconBadge } from '@/components/shared/IconBadge'
 
 export function ProblemSolution() {
@@ -10,22 +10,22 @@ export function ProblemSolution() {
         'Analysér alle CV´r op til 80 % hurtigere så du straks kan se, hvem der bedst matcher jobbet.'
     },
     {
-      icon: BarChart3,
+      icon: HeartHandshakeIcon,
       title: 'Objektiv vurdering uden bias',
       description:
-        'Med vores AI-drevet scoringsmodel sikres I en neutral, ensartet og retfærdig evaluering.'
+        'Med vores AI-drevet scoringsmodel sikres du en neutral, ensartet og retfærdig evaluering.'
     },
     {
       icon: Target,
-      title: 'Prioriteret liste ud fra ansættelseskrav',
+      title: 'Prioriteret best-match liste',
       description:
-        'I får alle CV´r rangeret på en 10 skala med detaljeret begrundelse for placeringen.'
+        'Alle CV´r rangeres på en 10 skala med detaljeret begrundelse for placeringen.'
     },
     {
-      icon: DollarSign,
+      icon: HandCoins,
       title: 'Ubegrænset analyser',
       description:
-        'Vi har én pris med alt inklusiv - I får ubegrænset antal CV-screeninger og stillingsopslag.'
+        'Vi tilbyder én pris med alt inklusiv - du kan screene ubegrænset antal CV´r.'
     }
   ]
 

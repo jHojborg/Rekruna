@@ -15,23 +15,23 @@ export function FAQAccordion() {
   const faqItems: FAQItem[] = [
     {
       question: "Hvor mange CV'er må jeg analysere?",
-      answer: "Du kan analysere op til 50 CV'er pr. stillingsopslag. Med Pro planen har du ubegrænset antal analyser pr. måned."
+      answer: "Der er ikke loft over hvor mange CVr du kan uploade, men har du mere end 50 CV´r, bliver de uploaded i puljer af 50 stk. pr. gang."
     },
     {
       question: "Hvilke filformater understøttes?",
-      answer: "Vi understøtter PDF-filer for både jobopslag og CV'er. Vi arbejder på at tilføje support for Word-dokumenter og LinkedIn profiler."
+      answer: "Vi understøtter PDF-filer for både jobopslag og CV'er. Vi arbejder på at tilføje support for andre formaler."
     },
     {
       question: "Hvor præcis er AI-vurderingen?",
-      answer: "Vores AI er trænet på tusindvis af CV'er og giver konsistente, objektive vurderinger baseret på dine specifikke krav. Nøjagtigheden forbedres konstant gennem machine learning."
+      answer: "Vores AI-model giver altid en konsistent, objektiv vurdering baseret på dine specifikke krav. Og med 10 point skalaen er du sikre granulering blandt de bedste kandidater. "
     },
     {
       question: "Hvordan håndteres mine data?",
-      answer: "Vi er GDPR compliant og sletter automatisk alle CV'er efter 30 dage. Dine data krypteres og behandles sikkert i henhold til danske og europæiske databeskyttelsesregler."
+      answer: "Alle data lagres indenfor EUs grænser iht gældende regler, og bliver automatisk efter 30 dage. Data du har downloaded har du selv ansavr for. "
     },
     {
       question: "Kan jeg opsige når som helst?",
-      answer: "Ja, du kan opsige dit abonnement når som helst uden binding. Du beholder adgang til dine eksisterende analyser indtil perioden udløber."
+      answer: "Ja, du kan opsige dit abonnement når som helst med løbende + dage 30. Du beholder adgang til dine eksisterende analyser indtil perioden udløber."
     }
   ]
 
@@ -90,7 +90,7 @@ export function FAQAccordion() {
             variant="outline"
             className="font-medium"
           >
-            Kontakt support
+            Kontakt os
           </Button>
         </div>
       </div>
