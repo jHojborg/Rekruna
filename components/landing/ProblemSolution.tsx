@@ -1,4 +1,4 @@
-import { Clock, Target, BarChart3, DollarSign, HeartHandshakeIcon, HandCoins } from 'lucide-react'
+import { Clock, Target, BarChart3, DollarSign, HeartHandshakeIcon, HandCoins, ListOrdered } from 'lucide-react'
 import { IconBadge } from '@/components/shared/IconBadge'
 
 export function ProblemSolution() {
@@ -16,7 +16,7 @@ export function ProblemSolution() {
         'Med vores AI-drevet scoringsmodel sikres du en neutral, ensartet og retfærdig evaluering.'
     },
     {
-      icon: Target,
+      icon: ListOrdered,
       title: 'Prioriteret best-match liste',
       description:
         'Alle CV´r rangeres på en 10 skala med detaljeret begrundelse for placeringen.'
@@ -25,7 +25,7 @@ export function ProblemSolution() {
       icon: HandCoins,
       title: 'Ubegrænset analyser',
       description:
-        'Vi tilbyder én pris med alt inklusiv - du kan screene ubegrænset antal CV´r.'
+        'Vi tilbyder én pris med alt inklusiv, så du kan screene ubegrænset antal CV´r.'
     }
   ]
 

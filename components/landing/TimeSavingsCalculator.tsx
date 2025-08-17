@@ -32,8 +32,7 @@ export function TimeSavingsCalculator() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <div className="mx-auto mb-4 flex items-center justify-center">
-            <IconBadge Icon={Clock} size="md" />
-          </div>
+           </div>
           <h2 className="text-4xl font-bold text-gray-900">Så meget tid kan du spare med Rekruna</h2>
           <p className="text-lg text-gray-600 mt-3">
             Beregn din tidsbesparelse ved at bruge Rekruna til at analysere og prioritere dine ansøgninger

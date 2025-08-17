@@ -1,4 +1,4 @@
-import { Upload, Brain, ListOrdered, FileText, Globe, Shield, Save, LandPlot } from 'lucide-react'
+import { Upload, Brain, ListOrdered, FileText, Globe, Shield, Save, LandPlot, HandCoinsIcon } from 'lucide-react'
 import { IconBadge } from '@/components/shared/IconBadge'
 
 interface Feature {
@@ -10,7 +10,7 @@ interface Feature {
 export function FeaturesGrid() {
   const features: Feature[] = [
     {
-      icon: Save,
+      icon: HandCoinsIcon,
       title: "Reducer omkostningerne",
       description: "Med Rekruna som jeres interne CV-screener sparer I både tid og penge i rekruteringsprocessen"
     },
