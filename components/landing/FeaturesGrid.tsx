@@ -1,4 +1,4 @@
-import { Upload, Brain, ListOrdered, FileText, Globe, Shield } from 'lucide-react'
+import { Upload, Brain, ListOrdered, FileText, Globe, Shield, Save } from 'lucide-react'
 import { IconBadge } from '@/components/shared/IconBadge'
 
 interface Feature {
@@ -10,34 +10,34 @@ interface Feature {
 export function FeaturesGrid() {
   const features: Feature[] = [
     {
-      icon: Upload,
-      title: "Upload & Analyser",
-      description: "Upload jobopslag og op til 50 CV'er. Simpel drag-and-drop interface gør processen hurtig og intuitiv."
+      icon: Save,
+      title: "Reducer omkostningerne",
+      description: "Med Rekruna som jeres interne CV-screener sparer I både tid og penge i rekruteringsprocessen"
     },
     {
       icon: Brain,
-      title: "AI-drevet Scoring", 
-      description: "Præcis vurdering med GPT-4o-mini teknologi. Konsistent og objektiv evaluering af hver kandidat."
+      title: "Brugervenlig proces", 
+      description: "Upload stillingsopslag og CV´r. Vælg jeres vigtigste krav – så klarer systemet resten."
     },
     {
       icon: ListOrdered,
-      title: "Prioriteret Liste",
-      description: "Få kandidater rangeret efter match med 0-10 skala. Se straks hvem der bedst opfylder dine krav."
+      title: "Detaljeret rapport",
+      description: "Download overskuelig PDF med prioriteret score og kommentarer for hver kandidat."
     },
     {
       icon: FileText,
-      title: "Detaljeret Rapport",
-      description: "Download PDF med begrundelser for hver score. Del nemt resultater med dit team."
+      title: "GDPR-sikkerhed som standard",
+      description: "Alle data håndteres og opbevares sikkert i EU – og slettes automatisk efter 30 dage."
     },
     {
       icon: Globe,
-      title: "Dansk Sprog",
-      description: "Fuld support for danske CV'er og jobopslag. AI forstår dansk kontekst og terminologi."
+      title: "En løsning for alle",
+      description: "Rekruna er for alle – samme hurtige analyse, uanset antal CV´r og stillingsopslag."
     },
     {
       icon: Shield,
-      title: "GDPR Compliant",
-      description: "Sikker håndtering af persondata med automatisk sletning efter 30 dage. Fuld GDPR compliance."
+      title: "Stærkt beslutningsgrundlag",
+      description: "Med Rekruna kan I analysere og prioriter og få et bedre beslutningsgrundlag til den videre proces."
     }
   ]
 

@@ -7,25 +7,25 @@ export function ProblemSolution() {
       icon: Clock,
       title: 'Reduceret tidsforbrug',
       description:
-        'Analyser alle ansøgninger på under 5 minutter uanset antal kandidater.'
+        'Analysér alle CV´r op til 80 % hurtigere så du straks kan se, hvem der bedst matcher jobbet.'
     },
     {
       icon: BarChart3,
-      title: 'Objektiv sammenligning uden bias',
+      title: 'Objektiv vurdering uden bias',
       description:
-        'AI-drevet analyse sikrer objektiv vurdering med granuleret pointsystem.'
+        'Med vores AI-drevet scoringsmodel sikres I en neutral, ensartet og retfærdig evaluering.'
     },
     {
       icon: Target,
-      title: 'Prioriteret kandidatliste ud fra ansættelseskrav',
+      title: 'Prioriteret liste ud fra ansættelseskrav',
       description:
-        'Kandidater rangeret efter ansættelseskrav med detaljeret scoring.'
+        'I får alle CV´r rangeret på en 10 skala med detaljeret begrundelse for placeringen.'
     },
     {
       icon: DollarSign,
-      title: 'Spar udgifter til bureauer',
+      title: 'Ubegrænset analyser',
       description:
-        'Undgå dyre rekrutteringsbureauer med intern AI-analyse.'
+        'Vi har én pris med alt inklusiv - I får ubegrænset antal CV-screeninger og stillingsopslag.'
     }
   ]
 

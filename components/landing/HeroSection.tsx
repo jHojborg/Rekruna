@@ -66,7 +66,8 @@ export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectio
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>Hurtigste kandidatanalyse</span>
+              <span>Ingen opstartsomkostninger
+              </span>
             </div>
           </div>
         </div>
