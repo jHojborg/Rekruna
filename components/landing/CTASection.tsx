@@ -15,7 +15,7 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
         </h2>
         
         <p className="text-xl text-black mb-8 max-w-2xl mx-auto">
-        Upload CV´r og stillingsopslag, lad systemet lave arbejdet, og du har en liste med de bedst egnede kandidater.
+        Upload CV´r og stillingsopslag, lad systemet gøre arbejdet, og du har en liste med de bedst egnede kandidater.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
