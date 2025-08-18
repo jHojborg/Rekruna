@@ -50,6 +50,8 @@ export default function DashboardPage() {
   const [currentFile, setCurrentFile] = useState<string | undefined>()
 
   const [results, setResults] = useState<any[]>([])
+  // Loading state for requirement extraction after job upload
+  const [loadingRequirements, setLoadingRequirements] = useState(false)
 
   // Recent analyses (client-side list for last 30 days) – hooks must be before any early returns
   const [recent, setRecent] = useState<Array<{ id: string; createdAt: Date; title: string; version: string; analysisId?: string; reportPath?: string }>>([])
@@ -77,6 +79,9 @@ export default function DashboardPage() {
     }
     const analysisId = crypto.randomUUID()
     try {
+      // Vis indikator mens vi analyserer jobopslaget
+      setLoadingRequirements(true)
+      setStep(2)
       await uploadJobDescription(jobFile, user.id, analysisId)
       // Forsøg at udtrække krav fra jobopslaget via server-API (best-effort)
       try {
@@ -90,12 +95,12 @@ export default function DashboardPage() {
           setRequirements(data.requirements)
         }
       } catch {}
-
-      setStep(2)
       ;(window as any).__analysisId = analysisId
       ;(window as any).__userId = user.id
     } catch (e: any) {
       alert(e.message)
+    } finally {
+      setLoadingRequirements(false)
     }
   }
 
@@ -367,7 +372,14 @@ export default function DashboardPage() {
           </div>
         )}
         {step === 2 && (
-          <RequirementSelector requirements={requirements} onToggle={toggleReq} onContinue={contFromReq} />
+          loadingRequirements ? (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+              <p className="text-lg font-medium text-gray-900">Vi analyserer dit stillingsopslag…</p>
+              <p className="text-gray-600 mt-2">Det tager typisk under 10 sekunder</p>
+            </div>
+          ) : (
+            <RequirementSelector requirements={requirements} onToggle={toggleReq} onContinue={contFromReq} />
+          )
         )}
         {step === 3 && (
           <CVUploadCard count={cvFiles.length} onFilesSelected={onFiles} onAnalyze={analyze} />
