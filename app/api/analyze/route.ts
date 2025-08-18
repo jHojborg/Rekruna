@@ -131,13 +131,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'Missing analysisId' }, { status: 400 })
     }
 
-    // Rate limit: per bruger og per IP
-    const ip = getClientIp(req)
-    const userKey: BucketKey = `u:${body.userId}`
-    const ipKey: BucketKey = `ip:${ip}`
-    if (!allowRun(userKey) || !allowRun(ipKey)) {
-      return NextResponse.json({ ok: false, error: 'For mange analyser. Prøv igen om lidt.' }, { status: 429 })
-    }
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ ok: false, error: 'Missing OPENAI_API_KEY on server' }, { status: 500 })
     }
@@ -157,6 +150,14 @@ export async function POST(req: Request) {
     const userId = userData.user.id as string
     const analysisId = body.analysisId
     const requirements = body.requirements ?? []
+
+    // Rate limit: per bruger og per IP (efter vi kender userId)
+    const ip = getClientIp(req)
+    const userKey: BucketKey = `u:${userId}`
+    const ipKey: BucketKey = `ip:${ip}`
+    if (!allowRun(userKey) || !allowRun(ipKey)) {
+      return NextResponse.json({ ok: false, error: 'For mange analyser. Prøv igen om lidt.' }, { status: 429 })
+    }
 
     // Hent jobbeskrivelse (valgfri men anbefalet)
     const jdBase = `${userId}/${analysisId}`
