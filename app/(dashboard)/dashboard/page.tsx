@@ -216,7 +216,8 @@ export default function DashboardPage() {
     // Headerbaggrund + multi-line centreret headertekst
     let y = margin.y + 28
     doc.setFillColor(245, 245, 245)
-    doc.rect(margin.x, y - 16, tableWidth, 28, 'F')
+    const headerBoxHeight = 40
+    doc.rect(margin.x, y - headerBoxHeight / 2, tableWidth, headerBoxHeight, 'F')
     doc.setTextColor(0)
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(11)
@@ -234,10 +235,11 @@ export default function DashboardPage() {
       x += col.width
     })
 
-    // Divider
+    // Divider (ekstra luft under header)
     doc.setLineWidth(0.6)
-    doc.line(margin.x, y + 6, margin.x + tableWidth, y + 6)
-    y += 22
+    const dividerY = y + headerBoxHeight / 2 + 8
+    doc.line(margin.x, dividerY, margin.x + tableWidth, dividerY)
+    y = dividerY + 8
 
     // Rækker
     doc.setFont('helvetica', 'normal')
@@ -253,7 +255,7 @@ export default function DashboardPage() {
         doc.addPage()
         y = margin.y + 12
         doc.setFillColor(245, 245, 245)
-        doc.rect(margin.x, y - 16, tableWidth, 28, 'F')
+        doc.rect(margin.x, y - headerBoxHeight / 2, tableWidth, headerBoxHeight, 'F')
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(11)
         let hx = margin.x
@@ -268,8 +270,9 @@ export default function DashboardPage() {
           hx += col.width
         })
         doc.setLineWidth(0.6)
-        doc.line(margin.x, y + 6, margin.x + tableWidth, y + 6)
-        y += 22
+        const pageDividerY = y + headerBoxHeight / 2 + 8
+        doc.line(margin.x, pageDividerY, margin.x + tableWidth, pageDividerY)
+        y = pageDividerY + 8
         doc.setFont('helvetica', 'normal')
       }
 
