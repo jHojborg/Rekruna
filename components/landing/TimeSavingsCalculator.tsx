@@ -26,6 +26,11 @@ export function TimeSavingsCalculator() {
     [applications]
   )
   const displayTime = useMemo(() => formatTime(totalMinutes), [totalMinutes])
+  const rekMinutes = useMemo(() => Math.ceil((applications * 5) / 60), [applications])
+  const rekMinutesLabel = useMemo(
+    () => `${rekMinutes} ${rekMinutes === 1 ? 'minut' : 'minutter'}`,
+    [rekMinutes]
+  )
 
   return (
     <section className="py-20 bg-brand-base">
@@ -70,11 +75,13 @@ export function TimeSavingsCalculator() {
               {displayTime}
             </div>
 
-            <div className="mt-6 p-4 rounded-lg border border-primary/20 bg-primary/10 inline-block">
-              <p className="text-gray-900">
-                Med Rekruna analyserer du alle ansøgninger på <span className="text-primary font-semibold">under 5 minutter</span>!
-              </p>
-            </div>
+            {applications > 0 && (
+              <div className="mt-6 p-4 rounded-lg border border-primary/20 bg-primary/10 inline-block">
+                <p className="text-gray-900">
+                  Med Rekruna analyserer du alle ansøgninger på <span className="text-primary font-semibold">{rekMinutesLabel}</span>!
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
