@@ -7,7 +7,6 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 type AnalyzeRequest = {
-  userId: string
   analysisId: string
   requirements?: string[] // 3 valgte must-haves
   title?: string
@@ -128,8 +127,8 @@ async function extractPdfText(buf: ArrayBuffer): Promise<string> {
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as AnalyzeRequest
-    if (!body?.userId || !body?.analysisId) {
-      return NextResponse.json({ ok: false, error: 'Missing userId or analysisId' }, { status: 400 })
+    if (!body?.analysisId) {
+      return NextResponse.json({ ok: false, error: 'Missing analysisId' }, { status: 400 })
     }
 
     // Rate limit: per bruger og per IP
@@ -143,7 +142,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'Missing OPENAI_API_KEY on server' }, { status: 500 })
     }
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-    const { userId, analysisId, requirements = [] } = body
+    // Udled userId fra bearer token
+    const authHeader = req.headers.get('authorization') || ''
+    const token = authHeader.toLowerCase().startsWith('bearer ')
+      ? authHeader.slice(7)
+      : undefined
+    if (!token) {
+      return NextResponse.json({ ok: false, error: 'Missing bearer token' }, { status: 401 })
+    }
+    const { data: userData, error: userErr }: any = await (supabaseAdmin as any).auth.getUser(token)
+    if (userErr || !userData?.user?.id) {
+      return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
+    }
+    const userId = userData.user.id as string
+    const analysisId = body.analysisId
+    const requirements = body.requirements ?? []
 
     // Hent jobbeskrivelse (valgfri men anbefalet)
     const jdBase = `${userId}/${analysisId}`
@@ -175,6 +188,7 @@ export async function POST(req: Request) {
     })
     if (cvErr) throw cvErr
 
+    // Filtypecheck – kun PDF
     let files = (cvFiles || []).filter((f) => f.name.toLowerCase().endsWith('.pdf'))
     // Batch-udsnit (offset/limit) for at kunne køre flere runs i træk uden overlap
     const offset = Math.max(0, Number.isFinite(body.offset as number) ? Number(body.offset) : 0)

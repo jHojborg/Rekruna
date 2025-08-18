@@ -22,7 +22,7 @@ export function FeaturesGrid() {
     {
       icon: ListOrdered,
       title: "Detaljeret rapport",
-      description: "Download overskuelig PDF med prioriteret score og kommentarer for hver kandidat."
+      description: "Download PDF rapport med prioriteret score og kommentarer for hver kandidat."
     },
     {
       icon: FileText,

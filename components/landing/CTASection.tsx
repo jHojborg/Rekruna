@@ -40,7 +40,7 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
         {/* Trust indicators */}
         <div className="mt-12 pt-8 border-t border-gray-300">
           <p className="text-black text-sm mb-4">
-            Tillid til danske virksomheder
+            FOOTER SEKTION: IKKE KLAR ENDNU, MEN HER KOMMER BLA SOCIAL PROOFS
           </p>
           <div className="flex justify-center items-center gap-8">
             <div className="text-black font-semibold">GDPR Compliant</div>

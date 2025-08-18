@@ -77,6 +77,8 @@ export default function DashboardPage() {
       window.location.href = '/login'
       return
     }
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData.session?.access_token
     const analysisId = crypto.randomUUID()
     try {
       // Vis indikator mens vi analyserer jobopslaget
@@ -87,8 +89,11 @@ export default function DashboardPage() {
       try {
         const r = await fetch('/api/requirements/extract', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.id, analysisId }),
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
+          body: JSON.stringify({ analysisId }),
         })
         const data = await r.json()
         if (data?.ok && Array.isArray(data.requirements) && data.requirements.length) {
@@ -141,12 +146,16 @@ export default function DashboardPage() {
       // Kald backend i batches á 10 indtil alle er behandlet
       const selectedReqs = requirements.filter((r) => r.selected).map((r) => r.text)
       const allResults: any[] = []
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
       for (let offset = 0; offset < cvFiles.length; offset += 10) {
         const res = await fetch('/api/analyze', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+          },
           body: JSON.stringify({
-            userId,
             analysisId,
             requirements: selectedReqs,
             title: jobFile?.name?.replace(/\.pdf$/i, '') || 'Analyse',
