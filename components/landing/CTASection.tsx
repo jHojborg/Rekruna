@@ -11,11 +11,11 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
     <section className="py-20 bg-brand-softGrey">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-        Effektivt og hurtig proces til moderne rekruttering!
+        Effektivt og hurtig CV-screening!
         </h2>
         
         <p className="text-xl text-black mb-8 max-w-2xl mx-auto">
-        Alt hvad du har brug for til effektivt at screene kandidater og opnå bedre beslutningsgrundlag til den videre proces.
+        Upload CV´r og stillingsopslag, lad systemet lave arbejdet, og du har en liste med de bedst egnede kandidater.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

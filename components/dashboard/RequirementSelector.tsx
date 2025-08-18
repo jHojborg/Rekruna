@@ -13,7 +13,7 @@ export function RequirementSelector({ requirements, onToggle, onContinue }: Requ
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-2">Vælg "Must-Have" Krav</h2>
-      <p className="text-gray-600 mb-6">Vælg præcis 3 krav som er mest kritiske for stillingen</p>
+      <p className="text-gray-600 mb-6">Vælg maks. 3 krav som er de mest kritiske for stillingen</p>
 
       <div className="space-y-3 mb-6">
         {requirements.map(r => {

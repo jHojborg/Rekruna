@@ -4,28 +4,28 @@ import { IconBadge } from '@/components/shared/IconBadge'
 export function ProblemSolution() {
   const items = [
     {
-      icon: Clock,
-      title: 'Reduceret tidsforbrug',
+      icon: HandCoins,
+      title: 'Ubegrænset analyser',
       description:
-        'Analysér alle CV´r op til 80 % hurtigere så du straks kan se, hvem der bedst matcher jobbet.'
+        'Vi tilbyder én pris med alt inklusiv, så du kan screene ubegrænset antal CV´r.'
     },
     {
       icon: HeartHandshakeIcon,
       title: 'Objektiv vurdering uden bias',
       description:
-        'Med vores AI-drevet scoringsmodel sikres du en neutral, ensartet og retfærdig evaluering.'
+        'Med vores AI scoringsmodel sikres du en neutral, ensartet og retfærdig evaluering.'
     },
     {
       icon: ListOrdered,
       title: 'Prioriteret best-match liste',
       description:
-        'Alle CV´r rangeres på en 10 skala med detaljeret begrundelse for placeringen.'
+        'Alle CV´r rangeres på en 10-skala med detaljeret begrundelse for placeringen.'
     },
     {
-      icon: HandCoins,
-      title: 'Ubegrænset analyser',
+      icon: Clock,
+      title: 'Reduceret tidsforbrug',
       description:
-        'Vi tilbyder én pris med alt inklusiv, så du kan screene ubegrænset antal CV´r.'
+        'Analysér alle CV´r op til 80 % hurtigere så du straks kan se, hvem der bedst matcher jobbet. '
     }
   ]
 

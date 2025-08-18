@@ -10,8 +10,8 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen">
       <HeroSection 
-        title="Screen kandidater 80% hurtigere med AI"
-        subtitle="Lad AI analysere CV'er og få en prioriteret kandidatliste på få minutter - for 149,-*"
+        title="Screen job-kandidater 80% hurtigere med AI"
+        subtitle="Få en prioriteret kandidatliste på få minutter og se straks, hvem der bedst matcher jobbet"
         ctaText="Start allerede i dag"
       />
       

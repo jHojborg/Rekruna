@@ -14,16 +14,16 @@ export function FAQAccordion() {
 
   const faqItems: FAQItem[] = [
     {
-      question: "Hvor mange CV'er må jeg analysere?",
-      answer: "Der er ikke loft over hvor mange CVr du kan uploade, men har du mere end 50 CV´r, bliver de uploaded i puljer af 50 stk. pr. gang."
+      question: "Hvor mange CV'r må jeg analysere?",
+      answer: "Der er ikke loft over hvor mange CV´r du kan uploade, men har du mere end 50 CV´r, bliver de uploaded i puljer af 50 stk. pr. gang."
     },
     {
       question: "Hvilke filformater understøttes?",
-      answer: "Vi understøtter PDF-filer for både jobopslag og CV'er. Vi arbejder på at tilføje support for andre formaler."
+      answer: "Vi understøtter PDF-filer for både jobopslag og CV´r. Vi arbejder på at tilføje support for andre formaler."
     },
     {
       question: "Hvor præcis er AI-vurderingen?",
-      answer: "Vores AI-model giver altid en konsistent, objektiv vurdering baseret på dine specifikke krav. Og med 10 point skalaen er du sikre granulering blandt de bedste kandidater. "
+      answer: "Vores AI-model giver en konsistent, objektiv vurdering baseret på dine specifikke krav. Og med 10 point skalaen får du en granuleret feedback på alle kandidater. "
     },
     {
       question: "Hvordan håndteres mine data?",
@@ -31,7 +31,7 @@ export function FAQAccordion() {
     },
     {
       question: "Kan jeg opsige når som helst?",
-      answer: "Ja, du kan opsige dit abonnement når som helst med løbende + dage 30. Du beholder adgang til dine eksisterende analyser indtil perioden udløber."
+      answer: "Ja, du kan opsige dit abonnement når som helst med løbende + dage 30. Du kan naturligvis benytte systemet i hele opsigelsesperioden."
     }
   ]
 

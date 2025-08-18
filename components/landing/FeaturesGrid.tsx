@@ -12,12 +12,12 @@ export function FeaturesGrid() {
     {
       icon: HandCoinsIcon,
       title: "Reducer omkostningerne",
-      description: "Med Rekruna som jeres interne CV-screener sparer I både tid og penge i rekruteringsprocessen"
+      description: "Med Rekruna som den interne CV-screener spares både tid og penge i rekruteringsprocessen"
     },
     {
       icon: Brain,
       title: "Brugervenlig proces", 
-      description: "Upload stillingsopslag og CV´r. Vælg jeres vigtigste krav – så klarer systemet resten."
+      description: "Upload stillingsopslag og CV´r. Vælg de vigtigste krav – så klarer systemet resten."
     },
     {
       icon: ListOrdered,
@@ -32,12 +32,12 @@ export function FeaturesGrid() {
     {
       icon: Globe,
       title: "En løsning for alle",
-      description: "Rekruna er for alle – samme hurtige analyse, uanset antal CV´r og stillingsopslag."
+      description: "Rekruna er for alle. Samme hurtige analyse og prioritering, uanset antal CV´r og stillingsopslag."
     },
     {
       icon: LandPlot,
       title: "Stærkt beslutningsgrundlag",
-      description: "Med Rekruna kan I analysere og prioriter og få et bedre beslutningsgrundlag til den videre proces."
+      description: "Med Rekruna CV-screener og analyse opnås et stærkt beslutningsgrundlag til den videre proces."
     }
   ]
 
@@ -46,7 +46,7 @@ export function FeaturesGrid() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-          Effektivt og hurtig proces til moderne screening af kandidater.
+          Effektivt og hurtig proces til screening af kandidater.
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           Alt hvad du har brug for til effektivt at screene kandidater og opnå bedste beslutningsgrundlag til den videre proces.

@@ -14,7 +14,7 @@ export function ResultsSection({ results }: ResultsSectionProps) {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Analyse Resultater</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Analyse resultat</h2>
         <div className="space-y-6">
           {results.map((r, i) => (
             <div key={i} className="border rounded-lg p-6">
@@ -36,7 +36,7 @@ export function ResultsSection({ results }: ResultsSectionProps) {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Bekymringsområder</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">Opmærksomhedsområder</h4>
                   <ul className="list-disc pl-5 text-sm text-gray-700">
                     {r.concerns.map((s, j) => <li key={j}>{s}</li>)}
                   </ul>
