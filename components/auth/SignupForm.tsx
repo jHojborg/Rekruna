@@ -189,6 +189,9 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
                   </Link>
                 </Label>
               </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Abonnementet fornys automatisk med en måned, indtil det opsiges.
+              </p>
               {errors.accept && <p className="text-sm text-red-600 mt-1">{errors.accept}</p>}
             </CardContent>
           </Card>
