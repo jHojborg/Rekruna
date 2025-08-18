@@ -213,19 +213,24 @@ export default function DashboardPage() {
     doc.setFontSize(20)
     doc.text('Analyse resultater', margin.x, margin.y)
 
-    // Headerbaggrund
+    // Headerbaggrund + multi-line centreret headertekst
     let y = margin.y + 28
     doc.setFillColor(245, 245, 245)
-    doc.rect(margin.x, y - 16, tableWidth, 24, 'F')
-    doc.setFontSize(12)
+    doc.rect(margin.x, y - 16, tableWidth, 28, 'F')
     doc.setTextColor(0)
     doc.setFont('helvetica', 'bold')
+    doc.setFontSize(11)
+    const headerLineHeight = 12
 
-    // Headertekst
     let x = margin.x
     cols.forEach((col) => {
-      const tx = col.align === 'left' ? x + 6 : x + col.width / 2
-      doc.text(col.label, tx, y, { align: col.align === 'left' ? 'left' : 'center' })
+      const centerX = x + col.width / 2
+      const lines = doc.splitTextToSize(col.label, col.width - 8)
+      const totalH = (lines.length - 1) * headerLineHeight
+      const startY = y - totalH / 2
+      lines.forEach((ln: string, i: number) => {
+        doc.text(ln, centerX, startY + i * headerLineHeight, { align: 'center' })
+      })
       x += col.width
     })
 
@@ -248,12 +253,18 @@ export default function DashboardPage() {
         doc.addPage()
         y = margin.y + 12
         doc.setFillColor(245, 245, 245)
-        doc.rect(margin.x, y - 16, tableWidth, 24, 'F')
+        doc.rect(margin.x, y - 16, tableWidth, 28, 'F')
         doc.setFont('helvetica', 'bold')
+        doc.setFontSize(11)
         let hx = margin.x
         cols.forEach((col) => {
-          const tx = col.align === 'left' ? hx + 6 : hx + col.width / 2
-          doc.text(col.label, tx, y, { align: col.align === 'left' ? 'left' : 'center' })
+          const centerX = hx + col.width / 2
+          const lines = doc.splitTextToSize(col.label, col.width - 8)
+          const totalH = (lines.length - 1) * headerLineHeight
+          const startY = y - totalH / 2
+          lines.forEach((ln: string, i: number) => {
+            doc.text(ln, centerX, startY + i * headerLineHeight, { align: 'center' })
+          })
           hx += col.width
         })
         doc.setLineWidth(0.6)
