@@ -198,13 +198,12 @@ export default function DashboardPage() {
     const tableWidth = pageWidth - margin.x - margin.right
     const rowHeight = 22
 
-    // Kolonner (skaleres til tabellens bredde)
+    // Dynamiske kolonner som matcher resultattabellen på skærmen
+    const scoreKeys: string[] = Object.keys(results[0]?.scores || {})
     const cols = [
       { key: 'name', label: 'Kandidat', width: 220, align: 'left' as const },
       { key: 'overall', label: 'Overall', width: 80, align: 'center' as const },
-      { key: 'js', label: 'JavaScript', width: 100, align: 'center' as const },
-      { key: 'react', label: 'React', width: 80, align: 'center' as const },
-      { key: 'agile', label: 'Agile', width: 80, align: 'center' as const },
+      ...scoreKeys.map((k) => ({ key: k, label: k, width: 100, align: 'center' as const })),
     ]
     const scale = tableWidth / cols.reduce((s, c) => s + c.width, 0)
     cols.forEach((c) => (c.width = c.width * scale))
@@ -237,16 +236,11 @@ export default function DashboardPage() {
 
     // Rækker
     doc.setFont('helvetica', 'normal')
-    const cell = (r: any, key: string) =>
-      key === 'overall'
-        ? String(r.overall)
-        : key === 'js'
-        ? String(r.scores?.JavaScript ?? '')
-        : key === 'react'
-        ? String(r.scores?.React ?? '')
-        : key === 'agile'
-        ? String(r.scores?.Agile ?? '')
-        : String(r.name)
+    const cell = (r: any, key: string) => {
+      if (key === 'name') return String(r.name)
+      if (key === 'overall') return String(r.overall)
+      return String(r.scores?.[key] ?? '')
+    }
 
     for (const r of results) {
       // Sideskift og gentag header
