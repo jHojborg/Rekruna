@@ -44,7 +44,7 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
           </p>
           <div className="flex justify-center items-center gap-8">
             <div className="text-black font-semibold">GDPR Compliant</div>
-            <div className="text-black font-semibold">🇩🇰 Dansk Support</div>
+            <div className="text-black font-semibold">Dansk Support</div>
             <div className="text-black font-semibold">Hosting i EU</div>
           </div>
         </div>
