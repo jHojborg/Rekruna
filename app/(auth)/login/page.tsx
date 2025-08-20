@@ -68,10 +68,9 @@ export default function LoginPage() {
             {errors.general && <p className="text-sm text-red-600">{errors.general}</p>}
 
             <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Logger ind...' : 'Log ind'}</Button>
-            <div className="text-center mt-3">
-              <Link href="/signup" className="text-sm text-primary hover:underline">
-                Ingen konto endnu? Opret dig her
-              </Link>
+            <div className="mt-3 flex items-center justify-between">
+              <Link href="/forgot-password" className="text-sm text-primary hover:underline">Glemt adgangskode?</Link>
+              <Link href="/signup" className="text-sm text-primary hover:underline">Ingen konto endnu? Opret dig her</Link>
             </div>
           </form>
         </CardContent>

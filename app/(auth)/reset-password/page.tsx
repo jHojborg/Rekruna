@@ -139,14 +139,10 @@ export default function ResetPasswordPage() {
             {phase === 'success' && (
               <div className="space-y-4">
                 <p className="text-gray-700">Din adgangskode er opdateret.</p>
-                <div className="flex gap-3">
-                  <Link href="/login">
-                    <Button>Gå til login</Button>
-                  </Link>
-                  <Link href="/dashboard">
-                    <Button variant="outline">Gå til dashboard</Button>
-                  </Link>
-                </div>
+                {/* Efter sikkerhedspraksis bør bruger logge ind på ny */}
+                <Link href="/login">
+                  <Button>Gå til login</Button>
+                </Link>
               </div>
             )}
 
