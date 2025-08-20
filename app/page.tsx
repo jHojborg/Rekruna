@@ -1,3 +1,5 @@
+"use client"
+import { useEffect } from 'react'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { ProblemSolution } from '@/components/landing/ProblemSolution'
 import { TimeSavingsCalculator } from '@/components/landing/TimeSavingsCalculator'
@@ -7,6 +9,18 @@ import { FAQAccordion } from '@/components/landing/FAQAccordion'
 import { CTASection } from '@/components/landing/CTASection'
 
 export default function LandingPage() {
+  // Handle Supabase password recovery links coming to the Site URL root.
+  // Supabase sends tokens in the URL hash (after #), which the server cannot read.
+  // We detect `type=recovery` on the client and forward the user to
+  // `/reset-password` while preserving the entire hash (tokens/timeouts).
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const hash = window.location.hash || ''
+    if (hash.includes('type=recovery')) {
+      window.location.replace(`/reset-password${hash}`)
+    }
+  }, [])
+
   return (
     <main className="min-h-screen">
       <HeroSection 
