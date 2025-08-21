@@ -26,7 +26,12 @@ export function ResultsSection({ results }: ResultsSectionProps) {
                     <span className="text-2xl font-bold text-primary">{r.overall}/10</span>
                   </div>
                 </div>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary text-white">#{i + 1} Prioritet</span>
+                <span
+                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary text-white"
+                  style={{ backgroundColor: i < 10 ? '#10b984' : undefined }}
+                >
+                  #{i + 1} Prioritet
+                </span>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
