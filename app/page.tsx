@@ -47,7 +47,16 @@ export default function LandingPage() {
           </div>
           
           {(() => {
-            const plans = [
+            type Plan = {
+              title: string
+              originalPrice?: string
+              finalPrice: string
+              priceSuffix?: string
+              savingsText?: string
+              features: ReadonlyArray<string>
+              highlighted: boolean
+            }
+            const plans: Plan[] = [
               {
                 title: "Rekruna Start",
                 originalPrice: "249 kr/måned",
@@ -55,7 +64,7 @@ export default function LandingPage() {
                 priceSuffix: "kr/måned",
                 savingsText: "Spar 100 kr./måned",
                 features: [
-                  "Analyse af 1 stillingsopslag og 50 CV´r pr. måned.,
+                  "Analyse af 1 stillingsopslag og 50 CV´r pr. måned.",
                   "Opsig når det passer",
                   "AI-drevet scorecard model",
                   "PDF rapporter med detaljeret begrundelse",
@@ -80,7 +89,7 @@ export default function LandingPage() {
               },
               {
                 title: "Rekruna Pro",
-                
+                // No originalPrice for this plan.
                 finalPrice: "899",
                 priceSuffix: "kr/måned",
                 savingsText: "Spar 100 kr./måned",
@@ -93,7 +102,7 @@ export default function LandingPage() {
                 ],
                 highlighted: false,
               },
-            ] as const
+            ]
 
             return (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -113,7 +122,7 @@ export default function LandingPage() {
               </div>
             )
           })()}
-          <p className="mt-6 text-center text-sm text-gray-500">*Tilbuddet gælder de først 50 nye kunder.<br>Alle priser eksl. 25% moms. Alle planer har en bindingsperiode på minimum 12 måneder.</br></p>
+          <p className="mt-6 text-center text-sm text-gray-500">*Tilbuddet gælder de først 50 nye kunder.<br />Alle priser eksl. 25% moms. Alle planer har en bindingsperiode på minimum 12 måneder.</p>
         </div>
       </section>
 
