@@ -55,7 +55,7 @@ export default function LandingPage() {
                 priceSuffix: "kr/måned",
                 savingsText: "Spar 100 kr./måned",
                 features: [
-                  "Ubegrænset antal analyser",
+                  "Analyse af 1 stillingsopslag og 50 CV´r pr. måned.,
                   "Opsig når det passer",
                   "AI-drevet scorecard model",
                   "PDF rapporter med detaljeret begrundelse",
@@ -68,9 +68,9 @@ export default function LandingPage() {
                 originalPrice: "549 kr/måned",
                 finalPrice: "349",
                 priceSuffix: "kr/måned",
-                savingsText: "Spar 100 kr./måned",
+                savingsText: "Spar 200 kr./måned",
                 features: [
-                  "Ubegrænset antal analyser",
+                  "Op til 3 stillingsopslag og 300 CV´r pr. måned.",
                   "Opsig når det passer",
                   "AI-drevet scorecard model",
                   "PDF rapporter med detaljeret begrundelse",
@@ -80,8 +80,8 @@ export default function LandingPage() {
               },
               {
                 title: "Rekruna Pro",
-                originalPrice: "249 kr/måned",
-                finalPrice: "149",
+                originalPrice:,
+                finalPrice: "899",
                 priceSuffix: "kr/måned",
                 savingsText: "Spar 100 kr./måned",
                 features: [
@@ -106,14 +106,14 @@ export default function LandingPage() {
                     priceSuffix={plan.priceSuffix}
                     savingsText={plan.savingsText}
                     features={plan.features}
-                    ctaText="Kom i gang i dag"
+                    ctaText="Start i dag"
                     highlighted={plan.highlighted}
                   />
                 ))}
               </div>
             )
           })()}
-          <p className="mt-6 text-center text-sm text-gray-500">*Tilbuddet gælder de først 50 nye kunder</p>
+          <p className="mt-6 text-center text-sm text-gray-500">*Tilbuddet gælder de først 50 nye kunder.<br>Alle priser eksl. 25% moms. Alle planer har en bindingsperiode på minimum 12 måneder.</br></p>
         </div>
       </section>
 
