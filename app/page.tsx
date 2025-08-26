@@ -65,8 +65,8 @@ export default function LandingPage() {
               },
               {
                 title: "Rekruna One",
-                originalPrice: "249 kr/måned",
-                finalPrice: "149",
+                originalPrice: "549 kr/måned",
+                finalPrice: "349",
                 priceSuffix: "kr/måned",
                 savingsText: "Spar 100 kr./måned",
                 features: [
