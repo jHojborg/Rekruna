@@ -21,9 +21,9 @@ export function SolutionSection() {
         {/* Headline and subheadline area */}
         <div className="text-center mb-12">
           {/* Headline: h2 with simple, readable styling */}
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Løsningen</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Hurtig og Effektiv CV screening i 3 steps</h2>
           {/* Subheadline/description: keep the text exactly as requested */}
-          <p className="text-xl text-gray-600">HEr skal stå kort beskrivelse.</p>
+          <p className="text-xl text-gray-600">Med tre simple steps har du en prioriteret kandidatliste som et stærkt beslutningsgrundlag for et videre proces i rekreuteringen</p>
         </div>
 
         {/* Step 1: Image left, text right */}
@@ -35,7 +35,7 @@ export function SolutionSection() {
               alt="Upload stillingsbeskrivelse"
               width={880}
               height={540}
-              className="w-full h-auto rounded-xl border border-gray-200 shadow-sm bg-white"
+              className="w-full h-auto rounded-xl shadow-sm bg-white"
             />
           </div>
 
@@ -75,7 +75,7 @@ export function SolutionSection() {
               alt="Vælg must-have kriterier"
               width={880}
               height={540}
-              className="w-full h-auto rounded-xl border border-gray-200 shadow-sm bg-white"
+              className="w-full h-auto rounded-xl shadow-sm bg-white"
             />
           </div>
         </div>
@@ -89,7 +89,7 @@ export function SolutionSection() {
               alt="Analyse resultat eksempel"
               width={880}
               height={540}
-              className="w-full h-auto rounded-xl border border-gray-200 shadow-sm bg-white"
+              className="w-full h-auto rounded-xl shadow-sm bg-white"
             />
           </div>
 
