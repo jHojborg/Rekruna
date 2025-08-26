@@ -80,7 +80,7 @@ export default function LandingPage() {
               },
               {
                 title: "Rekruna Pro",
-                originalPrice:,
+                
                 finalPrice: "899",
                 priceSuffix: "kr/måned",
                 savingsText: "Spar 100 kr./måned",
