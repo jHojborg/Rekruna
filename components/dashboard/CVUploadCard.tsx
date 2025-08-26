@@ -28,8 +28,8 @@ export function CVUploadCard({ count, onFilesSelected, onAnalyze }: CVUploadCard
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
       <div className="flex flex-col items-center text-center">
         <Upload className="h-16 w-16 text-gray-400 mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload CV'er</h2>
-        <p className="text-gray-600 mb-8">Upload op til 50 CV'er (PDF). Hvis flere end 50 CV´r, skal de uploades ad flere omgange.</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload CV&#39;er</h2>
+        <p className="text-gray-600 mb-8">Upload op til 50 CV&#39;er (PDF). Hvis flere end 50 CV´r, skal de uploades ad flere omgange.</p>
 
         <label className="w-full">
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
@@ -41,7 +41,7 @@ export function CVUploadCard({ count, onFilesSelected, onAnalyze }: CVUploadCard
         </label>
 
         <Button className="mt-8 px-8 py-6 text-lg" onClick={onAnalyze} disabled={count === 0}>
-          Analyser CV'er
+          Analyser CV&#39;er
         </Button>
       </div>
     </div>

@@ -46,7 +46,20 @@ export default function LandingPage() {
             </p>
           </div>
           
-          <div className="max-w-md mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <PricingCard
+              title="Rekruna Start"
+              price="199 kr/måned"
+              features={[
+                "Ubegrænset antal analyser",
+                "Opsig når det passer",
+                "AI-drevet scorecard model",
+                "PDF rapporter med detaljeret begrundelse",
+                "GDPR compliant datasikkerhed"
+              ]}
+              ctaText="Kom i gang i dag"
+              highlighted={false}
+            />
             <PricingCard
               title="Rekruna One"
               price="249 kr/måned"
@@ -60,7 +73,21 @@ export default function LandingPage() {
               ctaText="Kom i gang i dag"
               highlighted={true}
             />
+            <PricingCard
+              title="Rekruna Pro"
+              price="399 kr/måned"
+              features={[
+                "Ubegrænset antal analyser",
+                "Opsig når det passer",
+                "AI-drevet scorecard model",
+                "PDF rapporter med detaljeret begrundelse",
+                "GDPR compliant datasikkerhed"
+              ]}
+              ctaText="Kom i gang i dag"
+              highlighted={false}
+            />
           </div>
+          <p className="mt-6 text-center text-sm text-gray-500">*Tilbuddet gælder de først 50 nye kunder</p>
         </div>
       </section>
 

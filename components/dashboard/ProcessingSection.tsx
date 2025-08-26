@@ -12,7 +12,7 @@ export function ProcessingSection({ total, processed, currentFile }: ProcessingS
       <div className="w-full bg-gray-200 rounded h-4 overflow-hidden">
         <div className="h-4 bg-primary transition-all duration-700 ease-out" style={{ width: `${pct}%` }} />
       </div>
-      <p className="text-gray-600 mt-3">{processed}/{total} CV'er</p>
+      <p className="text-gray-600 mt-3">{processed}/{total} CV&#39;er</p>
       {currentFile && <p className="text-gray-500 mt-1">Behandler: {currentFile}</p>}
     </div>
   )

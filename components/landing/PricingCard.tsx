@@ -66,9 +66,7 @@ export function PricingCard({
         </Button>
       )}
 
-      {highlighted && (
-        <p className="mt-4 text-center text-sm text-gray-500">*Tilbuddet gælder de først 50 nye kunder</p>
-      )}
+      
     </div>
   )
 } 
