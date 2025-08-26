@@ -4,16 +4,26 @@ import Link from 'next/link'
 
 interface PricingCardProps {
   title: string
-  price: string
-  features: string[]
+  /** Optional: shows a struck-through price above the current price */
+  originalPrice?: string
+  /** The large highlighted price number, e.g. "149" */
+  finalPrice: string
+  /** Small suffix shown next to the price, e.g. "kr/måned" */
+  priceSuffix?: string
+  /** Optional small badge under the price, e.g. "Spar 100 kr./måned" */
+  savingsText?: string
+  features: ReadonlyArray<string>
   ctaText: string
   highlighted?: boolean
   onCtaClick?: () => void
 }
 
 export function PricingCard({ 
-  title, 
-  price, 
+  title,
+  originalPrice,
+  finalPrice,
+  priceSuffix,
+  savingsText,
   features, 
   ctaText, 
   highlighted = false,
@@ -34,12 +44,18 @@ export function PricingCard({
       <div className="text-center mb-8">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">{title}</h3>
         <div className="flex flex-col items-center justify-center gap-2">
-          <div className="text-gray-500 line-through text-xl">249 kr/måned</div>
+          {originalPrice && (
+            <div className="text-gray-500 line-through text-xl">{originalPrice}</div>
+          )}
           <div className="flex items-baseline justify-center">
-            <span className="text-5xl font-bold text-gray-900">149</span>
-            <span className="text-xl text-gray-600 ml-2">kr/måned</span>
+            <span className="text-5xl font-bold text-gray-900">{finalPrice}</span>
+            {priceSuffix && (
+              <span className="text-xl text-gray-600 ml-2">{priceSuffix}</span>
+            )}
           </div>
-          <span className="text-sm bg-green-100 text-green-700 rounded-full px-3 py-1">Spar 100 kr./måned</span>
+          {savingsText && (
+            <span className="text-sm bg-green-100 text-green-700 rounded-full px-3 py-1">{savingsText}</span>
+          )}
         </div>
       </div>
       

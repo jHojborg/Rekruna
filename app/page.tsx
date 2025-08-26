@@ -46,47 +46,73 @@ export default function LandingPage() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <PricingCard
-              title="Rekruna Start"
-              price="199 kr/måned"
-              features={[
-                "Ubegrænset antal analyser",
-                "Opsig når det passer",
-                "AI-drevet scorecard model",
-                "PDF rapporter med detaljeret begrundelse",
-                "GDPR compliant datasikkerhed"
-              ]}
-              ctaText="Kom i gang i dag"
-              highlighted={false}
-            />
-            <PricingCard
-              title="Rekruna One"
-              price="249 kr/måned"
-              features={[
-                "Ubegrænset antal analyser",
-                "Opsig når det passer",
-                "AI-drevet scorecard model",
-                "PDF rapporter med detaljeret begrundelse",
-                "GDPR compliant datasikkerhed"
-              ]}
-              ctaText="Kom i gang i dag"
-              highlighted={true}
-            />
-            <PricingCard
-              title="Rekruna Pro"
-              price="399 kr/måned"
-              features={[
-                "Ubegrænset antal analyser",
-                "Opsig når det passer",
-                "AI-drevet scorecard model",
-                "PDF rapporter med detaljeret begrundelse",
-                "GDPR compliant datasikkerhed"
-              ]}
-              ctaText="Kom i gang i dag"
-              highlighted={false}
-            />
-          </div>
+          {(() => {
+            const plans = [
+              {
+                title: "Rekruna Start",
+                originalPrice: "249 kr/måned",
+                finalPrice: "149",
+                priceSuffix: "kr/måned",
+                savingsText: "Spar 100 kr./måned",
+                features: [
+                  "Ubegrænset antal analyser",
+                  "Opsig når det passer",
+                  "AI-drevet scorecard model",
+                  "PDF rapporter med detaljeret begrundelse",
+                  "GDPR compliant datasikkerhed",
+                ],
+                highlighted: false,
+              },
+              {
+                title: "Rekruna One",
+                originalPrice: "249 kr/måned",
+                finalPrice: "149",
+                priceSuffix: "kr/måned",
+                savingsText: "Spar 100 kr./måned",
+                features: [
+                  "Ubegrænset antal analyser",
+                  "Opsig når det passer",
+                  "AI-drevet scorecard model",
+                  "PDF rapporter med detaljeret begrundelse",
+                  "GDPR compliant datasikkerhed",
+                ],
+                highlighted: true,
+              },
+              {
+                title: "Rekruna Pro",
+                originalPrice: "249 kr/måned",
+                finalPrice: "149",
+                priceSuffix: "kr/måned",
+                savingsText: "Spar 100 kr./måned",
+                features: [
+                  "Ubegrænset antal analyser",
+                  "Opsig når det passer",
+                  "AI-drevet scorecard model",
+                  "PDF rapporter med detaljeret begrundelse",
+                  "GDPR compliant datasikkerhed",
+                ],
+                highlighted: false,
+              },
+            ] as const
+
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {plans.map((plan, idx) => (
+                  <PricingCard
+                    key={idx}
+                    title={plan.title}
+                    originalPrice={plan.originalPrice}
+                    finalPrice={plan.finalPrice}
+                    priceSuffix={plan.priceSuffix}
+                    savingsText={plan.savingsText}
+                    features={plan.features}
+                    ctaText="Kom i gang i dag"
+                    highlighted={plan.highlighted}
+                  />
+                ))}
+              </div>
+            )
+          })()}
           <p className="mt-6 text-center text-sm text-gray-500">*Tilbuddet gælder de først 50 nye kunder</p>
         </div>
       </section>
