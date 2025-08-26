@@ -6,7 +6,7 @@ export function SolutionSection() {
   // This section is empty by design. It acts as a placeholder.
   // Add your future layout/components here when ready.
   return (
-    <section className="py-20">
+    <section className="py-20 bg-white">
       {/* Section container uses the same layout as other landing blocks for consistency */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Headline and subheadline area */}
