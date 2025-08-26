@@ -7,7 +7,16 @@ export function SolutionSection() {
   // Add your future layout/components here when ready.
   return (
     <section className="py-20">
-      {/* TODO: Add Solution content here. Currently left empty on purpose. */}
+      {/* Section container uses the same layout as other landing blocks for consistency */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Headline and subheadline area */}
+        <div className="text-center mb-12">
+          {/* Headline: h2 with simple, readable styling */}
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Løsningen</h2>
+          {/* Subheadline/description: keep the text exactly as requested */}
+          <p className="text-xl text-gray-600">HEr skal stå kort beskrivelse.</p>
+        </div>
+      </div>
     </section>
   )
 }
