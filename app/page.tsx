@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { ProblemSolution } from '@/components/landing/ProblemSolution'
 import { TimeSavingsCalculator } from '@/components/landing/TimeSavingsCalculator'
-import { FeaturesGrid } from '@/components/landing/FeaturesGrid'
+import { SolutionSection } from '@/components/landing/SolutionSection'
 import { PricingCard } from '@/components/landing/PricingCard'
 import { FAQAccordion } from '@/components/landing/FAQAccordion'
 import { CTASection } from '@/components/landing/CTASection'
@@ -33,7 +33,7 @@ export default function LandingPage() {
 
       <TimeSavingsCalculator />
       
-      <FeaturesGrid />
+      <SolutionSection />
       
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
