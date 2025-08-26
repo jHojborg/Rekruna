@@ -5,10 +5,17 @@
 import Image from 'next/image'
 
 export function SolutionSection() {
+  function NumberBadge({ value }: { value: number | string }) {
+    return (
+      <div className="w-16 h-16 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+        <span className="text-2xl font-bold">{value}</span>
+      </div>
+    )
+  }
   // This section is empty by design. It acts as a placeholder.
   // Add your future layout/components here when ready.
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-brand-base">
       {/* Section container uses the same layout as other landing blocks for consistency */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Headline and subheadline area */}
@@ -33,8 +40,11 @@ export function SolutionSection() {
           </div>
 
           {/* Descriptive card */}
-          <div className="bg-gray-50 rounded-xl p-6 md:p-8 border border-gray-200">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Upload stillingsbeskrivelsen</h3>
+          <div className="p-0">
+            <div className="flex items-center gap-4 mb-3">
+              <NumberBadge value={1} />
+              <h3 className="text-2xl font-semibold text-gray-900">Upload stillingsbeskrivelsen</h3>
+            </div>
             <p className="text-gray-700 leading-relaxed">
               Upload stillingsbeskrivelsen som PDF. På få sekunder analyserer vores AI modellen
               indholdet og identificerer de centrale kriterier for kandidaten.
@@ -46,8 +56,11 @@ export function SolutionSection() {
         {/* Step 2: Text left, image right */}
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-14">
           {/* Descriptive card */}
-          <div className="bg-gray-50 rounded-xl p-6 md:p-8 border border-gray-200">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Vælg de vigtigste kriterier</h3>
+          <div className="p-0">
+            <div className="flex items-center gap-4 mb-3">
+              <NumberBadge value={2} />
+              <h3 className="text-2xl font-semibold text-gray-900">Vælg de vigtigste kriterier</h3>
+            </div>
             <p className="text-gray-700 leading-relaxed">
               Der identificeres op til syv centrale kriterier. Du vælger de tre vigtigste,
               som kandidaten skal opfylde. Upload CV’er og start analysen – resten klarer systemet.
@@ -81,8 +94,11 @@ export function SolutionSection() {
           </div>
 
           {/* Descriptive card */}
-          <div className="bg-gray-50 rounded-xl p-6 md:p-8 border border-gray-200">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Analysen er klar på få minutter</h3>
+          <div className="p-0">
+            <div className="flex items-center gap-4 mb-3">
+              <NumberBadge value={3} />
+              <h3 className="text-2xl font-semibold text-gray-900">Analysen er klar på få minutter</h3>
+            </div>
             <p className="text-gray-700 leading-relaxed">
               Efter få minutter får du en prioriteret kandidatliste. Hver kandidat får en score
               og konkrete kommentarer, så du nemt kan spotte styrker og opmærksomhedspunkter.
