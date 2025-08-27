@@ -27,7 +27,7 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
           ) : (
             <Button size="lg" asChild className="text-lg px-8 py-4 h-auto font-semibold">
               <Link href="/#pricing">
-                Kom i gang i dag
+                Start allerede i dag
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>

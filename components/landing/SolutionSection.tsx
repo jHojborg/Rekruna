@@ -35,7 +35,7 @@ export function SolutionSection() {
               alt="Upload stillingsbeskrivelse"
               width={880}
               height={540}
-              className="w-full h-auto rounded-xl shadow-sm bg-white"
+              className="w-full h-auto rounded-xl bg-white shadow-[4px_6px_16px_rgba(0,0,0,0.25)]"
             />
           </div>
 
@@ -75,7 +75,7 @@ export function SolutionSection() {
               alt="Vælg must-have kriterier"
               width={880}
               height={540}
-              className="w-full h-auto rounded-xl shadow-sm bg-white"
+              className="w-full h-auto rounded-xl bg-white shadow-[4px_6px_16px_rgba(0,0,0,0.25)]"
             />
           </div>
         </div>
@@ -89,7 +89,7 @@ export function SolutionSection() {
               alt="Analyse resultat eksempel"
               width={880}
               height={540}
-              className="w-full h-auto rounded-xl shadow-sm bg-white"
+              className="w-full h-auto rounded-xl bg-white shadow-[4px_6px_16px_rgba(0,0,0,0.25)]"
             />
           </div>
 

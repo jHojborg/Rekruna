@@ -58,7 +58,7 @@ export function ProblemSolution() {
           {items.map((item, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow"
+              className="bg-white rounded-2xl border border-gray-100 p-6 shadow-[4px_6px_16px_rgba(0,0,0,0.25)]"
             >
               <div className="flex items-center gap-4">
                 <IconBadge Icon={item.icon} size="md" />

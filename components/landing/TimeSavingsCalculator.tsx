@@ -45,7 +45,7 @@ export function TimeSavingsCalculator() {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 max-w-3xl mx-auto">
+        <div className="bg-white rounded-xl p-8 border border-gray-200 max-w-3xl mx-auto shadow-[4px_6px_16px_rgba(0,0,0,0.25)]">
           <label className="block text-base font-semibold text-gray-900 mb-3">
             Vælg antal ansøgninger som skal analyseres: 
             <span className="ml-2 text-primary">{applications}</span>
