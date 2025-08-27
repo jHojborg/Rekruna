@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react'
 import { IconBadge } from '@/components/shared/IconBadge'
 
 const PAGES_PER_APPLICATION = 3
-const MINUTES_PER_PAGE = 2
+const MINUTES_PER_PAGE = 1,5
 const CORAL = '#FF6F61'
 const SOFT_GREY = '#EDEDE7'
 
@@ -26,7 +26,7 @@ export function TimeSavingsCalculator() {
     [applications]
   )
   const displayTime = useMemo(() => formatTime(totalMinutes), [totalMinutes])
-  const rekMinutes = useMemo(() => Math.ceil((applications * 5) / 60), [applications])
+  const rekMinutes = useMemo(() => Math.ceil((applications * 2) / 60), [applications])
   const rekMinutesLabel = useMemo(
     () => `${rekMinutes} ${rekMinutes === 1 ? 'minut' : 'minutter'}`,
     [rekMinutes]
