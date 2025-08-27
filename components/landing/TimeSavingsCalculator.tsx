@@ -34,7 +34,7 @@ export function TimeSavingsCalculator() {
   )
 
   return (
-    <section className="py-20 bg-brand-softGrey">
+    <section className="py-25 bg-brand-softGrey">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <div className="mx-auto mb-4 flex items-center justify-center">

@@ -18,6 +18,12 @@ const config: Config = {
       },
     },
     extend: {
+      // Add custom spacing scale entries
+      // We use `py-25` across landing sections. In Tailwind, 1 unit = 0.25rem.
+      // So 25 => 6.25rem vertical padding for consistent section rhythm.
+      spacing: {
+        25: "6.25rem",
+      },
       colors: {
         // Base design tokens via CSS variables are still available,
         // but we also expose explicit brand colors for convenience
