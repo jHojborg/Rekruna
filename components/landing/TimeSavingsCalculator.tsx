@@ -26,10 +26,11 @@ export function TimeSavingsCalculator() {
     [applications]
   )
   const displayTime = useMemo(() => formatTime(totalMinutes), [totalMinutes])
-  const rekMinutes = useMemo(() => Math.ceil((applications * 2) / 60), [applications])
-  const rekMinutesLabel = useMemo(
-    () => `${rekMinutes} ${rekMinutes === 1 ? 'minut' : 'minutter'}`,
-    [rekMinutes]
+  // Calculate Rekruna processing time in seconds (2 seconds per application)
+  const rekSeconds = useMemo(() => applications * 2, [applications])
+  const rekSecondsLabel = useMemo(
+    () => `${rekSeconds} ${rekSeconds === 1 ? 'sekund' : 'sekunder'}`,
+    [rekSeconds]
   )
 
   return (
@@ -68,18 +69,29 @@ export function TimeSavingsCalculator() {
           </div>
 
           <div className="text-center mt-8">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Gennemsnitlig læsetid uden Rekruna:
-            </h3>
-            <div className="text-4xl font-extrabold text-primary">
-              {displayTime}
-            </div>
-
+            {/* Main highlighted result box */}
             {applications > 0 && (
-              <div className="mt-6 p-4 rounded-lg border border-primary/20 bg-primary/10 inline-block">
-                <p className="text-gray-900">
-                  Med Rekruna analyserer du alle ansøgninger på <span className="text-primary font-semibold">{rekMinutesLabel}</span>!
-                </p>
+              <div className="mb-6 p-6 rounded-lg bg-gray-100 inline-block">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Rekruna analyserer alle ansøgninger på:
+                </h3>
+                <div className="text-4xl font-extrabold text-primary mb-4">
+                  {rekSecondsLabel}
+                </div>
+              </div>
+            )}
+            
+            {/* Comparison text */}
+            {applications > 0 && (
+              <div className="text-lg text-gray-900 mt-4">
+                Uden Rekruna: {displayTime}.*
+              </div>
+            )}
+            
+            {/* Footnote */}
+            {applications > 0 && (
+              <div className="text-sm text-gray-600 mt-4 italic">
+                *) beregnet gennemsnitlig tid til gennemlæsning, evaluering og prioritering
               </div>
             )}
           </div>
