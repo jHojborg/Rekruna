@@ -8,7 +8,7 @@ import { CVUploadCard } from '@/components/dashboard/CVUploadCard'
 import { ProcessingSection } from '@/components/dashboard/ProcessingSection'
 import { ResultsSection } from '@/components/dashboard/ResultsSection'
 import { supabase } from '@/lib/supabase/client'
-import { uploadCVsInBatches, uploadJobDescription } from '@/lib/storage/upload'
+// GDPR: Fjern direkte filuploads til Supabase Storage. CV'er og job sendes nu direkte til /api/analyze som FormData
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import jsPDF from 'jspdf'
@@ -84,22 +84,7 @@ export default function DashboardPage() {
       // Vis indikator mens vi analyserer jobopslaget
       setLoadingRequirements(true)
       setStep(2)
-      await uploadJobDescription(jobFile, user.id, analysisId)
-      // Forsøg at udtrække krav fra jobopslaget via server-API (best-effort)
-      try {
-        const r = await fetch('/api/requirements/extract', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-          },
-          body: JSON.stringify({ analysisId }),
-        })
-        const data = await r.json()
-        if (data?.ok && Array.isArray(data.requirements) && data.requirements.length) {
-          setRequirements(data.requirements)
-        }
-      } catch {}
+      // Valgfrit: Krav-udtræk kan kaldes når vi også sender jobfilen, men vi springer over her for at undgå lagring
       ;(window as any).__analysisId = analysisId
       ;(window as any).__userId = user.id
     } catch (e: any) {
@@ -131,50 +116,34 @@ export default function DashboardPage() {
     setTotal(cvFiles.length)
     setProcessed(0)
     try {
-      // Upload alle valgte CV'er (op til 50) til Storage
-      await uploadCVsInBatches(cvFiles, {
-        userId,
-        analysisId,
-        batchSize: 10,
-        concurrency: 5,
-        onProgress: (done, tot, current) => {
-          setProcessed(done)
-          setTotal(tot)
-          setCurrentFile(current)
-        }
-      })
-      // Kald backend i batches á 10 indtil alle er behandlet
       const selectedReqs = requirements.filter((r) => r.selected).map((r) => r.text)
-      const allResults: any[] = []
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData.session?.access_token
-      for (let offset = 0; offset < cvFiles.length; offset += 10) {
-        const res = await fetch('/api/analyze', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-          },
-          body: JSON.stringify({
-            analysisId,
-            requirements: selectedReqs,
-            title: jobFile?.name?.replace(/\.pdf$/i, '') || 'Analyse',
-            offset,
-            limit: 10,
-          }),
-        })
-        const ct = res.headers.get('content-type') || ''
-        if (!ct.includes('application/json')) {
-          const txt = await res.text()
-          throw new Error(`Serverfejl (${res.status}). ${txt.slice(0, 120)}`)
-        }
-        const data = await res.json()
-        if (!res.ok || !data?.ok) throw new Error(data?.error || 'Analyse fejlede')
-        if (Array.isArray(data.results)) allResults.push(...data.results)
-        setProcessed(Math.min(cvFiles.length, offset + 10))
+
+      const fd = new FormData()
+      fd.append('analysisId', analysisId)
+      fd.append('title', jobFile?.name?.replace(/\.pdf$/i, '') || 'Analyse')
+      fd.append('requirements', JSON.stringify(selectedReqs))
+      if (jobFile) fd.append('job', jobFile)
+      cvFiles.forEach((f) => fd.append('cvs', f))
+
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: fd,
+      })
+      const ct = res.headers.get('content-type') || ''
+      if (!ct.includes('application/json')) {
+        const txt = await res.text()
+        throw new Error(`Serverfejl (${res.status}). ${txt.slice(0, 120)}`)
       }
-      // Saml alle batch-resultater
-      setResults(allResults)
+      const data = await res.json()
+      if (!res.ok || !data?.ok) throw new Error(data?.error || 'Analyse fejlede')
+      setResults(Array.isArray(data.results) ? data.results : [])
+      setProcessed(cvFiles.length)
+      setCurrentFile(undefined)
       const title = jobFile?.name?.replace(/\.pdf$/i, '') || 'Analyse'
       recordAnalysis(title)
     } catch (e: any) {
