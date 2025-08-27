@@ -9,7 +9,10 @@ type ExtractRequest = {
   analysisId: string
 }
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+// IMPORTANT: Do NOT instantiate OpenAI at module scope.
+// Next.js may evaluate modules at build-time when collecting page data.
+// If OPENAI_API_KEY is not set in the CI environment, this would throw and fail the build.
+// We instead create the client inside the POST handler after validating the env var.
 
 async function extractPdfText(buf: ArrayBuffer): Promise<string> {
   try {
