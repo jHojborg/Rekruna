@@ -53,7 +53,7 @@ export function Header() {
                 <Link href="/login">
                   <Button variant="outline">Log ind</Button>
                 </Link>
-                <Link href="/signup">
+                <Link href="/#pricing">
                   <Button className="">Start i dag</Button>
                 </Link>
               </>

@@ -51,7 +51,7 @@ export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectio
               </Button>
             ) : (
               <Button size="lg" asChild className="text-lg px-8 py-4 h-auto">
-                <Link href="/signup">
+                <Link href="/#pricing">
                   {ctaText}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
