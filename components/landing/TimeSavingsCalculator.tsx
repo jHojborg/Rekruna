@@ -27,7 +27,7 @@ export function TimeSavingsCalculator() {
   )
   const displayTime = useMemo(() => formatTime(totalMinutes), [totalMinutes])
   // Calculate Rekruna processing time in seconds (2 seconds per application)
-  const rekSeconds = useMemo(() => applications * 2, [applications])
+  const rekSeconds = useMemo(() => applications * 0.9, [applications])
   const rekSecondsLabel = useMemo(
     () => `${rekSeconds} ${rekSeconds === 1 ? 'sekund' : 'sekunder'}`,
     [rekSeconds]
@@ -71,11 +71,11 @@ export function TimeSavingsCalculator() {
           <div className="text-center mt-8">
             {/* Main highlighted result box */}
             {applications > 0 && (
-              <div className="mb-6 p-6 rounded-lg bg-gray-100 inline-block">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="mb-6 w-full max-w-2xl mx-auto rounded-lg bg-gray-100 flex flex-col items-center justify-center py-8 px-12">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
                   Rekruna analyserer alle ansøgninger på:
                 </h3>
-                <div className="text-4xl font-extrabold text-primary mb-4">
+                <div className="text-4xl font-extrabold text-primary text-center">
                   {rekSecondsLabel}
                 </div>
               </div>
