@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react'
 import { IconBadge } from '@/components/shared/IconBadge'
 
 const PAGES_PER_APPLICATION = 3
-const MINUTES_PER_PAGE = 1,5
+const MINUTES_PER_PAGE = 1.5
 const CORAL = '#FF6F61'
 const SOFT_GREY = '#EDEDE7'
 
