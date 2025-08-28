@@ -63,55 +63,172 @@ function allowRun(key: BucketKey): boolean {
 
 // Generate consistent cache key based on extracted CV text and requirements
 // This ensures identical content + requirements combination gets cached results
+// Includes robust input validation and error handling
 function generateCacheKey(extractedText: string, requirements: string[]): string {
-  // Normalize text by removing extra whitespace and lowercasing for consistent hashing
-  const normalizedText = extractedText.replace(/\s+/g, ' ').trim().toLowerCase()
-  
-  // Sort requirements to ensure consistent key regardless of order
-  const sortedRequirements = [...requirements].sort()
-  
-  // Create hash from normalized text + sorted requirements
-  const hashInput = normalizedText + '|' + JSON.stringify(sortedRequirements)
-  return createHash('sha256').update(hashInput, 'utf8').digest('hex')
+  try {
+    // Input validation
+    if (typeof extractedText !== 'string') {
+      throw new Error('extractedText must be a string')
+    }
+    
+    if (!Array.isArray(requirements)) {
+      throw new Error('requirements must be an array')
+    }
+    
+    // Handle empty or invalid inputs
+    const text = extractedText || ''
+    const reqs = requirements.filter(r => typeof r === 'string' && r.trim().length > 0)
+    
+    // Normalize text by removing extra whitespace and lowercasing for consistent hashing
+    const normalizedText = text.replace(/\s+/g, ' ').trim().toLowerCase()
+    
+    // Sort requirements to ensure consistent key regardless of order
+    const sortedRequirements = [...reqs].sort()
+    
+    // Create hash from normalized text + sorted requirements
+    const hashInput = normalizedText + '|' + JSON.stringify(sortedRequirements)
+    
+    if (hashInput.length === 1) { // Only separator, no actual content
+      throw new Error('No valid content to hash')
+    }
+    
+    return createHash('sha256').update(hashInput, 'utf8').digest('hex')
+  } catch (error: any) {
+    console.warn('Cache key generation error:', error?.message || error)
+    throw error // Re-throw to be handled by caller
+  }
+}
+
+// Validate that cached result has the expected structure
+function isValidCachedResult(data: any): boolean {
+  try {
+    // Check that data is an object with required properties
+    if (!data || typeof data !== 'object') {
+      return false
+    }
+    
+    // Validate required fields exist and have correct types
+    const hasValidOverall = typeof data.overall === 'number' && 
+                           data.overall >= 0 && data.overall <= 10
+    
+    const hasValidScores = data.scores && 
+                          typeof data.scores === 'object' && 
+                          !Array.isArray(data.scores)
+    
+    const hasValidStrengths = Array.isArray(data.strengths)
+    const hasValidConcerns = Array.isArray(data.concerns)
+    
+    // All validation checks must pass
+    return hasValidOverall && hasValidScores && hasValidStrengths && hasValidConcerns
+  } catch (error) {
+    console.warn('Cache validation error:', error)
+    return false
+  }
 }
 
 // Check if we have cached results for this CV+requirements combination
+// Includes robust error handling and corruption detection
 async function getCachedResult(cacheKey: string): Promise<any | null> {
   try {
     const cutoffTime = new Date(Date.now() - (CACHE_EXPIRY_HOURS * 60 * 60 * 1000)).toISOString()
     
     const { data, error } = await supabaseAdmin
       .from('analysis_cache')
-      .select('result_data')
+      .select('result_data, created_at')
       .eq('cache_key', cacheKey)
       .gte('created_at', cutoffTime)
       .limit(1)
       .single()
     
-    if (error || !data) {
+    // Handle database query errors
+    if (error) {
+      console.warn('Cache database query failed:', error?.message || error)
       return null
     }
     
+    // No data found (cache miss)
+    if (!data || !data.result_data) {
+      return null
+    }
+    
+    // Validate cached data structure to detect corruption
+    if (!isValidCachedResult(data.result_data)) {
+      console.warn('Corrupted cache entry detected, removing and falling back to AI processing:', {
+        cacheKey: cacheKey.substring(0, 8) + '...', // Log partial key for debugging
+        createdAt: data.created_at
+      })
+      
+      // Attempt to clean up corrupted entry (non-blocking)
+      try {
+        await supabaseAdmin
+          .from('analysis_cache')
+          .delete()
+          .eq('cache_key', cacheKey)
+      } catch (deleteError) {
+        console.warn('Failed to clean up corrupted cache entry:', deleteError)
+      }
+      
+      return null
+    }
+    
+    // Cache hit with valid data
+    console.log(`✅ Valid cache entry found for key ${cacheKey.substring(0, 8)}...`)
     return data.result_data
-  } catch (error) {
-    console.warn('Cache lookup failed:', error)
+    
+  } catch (error: any) {
+    // Catch-all error handler for any unexpected errors
+    console.warn('Cache lookup failed with unexpected error:', {
+      message: error?.message || 'Unknown error',
+      code: error?.code || 'Unknown',
+      cacheKey: cacheKey.substring(0, 8) + '...'
+    })
     return null
   }
 }
 
 // Store analysis result in cache for future use
+// Includes validation and robust error handling
 async function setCachedResult(cacheKey: string, result: any): Promise<void> {
   try {
-    await supabaseAdmin
+    // Validate that we're not caching invalid data
+    if (!isValidCachedResult(result)) {
+      console.warn('Attempted to cache invalid result structure, skipping cache storage:', {
+        cacheKey: cacheKey.substring(0, 8) + '...',
+        resultType: typeof result,
+        hasOverall: result?.overall !== undefined,
+        hasScores: result?.scores !== undefined
+      })
+      return
+    }
+    
+    // Attempt to store in cache
+    const { error } = await supabaseAdmin
       .from('analysis_cache')
       .upsert({
         cache_key: cacheKey,
         result_data: result,
         created_at: new Date().toISOString()
       })
-  } catch (error) {
+    
+    if (error) {
+      console.warn('Cache storage database error:', {
+        message: error.message || 'Unknown database error',
+        code: error.code || 'Unknown',
+        cacheKey: cacheKey.substring(0, 8) + '...'
+      })
+      return
+    }
+    
+    console.log(`💾 Successfully cached result for key ${cacheKey.substring(0, 8)}...`)
+    
+  } catch (error: any) {
     // Non-critical - continue without failing the request
-    console.warn('Cache storage failed:', error)
+    // But log detailed error information for debugging
+    console.warn('Cache storage failed with unexpected error:', {
+      message: error?.message || 'Unknown error',
+      stack: error?.stack?.substring(0, 200) || 'No stack trace',
+      cacheKey: cacheKey.substring(0, 8) + '...'
+    })
   }
 }
 
@@ -468,20 +585,39 @@ ${cvText || '(intet udtræk)'}
       async ({ name: fileName, candidateName, excerpt }) => {
         try {
           // Generate cache key based on extracted text and requirements
-          const cacheKey = generateCacheKey(excerpt, requirements)
+          // Wrapped in try-catch to handle any hash generation errors
+          let cacheKey: string | null = null
+          try {
+            cacheKey = generateCacheKey(excerpt, requirements)
+          } catch (hashError) {
+            console.warn(`Cache key generation failed for ${fileName}, proceeding with AI processing:`, hashError)
+            cacheKey = null
+          }
           
-          // Check for cached result first
-          const cachedResult = await getCachedResult(cacheKey)
-          if (cachedResult) {
-            console.log(`📋 Using cached result for ${fileName}`)
-            // Update candidate name from current file (cache might have different name)
-            return {
-              ...cachedResult,
-              name: candidateName // Use current file's extracted name
+          // Check for cached result first (only if cache key was successfully generated)
+          if (cacheKey) {
+            try {
+              const cachedResult = await getCachedResult(cacheKey)
+              if (cachedResult) {
+                console.log(`📋 Using cached result for ${fileName}`)
+                
+                // Validate that cached result is still properly structured
+                // before returning it (extra safety check)
+                if (isValidCachedResult(cachedResult)) {
+                  return {
+                    ...cachedResult,
+                    name: candidateName // Use current file's extracted name
+                  }
+                } else {
+                  console.warn(`Cached result validation failed for ${fileName}, falling back to AI processing`)
+                }
+              }
+            } catch (cacheError) {
+              console.warn(`Cache lookup failed for ${fileName}, falling back to AI processing:`, cacheError)
             }
           }
           
-          console.log(`🤖 Processing ${fileName} with AI (no cache hit)`)
+          console.log(`🤖 Processing ${fileName} with AI (no valid cache hit)`)
           
           // Use retry mechanism for better reliability
           const resp = await callOpenAIWithRetry(
@@ -528,11 +664,19 @@ ${cvText || '(intet udtræk)'}
           }
           
           // Cache the result for future use (without the specific candidate name)
-          const cacheableResult = {
-            ...result,
-            name: '' // Don't cache specific names since they can vary
+          // Only attempt caching if we have a valid cache key and successful result
+          if (cacheKey && result) {
+            try {
+              const cacheableResult = {
+                ...result,
+                name: '' // Don't cache specific names since they can vary
+              }
+              await setCachedResult(cacheKey, cacheableResult)
+            } catch (cacheStoreError) {
+              console.warn(`Failed to cache result for ${fileName}:`, cacheStoreError)
+              // Continue without failing - caching is not critical for functionality
+            }
           }
-          await setCachedResult(cacheKey, cacheableResult)
           
           return result
         } catch (e: any) {
