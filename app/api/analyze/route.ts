@@ -656,26 +656,252 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'No CV files provided' }, { status: 400 })
     }
 
+    // OpenAI system prompt for CV analysis
+    const sys = `Du er en dansk HR-analytiker. Vurder en kandidat ift. en jobbeskrivelse og MUST-HAVE krav. Returnér KUN JSON i dette schema:
+{
+  "name": "str",
+  "overall": 0-10, // én decimal, beregnet som gennemsnit af (krav-score/10)
+  "scores": {
+    // nøglerne er de krav nedenfor
+    "<krav1>": 0-100,
+    "<krav2>": 0-100,
+    // etc for alle krav
+  },
+  "strengths": ["str", ...], // 1-3 korte punkter
+  "concerns": ["str", ...] // 0-3 korte punkter
+}
+Dansk sprog. Ingen ekstra tekst.`
+
+    const makeUserPrompt = (fileName: string, cvText: string) => {
+      const reqList = requirements.length ? requirements.join('\n- ') : '(ingen krav angivet)'
+      return `FILNAVN: ${decodeURIComponent(fileName.replace(/\.pdf$/i, ''))}
+
+[JOBBESKRIVELSE]
+${jobText || '(ikke angivet)'}
+
+[MUST-HAVE KRAV]
+- ${reqList}
+
+[CV]
+${cvText || '(intet udtræk)'}`
+    }
+
     console.log(`🚀 Starting CV analysis: ${cvBlobs.length} CVs, ${requirements.length} requirements`)
 
-    // For now, return minimal success to test the fix
-    const mockResults = cvBlobs.map((cv, i) => ({
-      name: cv.name.replace('.pdf', ''),
-      overall: 7.5,
-      scores: Object.fromEntries(requirements.map(req => [req, 75])),
-      strengths: ['Mock analysis working'],
-      concerns: [],
-      has_cached_resume: false,
-      cv_text_hash: null
+    // Step 1: Extract PDF text in parallel
+    timer.mark('extraction-start')
+    const extractedData = await processWithConcurrency(
+      cvBlobs,
+      async ({ name, blob }) => {
+        try {
+          const ab = await blob.arrayBuffer()
+          const fullText = await extractPdfText(ab)
+          const candidateName = extractCandidateNameFromText(fullText, decodeURIComponent(name.replace(/\.pdf$/i, '')))
+          const relevantExcerpt = extractJobRelevantInfo(fullText, jobText, requirements)
+          return { name, candidateName, excerpt: relevantExcerpt }
+        } catch (error) {
+          console.warn(`PDF extraction failed for ${name}:`, error)
+          return { name, candidateName: decodeURIComponent(name.replace(/\.pdf$/i, '')), excerpt: '' }
+        }
+      },
+      MAX_CONCURRENT_PROCESSING
+    )
+    timer.mark('extraction-end')
+    console.log(`🔍 PDF extraction completed in ${timer.getMarkDuration('extraction-start', 'extraction-end')}ms`)
+
+    // Step 2: Process with OpenAI in parallel with cache lookup
+    timer.mark('ai-start')
+    const results = await processWithConcurrency(
+      extractedData.filter(data => data !== null),
+      async ({ name: fileName, candidateName, excerpt }) => {
+        try {
+          // Generate cache key
+          let cacheKey: string | null = null
+          try {
+            cacheKey = generateCacheKey(excerpt, requirements, jobText)
+          } catch (hashError) {
+            console.warn(`Cache key generation failed for ${fileName}, proceeding with AI processing:`, hashError)
+            cacheKey = null
+          }
+
+          // Check for cached result
+          if (cacheKey) {
+            try {
+              const cachedResult = await getCachedResult(cacheKey)
+              if (cachedResult) {
+                console.log(`📋 Using cached result for ${fileName}`)
+                if (isValidCachedResult(cachedResult)) {
+                  return {
+                    ...cachedResult,
+                    name: candidateName
+                  }
+                } else {
+                  console.warn(`Cached result validation failed for ${fileName}, falling back to AI processing`)
+                }
+              }
+            } catch (cacheError) {
+              console.warn(`Cache lookup failed for ${fileName}, falling back to AI processing:`, cacheError)
+            }
+          }
+
+          console.log(`🤖 Processing ${fileName} with AI (no valid cache hit)`)
+
+          // Use retry mechanism for better reliability
+          const resp = await callOpenAIWithRetry(
+            openai,
+            [
+              { role: 'system', content: sys },
+              { role: 'user', content: makeUserPrompt(fileName, excerpt) },
+            ],
+            fileName
+          )
+
+          const raw = resp.choices?.[0]?.message?.content || ''
+          let parsed: any | null = null
+          try {
+            parsed = JSON.parse(raw)
+          } catch {
+            const m = raw.match(/\{[\s\S]*\}/)
+            if (m) {
+              try {
+                parsed = JSON.parse(m[0])
+              } catch {}
+            }
+          }
+
+          if (!parsed) throw new Error('Invalid AI response')
+
+          // Normalize results
+          const name = parsed.name || candidateName
+          const scoresObj: Record<string, number> = parsed.scores || {}
+          const normalizedScores: Record<string, number> = {}
+          Object.keys(scoresObj).forEach((k) => {
+            const n = Number(scoresObj[k])
+            normalizedScores[k] = Math.max(0, Math.min(100, Number.isFinite(n) ? Math.round(n) : 0))
+          })
+
+          const overallNum = Number(parsed.overall)
+          const overall = Math.max(0, Math.min(10, Number.isFinite(overallNum) ? Number(overallNum.toFixed(1)) : 0))
+
+          const result = {
+            name,
+            overall,
+            scores: normalizedScores,
+            strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 3) : [],
+            concerns: Array.isArray(parsed.concerns) ? parsed.concerns.slice(0, 3) : [],
+          }
+
+          // Cache the result
+          if (cacheKey && result) {
+            try {
+              const cacheableResult = { ...result, name: '' }
+              await setCachedResult(cacheKey, cacheableResult)
+            } catch (cacheStoreError) {
+              console.warn(`Failed to cache result for ${fileName}:`, cacheStoreError)
+            }
+          }
+
+          return result
+        } catch (e: any) {
+          console.warn('AI/parse failed for', fileName, e?.message || e)
+          return {
+            name: candidateName,
+            overall: 0,
+            scores: Object.fromEntries(requirements.map((r) => [r, 0])),
+            strengths: [],
+            concerns: ['Analyse mislykkedes for dette CV'],
+          }
+        }
+      },
+      MAX_CONCURRENT_PROCESSING
+    )
+    timer.mark('ai-end')
+    console.log(`🤖 OpenAI processing completed in ${timer.getMarkDuration('ai-start', 'ai-end')}ms`)
+
+    // Filter and sort results
+    const validResults = results.filter(result => result !== null)
+    validResults.sort((a, b) => b.overall - a.overall)
+
+    // Add resume functionality
+    const finalResults = await Promise.all(validResults.map(async (result) => {
+      let hasCachedResume = false
+      let cvTextHash = null
+
+      // Find the extracted CV text for this candidate
+      const extractedItem = extractedData.find(item => 
+        item && extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, ''))) === result.name
+      )
+
+      if (extractedItem) {
+        try {
+          cvTextHash = createHash('sha256').update(extractedItem.excerpt, 'utf8').digest('hex')
+          
+          // Store CV text in temporary cache for resume generation
+          try {
+            console.log(`💾 Storing CV text for ${result.name} with hash:`, cvTextHash.substring(0, 8) + '...')
+            await supabaseAdmin.from('cv_text_cache').upsert({
+              text_hash: cvTextHash,
+              cv_text: extractedItem.excerpt,
+              candidate_name: result.name,
+              created_at: new Date().toISOString(),
+              expires_at: new Date(Date.now() + (2 * 60 * 60 * 1000)).toISOString()
+            })
+            console.log(`✅ Successfully cached CV text for ${result.name}`)
+          } catch (cacheError) {
+            console.warn(`❌ Failed to cache CV text for ${result.name}:`, cacheError)
+          }
+
+          // Check for cached resume (top 3 candidates only)
+          if (validResults.indexOf(result) < 3) {
+            const resumeCacheKey = generateResumeCacheKey(result.name, extractedItem.excerpt)
+            const cachedResume = await getCachedResume(resumeCacheKey)
+            hasCachedResume = !!cachedResume
+          }
+        } catch (error) {
+          console.warn(`Hash generation failed for ${result.name}:`, error)
+        }
+      }
+
+      return {
+        ...result,
+        has_cached_resume: hasCachedResume,
+        cv_text_hash: cvTextHash
+      }
     }))
 
-    return NextResponse.json({ 
-      ok: true, 
-      results: mockResults,
+    timer.mark('request-end')
+    timer.logSummary()
+
+    console.log(`✅ CV analysis completed: ${finalResults.length}/${cvBlobs.length} CVs processed successfully`)
+
+    // Optional database storage
+    try {
+      await supabaseAdmin.from('analysis_results').insert(
+        finalResults.map((r) => ({
+          user_id: userId,
+          analysis_id: analysisId,
+          name: r.name,
+          overall: r.overall,
+          scores: r.scores,
+          strengths: r.strengths,
+          concerns: r.concerns,
+          created_at: new Date().toISOString(),
+          title: title ?? null,
+        }))
+      )
+    } catch (e) {
+      console.warn('DB insert skipped/failed:', (e as any)?.message)
+    }
+
+    return NextResponse.json({
+      ok: true,
+      results: finalResults,
       performance: {
         totalTime: timer.getDuration(),
-        processedCount: cvBlobs.length,
-        totalCount: cvBlobs.length
+        processedCount: finalResults.length,
+        totalCount: cvBlobs.length,
+        extractionTime: timer.getMarkDuration('extraction-start', 'extraction-end'),
+        aiProcessingTime: timer.getMarkDuration('ai-start', 'ai-end')
       }
     })
 
