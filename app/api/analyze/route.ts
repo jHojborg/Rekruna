@@ -375,6 +375,141 @@ async function extractPdfText(buf: ArrayBuffer): Promise<string> {
   }
 }
 
+// Resume generation prompts for Danish CV summaries
+const resumeSystemPrompt = `Du laver strukturerede CV-resuméer på dansk. Følg nøjagtigt den angivne struktur og ordgrænse.`;
+
+const makeResumePrompt = (fileName: string, cvText: string) => {
+  return `Lav et struktureret dansk resumé af denne kandidat på præcis 200 ord:
+
+STRUKTUR:
+**Profil:** [2-3 linjer - nuværende rolle og samlet erfaring]
+**Nøgleerfaring:** [3-4 mest relevante tidligere stillinger med år og virksomhed]
+**Kernekompetencer:** [job-relevante færdigheder og teknologier]
+**Uddannelse:** [relevante uddannelser og certificeringer]
+**Konkrete resultater:** [målbare achievements der understøtter kravene]
+
+FOKUS:
+- Fremhæv erfaring der matcher stillingsopslaget
+- Inkludér kun job-relevante information
+- Brug konkrete tal og resultater hvor muligt
+- Præcis 200 ord - ikke mere, ikke mindre
+
+UDELAD:
+- Personlige oplysninger (alder, adresse, familie)
+- Irrelevante hobbyer eller kurser
+- Vage beskrivelser uden konkret indhold
+
+KANDIDAT: ${fileName}
+CV-INDHOLD: ${cvText}`;
+};
+
+// Generate resume for a candidate using OpenAI
+// Includes retry logic and error handling to not break main analysis
+async function generateResume(
+  openai: OpenAI,
+  fileName: string,
+  cvText: string,
+  attempt: number = 1
+): Promise<string | null> {
+  try {
+    const resp = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.3,
+      messages: [
+        { role: 'system', content: resumeSystemPrompt },
+        { role: 'user', content: makeResumePrompt(fileName, cvText) }
+      ],
+      max_tokens: 400, // Limit for 200-word resume
+    });
+
+    const resumeText = resp.choices?.[0]?.message?.content?.trim() || '';
+    
+    // Basic validation - should contain some Danish resume structure markers
+    if (resumeText.length < 100 || !resumeText.includes('**')) {
+      throw new Error('Generated resume too short or missing structure');
+    }
+
+    return resumeText;
+  } catch (error: any) {
+    if (attempt >= OPENAI_RETRY_ATTEMPTS) {
+      console.warn(`Resume generation failed for ${fileName} after ${attempt} attempts:`, error?.message || error);
+      return null;
+    }
+    
+    // Exponential backoff for retries
+    const delayMs = OPENAI_RETRY_DELAY * Math.pow(2, attempt - 1);
+    console.warn(`Resume generation failed for ${fileName} (attempt ${attempt}), retrying in ${delayMs}ms...`);
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+    
+    return generateResume(openai, fileName, cvText, attempt + 1);
+  }
+}
+
+// Cache key for resume (separate from analysis cache)
+function generateResumeCacheKey(candidateName: string, cvText: string): string {
+  try {
+    // Normalize inputs for consistent caching
+    const normalizedName = (candidateName || '').trim().toLowerCase();
+    const normalizedText = (cvText || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    
+    const hashInput = `resume:${normalizedName}|${normalizedText}`;
+    return createHash('sha256').update(hashInput, 'utf8').digest('hex');
+  } catch (error: any) {
+    console.warn('Resume cache key generation error:', error?.message || error);
+    throw error;
+  }
+}
+
+// Get cached resume if available
+async function getCachedResume(cacheKey: string): Promise<string | null> {
+  try {
+    const cutoffTime = new Date(Date.now() - (CACHE_EXPIRY_HOURS * 60 * 60 * 1000)).toISOString();
+    
+    const { data, error } = await supabaseAdmin
+      .from('resume_cache')
+      .select('resume_text, created_at')
+      .eq('cache_key', cacheKey)
+      .gte('created_at', cutoffTime)
+      .limit(1)
+      .single();
+    
+    if (error || !data?.resume_text) {
+      return null;
+    }
+    
+    return data.resume_text;
+  } catch (error: any) {
+    console.warn('Resume cache lookup failed:', error?.message || error);
+    return null;
+  }
+}
+
+// Store generated resume in cache
+async function setCachedResume(cacheKey: string, resumeText: string): Promise<void> {
+  try {
+    if (!resumeText || resumeText.length < 50) {
+      console.warn('Attempted to cache invalid resume, skipping');
+      return;
+    }
+    
+    const { error } = await supabaseAdmin
+      .from('resume_cache')
+      .upsert({
+        cache_key: cacheKey,
+        resume_text: resumeText,
+        created_at: new Date().toISOString()
+      });
+    
+    if (error) {
+      console.warn('Resume cache storage failed:', error?.message || error);
+    } else {
+      console.log(`💾 Successfully cached resume for key ${cacheKey.substring(0, 8)}...`);
+    }
+  } catch (error: any) {
+    console.warn('Resume cache storage error:', error?.message || error);
+  }
+}
+
 // GDPR: Ekstraher kun kandidatens navn fra CV-teksten
 // Simpel heuristik: kig i de første ~30 linjer efter tydelige navnemarkører eller store ordsekvenser
 function extractCandidateNameFromText(cvText: string, fallbackName: string): string {
@@ -702,14 +837,102 @@ ${cvText || '(intet udtræk)'}
     // Sort by overall score (descending)
     validResults.sort((a, b) => b.overall - a.overall)
 
+    // Background resume generation for top 3 candidates
+    // This runs in parallel after scoring is complete to minimize impact on main response time
+    timer.mark('resume-generation-start')
+    console.log(`🔄 Starting background resume generation for top 3 candidates...`)
+    
+    // Prepare resume generation data for top 3 candidates
+    const top3Candidates = validResults.slice(0, 3)
+    const candidateResumeData = new Map<string, { name: string, cvText: string }>()
+    
+    // Find corresponding extracted data for top 3 candidates
+    for (const candidate of top3Candidates) {
+      const extractedItem = extractedData.find(item => 
+        item && extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, ''))) === candidate.name
+      )
+      if (extractedItem) {
+        candidateResumeData.set(candidate.name, {
+          name: candidate.name,
+          cvText: extractedItem.excerpt
+        })
+      }
+    }
+
+    // Generate resumes for top 3 candidates in parallel (non-blocking for main response)
+    const resumePromises = Array.from(candidateResumeData.entries()).map(async ([candidateName, data]) => {
+      try {
+        // Check if resume is already cached
+        let resumeCacheKey: string | null = null
+        try {
+          resumeCacheKey = generateResumeCacheKey(candidateName, data.cvText)
+          const cachedResume = await getCachedResume(resumeCacheKey)
+          if (cachedResume) {
+            console.log(`📋 Using cached resume for ${candidateName}`)
+            return { candidateName, resume: cachedResume, fromCache: true }
+          }
+        } catch (cacheError) {
+          console.warn(`Resume cache lookup failed for ${candidateName}:`, cacheError)
+        }
+
+        // Generate new resume if not cached
+        console.log(`🤖 Generating resume for ${candidateName}`)
+        const resume = await generateResume(openai, candidateName, data.cvText)
+        
+        if (resume && resumeCacheKey) {
+          // Cache the generated resume for future use
+          try {
+            await setCachedResume(resumeCacheKey, resume)
+          } catch (cacheStoreError) {
+            console.warn(`Failed to cache resume for ${candidateName}:`, cacheStoreError)
+          }
+        }
+
+        return { candidateName, resume, fromCache: false }
+      } catch (error: any) {
+        console.warn(`Resume generation failed for ${candidateName}:`, error?.message || error)
+        return { candidateName, resume: null, fromCache: false }
+      }
+    })
+
+    // Wait for all resume generation to complete (with timeout to prevent hanging)
+    const resumeResults = await Promise.allSettled(resumePromises.map(promise => 
+      Promise.race([
+        promise,
+        new Promise(resolve => setTimeout(() => resolve({ candidateName: 'timeout', resume: null, fromCache: false }), 15000))
+      ])
+    ))
+
+    // Create a map of generated resumes
+    const generatedResumes = new Map<string, string>()
+    resumeResults.forEach((result, index) => {
+      if (result.status === 'fulfilled' && result.value && typeof result.value === 'object') {
+        const { candidateName, resume } = result.value as any
+        if (candidateName !== 'timeout' && resume) {
+          generatedResumes.set(candidateName, resume)
+        }
+      }
+    })
+
+    timer.mark('resume-generation-end')
+    console.log(`📝 Resume generation completed in ${timer.getMarkDuration('resume-generation-start', 'resume-generation-end')}ms`)
+    console.log(`✅ Generated ${generatedResumes.size}/${top3Candidates.length} resumes for top candidates`)
+
+    // Add resume data to all results (both cached_resume and has_cached_resume fields)
+    const finalResults = validResults.map(result => ({
+      ...result,
+      cached_resume: generatedResumes.get(result.name) || null,
+      has_cached_resume: generatedResumes.has(result.name)
+    }))
+
     timer.mark('request-end')
     timer.logSummary()
-    console.log(`✅ In-memory processing completed: ${validResults.length}/${cvBlobs.length} CVs processed successfully`)
+    console.log(`✅ In-memory processing completed: ${finalResults.length}/${cvBlobs.length} CVs processed successfully`)
 
     // Valgfri DB-lagring (kun struktureret data, ingen filreferencer)
     try {
       await supabaseAdmin.from('analysis_results').insert(
-        validResults.map((r) => ({
+        finalResults.map((r) => ({
           user_id: userId,
           analysis_id: analysisId,
           name: r.name,
@@ -731,13 +954,14 @@ ${cvText || '(intet udtræk)'}
     
     return NextResponse.json({ 
       ok: true, 
-      results: validResults,
+      results: finalResults,
       performance: {
         totalTime: timer.getDuration(),
-        processedCount: validResults.length,
+        processedCount: finalResults.length,
         totalCount: cvBlobs.length,
         extractionTime: timer.getMarkDuration('extraction-start', 'extraction-end'),
-        aiProcessingTime: timer.getMarkDuration('ai-start', 'ai-end')
+        aiProcessingTime: timer.getMarkDuration('ai-start', 'ai-end'),
+        resumeGenerationTime: timer.getMarkDuration('resume-generation-start', 'resume-generation-end')
       }
     })
   } catch (error: any) {
