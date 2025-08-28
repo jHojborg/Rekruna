@@ -94,15 +94,21 @@ async function extractPdfText(buf: ArrayBuffer): Promise<string> {
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as ExtractRequest
-    if (!body?.analysisId) {
-      return NextResponse.json({ ok: false, error: 'Missing analysisId' }, { status: 400 })
+    // Handle FormData with PDF file
+    const form = await req.formData()
+    const jobFile = form.get('jobFile') as File
+    
+    if (!jobFile) {
+      return NextResponse.json({ ok: false, error: 'Missing jobFile' }, { status: 400 })
     }
+    
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ ok: false, error: 'Missing OPENAI_API_KEY on server' }, { status: 500 })
     }
+    
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-    // Udled userId server-side fra Supabase Access Token (Authorization: Bearer)
+    
+    // Authenticate user
     const authHeader = req.headers.get('authorization') || ''
     const token = authHeader.toLowerCase().startsWith('bearer ')
       ? authHeader.slice(7)
@@ -110,31 +116,21 @@ export async function POST(req: Request) {
     if (!token) {
       return NextResponse.json({ ok: false, error: 'Missing bearer token' }, { status: 401 })
     }
-    // Bruger supabase-js admin via getUser med token
+    
     const { data: userData, error: userErr }: any = await (supabaseAdmin as any).auth.getUser(token)
     if (userErr || !userData?.user?.id) {
       return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
     }
-    const userId = userData.user.id as string
-    const analysisId = body.analysisId
 
-    // Find job description file
-    const base = `${userId}/${analysisId}`
-    const { data: list, error: listErr } = await supabaseAdmin.storage
-      .from('job-descriptions')
-      .list(base, { limit: 1, sortBy: { column: 'name', order: 'asc' } })
-    if (listErr) throw listErr
-    if (!list || list.length === 0) {
-      return NextResponse.json({ ok: false, error: 'Jobbeskrivelse ikke fundet' }, { status: 404 })
+    // Extract text from PDF file
+    const arrayBuffer = await jobFile.arrayBuffer()
+    const jobText = await extractPdfText(arrayBuffer)
+    
+    if (!jobText || jobText.trim().length < 50) {
+      return NextResponse.json({ ok: false, error: 'Could not extract text from PDF or text too short' }, { status: 400 })
     }
-
-    const first = list[0]
-    const { data: file, error: downErr } = await supabaseAdmin.storage
-      .from('job-descriptions')
-      .download(`${base}/${first.name}`)
-    if (downErr || !file) throw downErr || new Error('Download failed')
-
-    const jobText = await extractPdfText(await file.arrayBuffer())
+    
+    console.log('🔍 Extracting requirements from job text, length:', jobText.length)
 
     const sys = `Du er en dansk HR-analytiker. Udtræk de 5-7 mest kritiske "must-have" krav fra en jobbeskrivelse.
 Returnér KUN JSON på denne form:
@@ -157,16 +153,27 @@ Regler: 3-8 ord pr. punkt, ingen overlap/dubletter, ingen "nice-to-have". Dansk 
 
     const raw = resp.choices?.[0]?.message?.content || ''
     let parsed: any | null = null
-    try { parsed = JSON.parse(raw) } catch {
+    try { 
+      parsed = JSON.parse(raw) 
+    } catch {
       const m = raw.match(/\{[\s\S]*\}/)
-      if (m) { try { parsed = JSON.parse(m[0]) } catch {} }
+      if (m) { 
+        try { 
+          parsed = JSON.parse(m[0]) 
+        } catch {} 
+      }
     }
 
     const items: string[] = Array.isArray(parsed?.requirements) ? parsed.requirements : []
-    const requirements = items.slice(0, 7).map((t, i) => ({ id: String(i + 1), text: String(t), selected: false }))
+    const requirements = items.slice(0, 7).map((t, i) => ({ 
+      id: String(i + 1), 
+      text: String(t), 
+      selected: false 
+    }))
 
     if (requirements.length === 0) {
       // Fallback til neutrale krav
+      console.log('⚠️ No requirements extracted, using fallback')
       const fallback = [
         'Dokumenteret erfaring i tilsvarende rolle',
         'Stærke kommunikationsevner',
@@ -177,8 +184,10 @@ Regler: 3-8 ord pr. punkt, ingen overlap/dubletter, ingen "nice-to-have". Dansk 
       return NextResponse.json({ ok: true, requirements: fallback })
     }
 
+    console.log('✅ Extracted', requirements.length, 'requirements:', requirements.map(r => r.text))
     return NextResponse.json({ ok: true, requirements })
   } catch (error: any) {
+    console.error('Requirements extraction error:', error)
     return NextResponse.json({ ok: false, error: error?.message ?? 'Unknown error' }, { status: 500 })
   }
 }

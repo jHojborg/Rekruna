@@ -80,15 +80,54 @@ export default function DashboardPage() {
     const { data: sessionData } = await supabase.auth.getSession()
     const accessToken = sessionData.session?.access_token
     const analysisId = crypto.randomUUID()
+    
     try {
-      // Vis indikator mens vi analyserer jobopslaget
+      // Show loading indicator while extracting requirements
       setLoadingRequirements(true)
       setStep(2)
-      // Valgfrit: Krav-udtræk kan kaldes når vi også sender jobfilen, men vi springer over her for at undgå lagring
+      
+      console.log('🔍 Starting requirements extraction for:', jobFile.name)
+      
+      // Extract requirements from job description
+      const formData = new FormData()
+      formData.append('jobFile', jobFile)
+      
+      const response = await fetch('/api/requirements/extract', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: formData
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || 'Failed to extract requirements')
+      }
+      
+      // Update requirements with extracted ones
+      if (data.requirements && Array.isArray(data.requirements)) {
+        console.log('✅ Extracted requirements:', data.requirements.map((r: any) => r.text))
+        setRequirements(data.requirements)
+      } else {
+        console.warn('⚠️ No requirements in response, keeping defaults')
+      }
+      
+      // Set up analysis session
       ;(window as any).__analysisId = analysisId
       ;(window as any).__userId = user.id
+      
     } catch (e: any) {
-      alert(e.message)
+      console.error('Requirements extraction failed:', e)
+      alert(`Krav-udtræk fejlede: ${e.message}. Bruger standard krav.`)
+      
+      // Keep default requirements on error
+      console.log('Using fallback requirements due to extraction error')
+      
+      // Still set up analysis session
+      ;(window as any).__analysisId = analysisId
+      ;(window as any).__userId = user.id
     } finally {
       setLoadingRequirements(false)
     }
