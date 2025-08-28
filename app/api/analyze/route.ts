@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 import { PerformanceTimer } from '@/lib/performance'
+import { createHash } from 'crypto'
 // Dynamisk import af pdf-parse for at undgå sideeffekter i bundling
 
 export const runtime = 'nodejs'
@@ -11,6 +12,9 @@ export const dynamic = 'force-dynamic'
 const MAX_CONCURRENT_PROCESSING = 5 // Max parallel CV processing
 const OPENAI_RETRY_ATTEMPTS = 3 // Retry failed OpenAI calls
 const OPENAI_RETRY_DELAY = 1000 // Base delay between retries (ms)
+
+// Cache configuration for CV analysis results
+const CACHE_EXPIRY_HOURS = 24 // Cache analysis results for 24 hours
 
 // NY REQUEST-MODEL (multipart):
 // - analysisId: string (field)
@@ -55,6 +59,60 @@ function allowRun(key: BucketKey): boolean {
   pruned.push(now)
   rateBuckets.set(key, pruned)
   return true
+}
+
+// Generate consistent cache key based on extracted CV text and requirements
+// This ensures identical content + requirements combination gets cached results
+function generateCacheKey(extractedText: string, requirements: string[]): string {
+  // Normalize text by removing extra whitespace and lowercasing for consistent hashing
+  const normalizedText = extractedText.replace(/\s+/g, ' ').trim().toLowerCase()
+  
+  // Sort requirements to ensure consistent key regardless of order
+  const sortedRequirements = [...requirements].sort()
+  
+  // Create hash from normalized text + sorted requirements
+  const hashInput = normalizedText + '|' + JSON.stringify(sortedRequirements)
+  return createHash('sha256').update(hashInput, 'utf8').digest('hex')
+}
+
+// Check if we have cached results for this CV+requirements combination
+async function getCachedResult(cacheKey: string): Promise<any | null> {
+  try {
+    const cutoffTime = new Date(Date.now() - (CACHE_EXPIRY_HOURS * 60 * 60 * 1000)).toISOString()
+    
+    const { data, error } = await supabaseAdmin
+      .from('analysis_cache')
+      .select('result_data')
+      .eq('cache_key', cacheKey)
+      .gte('created_at', cutoffTime)
+      .limit(1)
+      .single()
+    
+    if (error || !data) {
+      return null
+    }
+    
+    return data.result_data
+  } catch (error) {
+    console.warn('Cache lookup failed:', error)
+    return null
+  }
+}
+
+// Store analysis result in cache for future use
+async function setCachedResult(cacheKey: string, result: any): Promise<void> {
+  try {
+    await supabaseAdmin
+      .from('analysis_cache')
+      .upsert({
+        cache_key: cacheKey,
+        result_data: result,
+        created_at: new Date().toISOString()
+      })
+  } catch (error) {
+    // Non-critical - continue without failing the request
+    console.warn('Cache storage failed:', error)
+  }
 }
 
 // Performance: Parallel processing helper function
@@ -403,12 +461,28 @@ ${cvText || '(intet udtræk)'}
     timer.mark('extraction-end')
     console.log(`🔍 PDF extraction completed in ${timer.getMarkDuration('extraction-start', 'extraction-end')}ms`)
 
-    // Step 2: Process with OpenAI in parallel (network-bound, main bottleneck)
+    // Step 2: Process with OpenAI in parallel with cache lookup (network-bound, main bottleneck)
     timer.mark('ai-start')
     const results = await processWithConcurrency(
       extractedData.filter(data => data !== null),
       async ({ name: fileName, candidateName, excerpt }) => {
         try {
+          // Generate cache key based on extracted text and requirements
+          const cacheKey = generateCacheKey(excerpt, requirements)
+          
+          // Check for cached result first
+          const cachedResult = await getCachedResult(cacheKey)
+          if (cachedResult) {
+            console.log(`📋 Using cached result for ${fileName}`)
+            // Update candidate name from current file (cache might have different name)
+            return {
+              ...cachedResult,
+              name: candidateName // Use current file's extracted name
+            }
+          }
+          
+          console.log(`🤖 Processing ${fileName} with AI (no cache hit)`)
+          
           // Use retry mechanism for better reliability
           const resp = await callOpenAIWithRetry(
             openai,
@@ -445,13 +519,22 @@ ${cvText || '(intet udtræk)'}
           const overallNum = Number(parsed.overall)
           const overall = Math.max(0, Math.min(10, Number.isFinite(overallNum) ? Number(overallNum.toFixed(1)) : 0))
 
-          return {
+          const result = {
             name,
             overall,
             scores: normalizedScores,
             strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 3) : [],
             concerns: Array.isArray(parsed.concerns) ? parsed.concerns.slice(0, 3) : [],
           }
+          
+          // Cache the result for future use (without the specific candidate name)
+          const cacheableResult = {
+            ...result,
+            name: '' // Don't cache specific names since they can vary
+          }
+          await setCachedResult(cacheKey, cacheableResult)
+          
+          return result
         } catch (e: any) {
           console.warn('AI/parse failed for', fileName, e?.message || e)
           // Fallback: minimal output, lav overall for at undgå vildledning
