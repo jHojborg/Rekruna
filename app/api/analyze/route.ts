@@ -579,36 +579,22 @@ function extractJobRelevantInfo(cvText: string, jobText: string, requirements: s
 }
 
 export async function POST(req: Request) {
-  const timer = new PerformanceTimer()
-  timer.mark('request-start')
-  
   try {
-    // VIGTIG GDPR-ÆNDRING: Vi accepterer nu multipart/form-data og behandler PDF'er i hukommelsen.
-    // Vi gemmer ikke CV-filer i permanent storage længere.
-    const form = await req.formData().catch(() => null)
-    if (!form) {
-      return NextResponse.json({ ok: false, error: 'Expected multipart/form-data payload' }, { status: 400 })
+    // Handle FormData with PDF file
+    const form = await req.formData()
+    const jobFile = form.get('jobFile') as File
+    
+    if (!jobFile) {
+      return NextResponse.json({ ok: false, error: 'Missing jobFile' }, { status: 400 })
     }
-
-    const analysisId = String(form.get('analysisId') || '')
-    if (!analysisId) {
-      return NextResponse.json({ ok: false, error: 'Missing analysisId' }, { status: 400 })
-    }
-    const title = form.get('title') ? String(form.get('title')) : undefined
-    let requirements: string[] = []
-    const reqRaw = form.get('requirements')
-    if (typeof reqRaw === 'string') {
-      try { requirements = JSON.parse(reqRaw) } catch { requirements = [] }
-    } else if (Array.isArray(reqRaw)) {
-      // Ikke normalt for FormData, men vi beskytter os alligevel
-      requirements = reqRaw.map(String)
-    }
-
+    
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ ok: false, error: 'Missing OPENAI_API_KEY on server' }, { status: 500 })
     }
+    
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
-    // Udled userId fra bearer token
+    
+    // Authenticate user
     const authHeader = req.headers.get('authorization') || ''
     const token = authHeader.toLowerCase().startsWith('bearer ')
       ? authHeader.slice(7)
@@ -616,56 +602,78 @@ export async function POST(req: Request) {
     if (!token) {
       return NextResponse.json({ ok: false, error: 'Missing bearer token' }, { status: 401 })
     }
+    
     const { data: userData, error: userErr }: any = await (supabaseAdmin as any).auth.getUser(token)
     if (userErr || !userData?.user?.id) {
       return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
     }
-    const userId = userData.user.id as string
 
-    // Rate limit: per bruger og per IP (efter vi kender userId)
-    const ip = getClientIp(req)
-    const userKey: BucketKey = `u:${userId}`
-    const ipKey: BucketKey = `ip:${ip}`
-    if (!allowRun(userKey) || !allowRun(ipKey)) {
-      return NextResponse.json({ ok: false, error: 'For mange analyser. Prøv igen om lidt.' }, { status: 429 })
-    }
-
-    // Hent jobbeskrivelse direkte fra FormData (enten PDF eller for-udtrukket tekst)
-    let jobText = ''
-    const jobTextField = form.get('jobText')
-    if (typeof jobTextField === 'string' && jobTextField.trim()) {
-      jobText = jobTextField.slice(0, 50_000)
-    } else {
-      const jobFile = form.get('job')
-      if (jobFile && typeof (jobFile as any).arrayBuffer === 'function') {
-        try {
-          const ab = await (jobFile as unknown as Blob).arrayBuffer()
-          jobText = await extractPdfText(ab)
-        } catch {}
-      }
-    }
-
-    // TEMPORARY: Just return success for now to test request parsing
-    console.log('✅ Request parsing successful:', {
-      analysisId,
-      title,
-      requirementsCount: requirements.length,
-      hasJobText: !!jobText,
-      jobTextLength: jobText.length
-    })
+    // Extract text from PDF file
+    const arrayBuffer = await jobFile.arrayBuffer()
+    const jobText = await extractPdfText(arrayBuffer)
     
-    return NextResponse.json({ 
-      ok: true, 
-      message: 'Request parsing successful - CV analysis logic coming next',
-      debug: {
-        analysisId,
-        requirementsCount: requirements.length,
-        hasJobText: !!jobText,
-        jobTextLength: jobText.length
-      }
+    if (!jobText || jobText.trim().length < 50) {
+      return NextResponse.json({ ok: false, error: 'Could not extract text from PDF or text too short' }, { status: 400 })
+    }
+    
+    console.log('🔍 Extracting requirements from job text, length:', jobText.length)
+
+    const sys = `Du er en dansk HR-analytiker. Udtræk de 5-7 mest kritiske "must-have" krav fra en jobbeskrivelse.
+Returnér KUN JSON på denne form:
+{
+  "requirements": ["kort krav 1", "kort krav 2", ...]
+}
+Regler: 3-8 ord pr. punkt, ingen overlap/dubletter, ingen "nice-to-have". Dansk sprog.`
+
+    const user = `JOBBESKRIVELSE:\n\n${jobText}`
+
+    const resp = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.2,
+      messages: [
+        { role: 'system', content: sys },
+        { role: 'user', content: user },
+      ],
+      response_format: { type: 'json_object' },
     })
 
+    const raw = resp.choices?.[0]?.message?.content || ''
+    let parsed: any | null = null
+    try { 
+      parsed = JSON.parse(raw) 
+    } catch {
+      const m = raw.match(/\{[\s\S]*\}/)
+      if (m) { 
+        try { 
+          parsed = JSON.parse(m[0]) 
+        } catch {} 
+      }
+    }
+
+    const items: string[] = Array.isArray(parsed?.requirements) ? parsed.requirements : []
+    const requirements = items.slice(0, 7).map((t, i) => ({ 
+      id: String(i + 1), 
+      text: String(t), 
+      selected: false 
+    }))
+
+    if (requirements.length === 0) {
+      // Fallback til neutrale krav
+      console.log('⚠️ No requirements extracted, using fallback')
+      const fallback = [
+        'Dokumenteret erfaring i tilsvarende rolle',
+        'Stærke kommunikationsevner',
+        'Struktureret og selvstændig arbejdsform',
+        'Dokumenterbar erfaring med relevante værktøjer',
+        'Evne til at samarbejde tværfagligt',
+      ].map((t, i) => ({ id: String(i + 1), text: t, selected: false }))
+      return NextResponse.json({ ok: true, requirements: fallback })
+    }
+
+    console.log('✅ Extracted', requirements.length, 'requirements:', requirements.map(r => r.text))
+    return NextResponse.json({ ok: true, requirements })
   } catch (error: any) {
+    console.error('Requirements extraction error:', error)
     return NextResponse.json({ ok: false, error: error?.message ?? 'Unknown error' }, { status: 500 })
   }
 }
