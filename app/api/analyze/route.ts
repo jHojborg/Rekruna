@@ -645,208 +645,27 @@ export async function POST(req: Request) {
       }
     }
 
-    // CV-filer fra FormData
-    // NB: FormData returnerer den første værdi for en given nøgle; vi henter alle ved at gennemløbe entries
-    const cvBlobs: Array<{ name: string; blob: Blob }> = []
-    for (const [key, val] of form.entries()) {
-      if (key === 'cvs' && val && typeof (val as any).arrayBuffer === 'function') {
-        const fileLike = val as unknown as File
-        const safeName = fileLike.name || 'cv.pdf'
-        if (safeName.toLowerCase().endsWith('.pdf')) {
-          cvBlobs.push({ name: safeName, blob: fileLike })
-        }
+    // TEMPORARY: Just return success for now to test request parsing
+    console.log('✅ Request parsing successful:', {
+      analysisId,
+      title,
+      requirementsCount: requirements.length,
+      hasJobText: !!jobText,
+      jobTextLength: jobText.length
+    })
+    
+    return NextResponse.json({ 
+      ok: true, 
+      message: 'Request parsing successful - CV analysis logic coming next',
+      debug: {
+        analysisId,
+        requirementsCount: requirements.length,
+        hasJobText: !!jobText,
+        jobTextLength: jobText.length
       }
-    }
-    if (!cvBlobs.length) {
-      return NextResponse.json({ ok: false, error: 'No CV files provided' }, { status: 400 })
-    }
-
-    const sys = `Du er en dansk HR-analytiker. Vurder en kandidat ift. en jobbeskrivelse og tre MUST-HAVE krav.
-Returnér KUN JSON i dette schema:
-{
-  "name": "str",
-  "overall": 0-10,              // én decimal, beregnet som gennemsnit af (krav-score/10)
-  "scores": {                    // nøglerne er de tre krav nedenfor
-    "<krav1>": 0-100,
-    "<krav2>": 0-100,
-    "<krav3>": 0-100
-  },
-  "strengths": ["str", ...],    // 1-3 korte punkter
-  "concerns": ["str", ...]      // 0-3 korte punkter
-}
-Dansk sprog. Ingen ekstra tekst.`
-
-    const makeUserPrompt = (fileName: string, cvText: string) => {
-      const reqList = requirements.length ? requirements.join('\n- ') : '(ingen krav angivet)'
-      return `FILNAVN: ${decodeURIComponent(fileName.replace(/\.pdf$/i, ''))}
-
-[JOBBESKRIVELSE]
-${jobText || '(ikke angivet)'}
-
-[MUST-HAVE KRAV]
-- ${reqList}
-
-[CV]
-${cvText || '(intet udtræk)'}
-`
-    }
-
-    // PERFORMANCE: Process CVs in parallel in-memory
-    console.log(`🚀 Starting in-memory processing of ${cvBlobs.length} CVs...`)
-
-    // Step 1: Extract PDF text in parallel (CPU-intensive but can be parallelized)
-    timer.mark('extraction-start')
-    const extractedData = await processWithConcurrency(
-      cvBlobs,
-      async ({ name, blob }) => {
-        try {
-          const ab = await blob.arrayBuffer()
-          const fullText = await extractPdfText(ab)
-          // GDPR: reducer input til AI – kun jobrelevant uddrag + navn
-          const candidateName = extractCandidateNameFromText(fullText, decodeURIComponent(name.replace(/\.pdf$/i, '')))
-          const relevantExcerpt = extractJobRelevantInfo(fullText, jobText, requirements)
-          return { name, candidateName, excerpt: relevantExcerpt }
-        } catch (error) {
-          console.warn(`PDF extraction failed for ${name}:`, error)
-          return { name, candidateName: decodeURIComponent(name.replace(/\.pdf$/i, '')), excerpt: '' }
-        }
-      },
-      MAX_CONCURRENT_PROCESSING
-    )
-    timer.mark('extraction-end')
-    console.log(`🔍 PDF extraction completed in ${timer.getMarkDuration('extraction-start', 'extraction-end')}ms`)
-
-    // Step 2: Process with OpenAI in parallel with cache lookup (network-bound, main bottleneck)
-    timer.mark('ai-start')
-    const results = await processWithConcurrency(
-      extractedData.filter(data => data !== null),
-      async ({ name: fileName, candidateName, excerpt }) => {
-        try {
-          // Generate cache key based on extracted text and requirements
-          // Wrapped in try-catch to handle any hash generation errors
-          let cacheKey: string | null = null
-          try {
-            cacheKey = generateCacheKey(excerpt, requirements, jobText)
-          } catch (hashError) {
-            console.warn(`Cache key generation failed for ${fileName}, proceeding with AI processing:`, hashError)
-            cacheKey = null
-          }
-          
-          // Check for cached result first (only if cache key was successfully generated)
-          if (cacheKey) {
-            try {
-              const cachedResult = await getCachedResult(cacheKey)
-              if (cachedResult) {
-                console.log(`📋 Using cached result for ${fileName}`)
-                
-                // Validate that cached result is still properly structured
-                // before returning it (extra safety check)
-                if (isValidCachedResult(cachedResult)) {
-                  return {
-                    ...cachedResult,
-                    name: candidateName // Use current file's extracted name
-                  }
-                } else {
-                  console.warn(`Cached result validation failed for ${fileName}, falling back to AI processing`)
-                }
-              }
-            } catch (cacheError) {
-              console.warn(`Cache lookup failed for ${fileName}, falling back to AI processing:`, cacheError)
-            }
-          }
-          
-          console.log(`🤖 Processing ${fileName} with AI (no valid cache hit)`)
-          
-          // Use retry mechanism for better reliability
-          const resp = await callOpenAIWithRetry(
-            openai,
-            [
-              { role: 'system', content: sys },
-              { role: 'user', content: makeUserPrompt(fileName, excerpt) },
-            ],
-            fileName
-          )
-          
-          const raw = resp.choices?.[0]?.message?.content || ''
-          let parsed: any | null = null
-          try { 
-            parsed = JSON.parse(raw) 
-          } catch {
-            const m = raw.match(/\{[\s\S]*\}/)
-            if (m) { 
-              try { 
-                parsed = JSON.parse(m[0]) 
-              } catch {} 
-            }
-          }
-          
-          if (!parsed) throw new Error('Invalid AI response')
-
-          // Normalisering
-          const name = parsed.name || candidateName
-          const scoresObj: Record<string, number> = parsed.scores || {}
-          const normalizedScores: Record<string, number> = {}
-          Object.keys(scoresObj).forEach((k) => {
-            const n = Number(scoresObj[k])
-            normalizedScores[k] = Math.max(0, Math.min(100, Number.isFinite(n) ? Math.round(n) : 0))
-          })
-          const overallNum = Number(parsed.overall)
-          const overall = Math.max(0, Math.min(10, Number.isFinite(overallNum) ? Number(overallNum.toFixed(1)) : 0))
-
-          const result = {
-            name,
-            overall,
-            scores: normalizedScores,
-            strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 3) : [],
-            concerns: Array.isArray(parsed.concerns) ? parsed.concerns.slice(0, 3) : [],
-          }
-          
-          // Cache the result for future use (without the specific candidate name)
-          // Only attempt caching if we have a valid cache key and successful result
-          if (cacheKey && result) {
-            try {
-              const cacheableResult = {
-                ...result,
-                name: '' // Don't cache specific names since they can vary
-              }
-              await setCachedResult(cacheKey, cacheableResult)
-            } catch (cacheStoreError) {
-              console.warn(`Failed to cache result for ${fileName}:`, cacheStoreError)
-              // Continue without failing - caching is not critical for functionality
-            }
-          }
-          
-          return result
-        } catch (e: any) {
-          console.warn('AI/parse failed for', fileName, e?.message || e)
-          // Fallback: minimal output, lav overall for at undgå vildledning
-          return {
-            name: candidateName,
-            overall: 0,
-            scores: Object.fromEntries(requirements.map((r) => [r, 0])),
-            strengths: [],
-            concerns: ['Analyse mislykkedes for dette CV'],
-          }
-        }
-      },
-      MAX_CONCURRENT_PROCESSING
-    )
-    timer.mark('ai-end')
-    console.log(`🤖 OpenAI processing completed in ${timer.getMarkDuration('ai-start', 'ai-end')}ms`)
-
-    // Combine results and return
-    const combinedResults = results.map(r => ({
-      name: r.name,
-      overall: r.overall,
-      scores: r.scores,
-      strengths: r.strengths,
-      concerns: r.concerns,
-    }));
-
-    return NextResponse.json({ ok: true, results: combinedResults });
+    })
 
   } catch (error: any) {
-    console.error('Analysis failed:', error);
-    return NextResponse.json({ ok: false, error: error.message || 'Analysis failed' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: error?.message ?? 'Unknown error' }, { status: 500 })
   }
 }
