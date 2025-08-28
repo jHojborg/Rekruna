@@ -61,10 +61,10 @@ function allowRun(key: BucketKey): boolean {
   return true
 }
 
-// Generate consistent cache key based on extracted CV text and requirements
+// Generate consistent cache key based on extracted CV text
 // This ensures identical content + requirements combination gets cached results
 // Includes robust input validation and error handling
-function generateCacheKey(extractedText: string, requirements: string[]): string {
+function generateCacheKey(extractedText: string, requirements: string[], jobText: string): string {
   try {
     // Input validation
     if (typeof extractedText !== 'string') {
@@ -82,11 +82,14 @@ function generateCacheKey(extractedText: string, requirements: string[]): string
     // Normalize text by removing extra whitespace and lowercasing for consistent hashing
     const normalizedText = text.replace(/\s+/g, ' ').trim().toLowerCase()
     
+    // Add job text normalization first (around line 84):
+    const normalizedJobText = (jobText || '').replace(/\s+/g, ' ').trim().toLowerCase()
+    
     // Sort requirements to ensure consistent key regardless of order
     const sortedRequirements = [...reqs].sort()
     
     // Create hash from normalized text + sorted requirements
-    const hashInput = normalizedText + '|' + JSON.stringify(sortedRequirements)
+    const hashInput = normalizedText + '|' + JSON.stringify(sortedRequirements) + '|' + normalizedJobText
     
     if (hashInput.length === 1) { // Only separator, no actual content
       throw new Error('No valid content to hash')
@@ -723,7 +726,7 @@ ${cvText || '(intet udtræk)'}
           // Wrapped in try-catch to handle any hash generation errors
           let cacheKey: string | null = null
           try {
-            cacheKey = generateCacheKey(excerpt, requirements)
+            cacheKey = generateCacheKey(excerpt, requirements, jobText)
           } catch (hashError) {
             console.warn(`Cache key generation failed for ${fileName}, proceeding with AI processing:`, hashError)
             cacheKey = null
@@ -829,181 +832,4 @@ ${cvText || '(intet udtræk)'}
       MAX_CONCURRENT_PROCESSING
     )
     timer.mark('ai-end')
-    console.log(`🤖 OpenAI processing completed in ${timer.getMarkDuration('ai-start', 'ai-end')}ms`)
-
-    // Filter out null results from failed processing
-    const validResults = results.filter(result => result !== null)
-
-    // Sort by overall score (descending)
-    validResults.sort((a, b) => b.overall - a.overall)
-
-    // Background resume generation for top 3 candidates
-    // This runs in parallel after scoring is complete to minimize impact on main response time
-    timer.mark('resume-generation-start')
-    console.log(`🔄 Starting background resume generation for top 3 candidates...`)
-    
-    // Prepare resume generation data for top 3 candidates
-    const top3Candidates = validResults.slice(0, 3)
-    const candidateResumeData = new Map<string, { name: string, cvText: string }>()
-    
-    // Find corresponding extracted data for top 3 candidates
-    for (const candidate of top3Candidates) {
-      const extractedItem = extractedData.find(item => 
-        item && extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, ''))) === candidate.name
-      )
-      if (extractedItem) {
-        candidateResumeData.set(candidate.name, {
-          name: candidate.name,
-          cvText: extractedItem.excerpt
-        })
-      }
-    }
-
-    // Start background resume generation for top 3 candidates (truly non-blocking)
-    // This will run in the background and cache results for future requests
-    const backgroundResumeGeneration = Array.from(candidateResumeData.entries()).map(async ([candidateName, data]) => {
-      try {
-        // Check if resume is already cached
-        let resumeCacheKey: string | null = null
-        try {
-          resumeCacheKey = generateResumeCacheKey(candidateName, data.cvText)
-          const cachedResume = await getCachedResume(resumeCacheKey)
-          if (cachedResume) {
-            console.log(`📋 Resume already cached for ${candidateName}`)
-            return { candidateName, resume: cachedResume, fromCache: true }
-          }
-        } catch (cacheError) {
-          console.warn(`Resume cache lookup failed for ${candidateName}:`, cacheError)
-        }
-
-        // Generate new resume if not cached
-        console.log(`🤖 Generating resume in background for ${candidateName}`)
-        const resume = await generateResume(openai, candidateName, data.cvText)
-        
-        if (resume && resumeCacheKey) {
-          // Cache the generated resume for future use
-          try {
-            await setCachedResume(resumeCacheKey, resume)
-            console.log(`💾 Cached resume for ${candidateName}`)
-          } catch (cacheStoreError) {
-            console.warn(`Failed to cache resume for ${candidateName}:`, cacheStoreError)
-          }
-        }
-
-        return { candidateName, resume, fromCache: false }
-      } catch (error: any) {
-        console.warn(`Background resume generation failed for ${candidateName}:`, error?.message || error)
-        return { candidateName, resume: null, fromCache: false }
-      }
-    })
-
-    // Don't await - let resume generation happen in background
-    // Just fire and forget to not block main response
-    Promise.allSettled(backgroundResumeGeneration.map(promise => 
-      Promise.race([
-        promise,
-        new Promise(resolve => setTimeout(() => resolve({ candidateName: 'timeout', resume: null, fromCache: false }), 30000))
-      ])
-    )).then(() => {
-      console.log(`📝 Background resume generation completed for top 3 candidates`)
-    }).catch(error => {
-      console.warn('Background resume generation encountered errors:', error)
-    })
-
-    timer.mark('resume-generation-end')
-    console.log(`🚀 Background resume generation started (non-blocking)`)
-
-    // Add has_cached_resume field and cv_text_hash to all results  
-    const finalResults = await Promise.all(validResults.map(async (result) => {
-      let hasCachedResume = false
-      let cvTextHash = null
-      
-      // Find the extracted CV text for this candidate
-      const extractedItem = extractedData.find(item => 
-        item && extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, ''))) === result.name
-      )
-      
-      if (extractedItem) {
-        // Generate a hash of the CV text for resume lookup
-        try {
-          cvTextHash = createHash('sha256').update(extractedItem.excerpt, 'utf8').digest('hex')
-          
-          // Store CV text in temporary cache for resume generation (expires in 2 hours)
-          try {
-            console.log(`💾 Storing CV text for ${result.name} with hash:`, cvTextHash.substring(0, 8) + '...')
-            await supabaseAdmin.from('cv_text_cache').upsert({
-              text_hash: cvTextHash,
-              cv_text: extractedItem.excerpt,
-              candidate_name: result.name,
-              created_at: new Date().toISOString(),
-              expires_at: new Date(Date.now() + (2 * 60 * 60 * 1000)).toISOString() // 2 hours
-            })
-            console.log(`✅ Successfully cached CV text for ${result.name}`)
-          } catch (cacheError) {
-            console.warn(`❌ Failed to cache CV text for ${result.name}:`, cacheError)
-          }
-          
-          // Quick cache check for top 3 candidates only
-          if (validResults.indexOf(result) < 3) {
-            const resumeCacheKey = generateResumeCacheKey(result.name, extractedItem.excerpt)
-            const cachedResume = await getCachedResume(resumeCacheKey)
-            hasCachedResume = !!cachedResume
-          }
-        } catch (error) {
-          // Silent fail - just means no cached resume available
-        }
-      }
-      
-      return {
-        ...result,
-        has_cached_resume: hasCachedResume,
-        cv_text_hash: cvTextHash
-      }
-    }))
-
-    timer.mark('request-end')
-    timer.logSummary()
-    console.log(`✅ In-memory processing completed: ${finalResults.length}/${cvBlobs.length} CVs processed successfully`)
-
-    // Valgfri DB-lagring (kun struktureret data, ingen filreferencer)
-    try {
-      await supabaseAdmin.from('analysis_results').insert(
-        finalResults.map((r) => ({
-          user_id: userId,
-          analysis_id: analysisId,
-          name: r.name,
-          overall: r.overall,
-          scores: r.scores,
-          strengths: r.strengths,
-          concerns: r.concerns,
-          created_at: new Date().toISOString(),
-          title: title ?? null,
-        }))
-      )
-    } catch (e) {
-      // Ikke-kritisk – vi fortsætter uden at fejle requesten
-      console.warn('DB insert skipped/failed:', (e as any)?.message)
-    }
-    
-    // Proaktiv oprydning (frigiv store arrays)
-    ;(global as any)._void = null
-    
-    return NextResponse.json({ 
-      ok: true, 
-      results: finalResults,
-      performance: {
-        totalTime: timer.getDuration(),
-        processedCount: finalResults.length,
-        totalCount: cvBlobs.length,
-        extractionTime: timer.getMarkDuration('extraction-start', 'extraction-end'),
-        aiProcessingTime: timer.getMarkDuration('ai-start', 'ai-end'),
-        resumeGenerationTime: timer.getMarkDuration('resume-generation-start', 'resume-generation-end')
-      }
-    })
-  } catch (error: any) {
-    return NextResponse.json({ ok: false, error: error?.message ?? 'Unknown error' }, { status: 500 })
-  }
-}
-
-
-
+    console.log(`
