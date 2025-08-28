@@ -930,6 +930,7 @@ ${cvText || '(intet udtræk)'}
           
           // Store CV text in temporary cache for resume generation (expires in 2 hours)
           try {
+            console.log(`💾 Storing CV text for ${result.name} with hash:`, cvTextHash.substring(0, 8) + '...')
             await supabaseAdmin.from('cv_text_cache').upsert({
               text_hash: cvTextHash,
               cv_text: extractedItem.excerpt,
@@ -937,8 +938,9 @@ ${cvText || '(intet udtræk)'}
               created_at: new Date().toISOString(),
               expires_at: new Date(Date.now() + (2 * 60 * 60 * 1000)).toISOString() // 2 hours
             })
+            console.log(`✅ Successfully cached CV text for ${result.name}`)
           } catch (cacheError) {
-            console.warn(`Failed to cache CV text for ${result.name}:`, cacheError)
+            console.warn(`❌ Failed to cache CV text for ${result.name}:`, cacheError)
           }
           
           // Quick cache check for top 3 candidates only

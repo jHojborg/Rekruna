@@ -151,8 +151,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { candidateName, cvTextHash } = body;
 
+    console.log('Resume API called with:', { candidateName, cvTextHash: cvTextHash?.substring(0, 8) + '...' });
+
     // Input validation
     if (!candidateName || !cvTextHash) {
+      console.log('❌ Missing required fields:', { candidateName: !!candidateName, cvTextHash: !!cvTextHash });
       return NextResponse.json({ 
         ok: false, 
         error: 'Missing required fields: candidateName and cvTextHash' 
@@ -176,6 +179,8 @@ export async function POST(req: Request) {
     // Lookup CV text from temporary cache
     let cvText: string;
     try {
+      console.log('🔍 Looking up CV text with hash:', cvTextHash.substring(0, 8) + '...');
+      
       const { data, error } = await supabaseAdmin
         .from('cv_text_cache')
         .select('cv_text')
@@ -184,7 +189,15 @@ export async function POST(req: Request) {
         .limit(1)
         .single();
       
+      console.log('CV text lookup result:', { 
+        error: error?.message, 
+        hasData: !!data, 
+        hasCvText: !!data?.cv_text,
+        cvTextLength: data?.cv_text?.length 
+      });
+      
       if (error || !data?.cv_text) {
+        console.log('❌ CV text not found or expired:', error?.message);
         return NextResponse.json({ 
           ok: false, 
           error: 'CV text not found or expired. Please re-run analysis.' 
@@ -192,6 +205,7 @@ export async function POST(req: Request) {
       }
       
       cvText = data.cv_text;
+      console.log('✅ CV text found, length:', cvText.length);
     } catch (lookupError) {
       console.warn(`CV text lookup failed for ${candidateName}:`, lookupError);
       return NextResponse.json({ 

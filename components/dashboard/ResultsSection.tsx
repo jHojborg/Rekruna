@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { supabase } from '@/lib/supabase/client'
 
 interface ResultItem {
   name: string
@@ -82,11 +83,27 @@ export function ResultsSection({ results }: ResultsSectionProps) {
     })
 
     try {
+      // Get authentication token from Supabase
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+      
+      if (!accessToken) {
+        console.error('No access token available')
+        setSelectedResume({
+          candidateName,
+          resumeText: null,
+          isLoading: false
+        })
+        return
+      }
+
+      console.log('Fetching resume for:', candidateName, 'with hash:', cvTextHash.substring(0, 8) + '...')
+
       const response = await fetch('/api/resume', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({
           candidateName,
@@ -96,13 +113,21 @@ export function ResultsSection({ results }: ResultsSectionProps) {
 
       const data = await response.json()
       
-      if (data.ok) {
+      console.log('Resume API response:', { 
+        status: response.status, 
+        ok: data.ok, 
+        error: data.error,
+        hasResume: !!data.resume 
+      })
+      
+      if (data.ok && data.resume) {
         setSelectedResume({
           candidateName,
           resumeText: data.resume,
           isLoading: false
         })
       } else {
+        console.error('Resume fetch failed:', data.error || 'Unknown error')
         setSelectedResume({
           candidateName,
           resumeText: null,
