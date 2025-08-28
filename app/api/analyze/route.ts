@@ -832,4 +832,21 @@ ${cvText || '(intet udtræk)'}
       MAX_CONCURRENT_PROCESSING
     )
     timer.mark('ai-end')
-    console.log(`
+    console.log(`🤖 OpenAI processing completed in ${timer.getMarkDuration('ai-start', 'ai-end')}ms`)
+
+    // Combine results and return
+    const combinedResults = results.map(r => ({
+      name: r.name,
+      overall: r.overall,
+      scores: r.scores,
+      strengths: r.strengths,
+      concerns: r.concerns,
+    }));
+
+    return NextResponse.json({ ok: true, results: combinedResults });
+
+  } catch (error: any) {
+    console.error('Analysis failed:', error);
+    return NextResponse.json({ ok: false, error: error.message || 'Analysis failed' }, { status: 500 });
+  }
+}
