@@ -172,7 +172,7 @@ export function ResultsSection({ results }: ResultsSectionProps) {
                   <div className="flex items-center mt-2 gap-4">
                     <div className="flex items-center">
                       <span className="font-semibold text-gray-900 mb-2">Overall:</span>
-                      <span className="font-semibold text-primary mb-2">{r.overall}/10</span>
+                      <span className="font-bold text-primary mb-2"> {r.overall}/10</span>
                     </div>
                     {/* Resume button positioned next to the score */}
                     {r.cv_text_hash && (
