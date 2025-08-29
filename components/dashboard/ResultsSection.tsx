@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 
 interface ResultItem {
@@ -73,52 +73,7 @@ export function ResultsSection({ results }: ResultsSectionProps) {
     resumeText: string | null
     isLoading: boolean
   } | null>(null)
-  const [resumeStatuses, setResumeStatuses] = useState<Record<string, boolean>>({})
-
-  // Check resume status for top 3 candidates
-  const checkResumeStatuses = async () => {
-    const top3 = results.slice(0, 3).filter(r => r.cv_text_hash)
-    if (top3.length === 0) return
-
-    try {
-      const { data: sessionData } = await supabase.auth.getSession()
-      const accessToken = sessionData.session?.access_token
-      
-      if (!accessToken) return
-
-      const response = await fetch('/api/resume/status', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          cvTextHashes: top3.map(r => r.cv_text_hash)
-        })
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        if (data.ok) {
-          setResumeStatuses(data.resumeStatus)
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to check resume statuses:', error)
-    }
-  }
-
-  // Check resume statuses when results change
-  useEffect(() => {
-    if (results.length > 0) {
-      // Initial check
-      checkResumeStatuses()
-      
-      // Check again after 3 seconds (time for background processing)
-      const timer = setTimeout(checkResumeStatuses, 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [results])
+  // Simplified: no status checking needed for on-demand generation
 
   // Function to fetch resume from API
   const fetchResume = async (candidateName: string, cvTextHash: string) => {
@@ -227,20 +182,17 @@ export function ResultsSection({ results }: ResultsSectionProps) {
                     #{i + 1} Prioritet
                   </span>
                   
-                  {/* Resume button for top 3 candidates only */}
-                  {i < 3 && r.cv_text_hash && (
+                  {/* Resume button for ALL candidates */}
+                  {r.cv_text_hash && (
                     <button
                       onClick={() => fetchResume(r.name, r.cv_text_hash!)}
                       className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg transition-colors duration-200 flex items-center space-x-1"
-                      title={resumeStatuses[r.cv_text_hash!] ? 'Se cached resumé' : 'Generer resumé'}
+                      title="Generer CV resumé"
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                       <span>CV Resumé</span>
-                      {resumeStatuses[r.cv_text_hash!] && (
-                        <span className="inline-flex items-center justify-center w-2 h-2 bg-green-400 rounded-full ml-1"></span>
-                      )}
                     </button>
                   )}
                 </div>

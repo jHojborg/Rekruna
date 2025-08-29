@@ -854,7 +854,6 @@ ${cvText || '(intet udtræk)'}`
       
       return {
         ...result,
-        has_cached_resume: false, // Will be updated in background
         cv_text_hash: cvTextHash
       }
     })
@@ -885,47 +884,38 @@ ${cvText || '(intet udtræk)'}`
       }
     })
 
-    // Background resume processing for top 3 candidates (non-blocking)
+    // Store CV text in cache for all candidates (for on-demand resume generation)
     setImmediate(async () => {
       try {
-        console.log('🔄 Starting background resume generation for top 3 candidates...')
+        console.log('💾 Storing CV text cache for on-demand resume generation...')
         
-        for (let i = 0; i < Math.min(3, validResults.length); i++) {
-          const result = validResults[i]
-          
-          // Use the same lookup logic as the main processing
-          const extractedItem = Array.from(extractedMap.values()).find(item => {
+        for (const result of validResults) {
+          const matchingExtracted = Array.from(extractedMap.values()).find(item => {
             const candidateName = extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, '')))
             return candidateName === result.name
           })
           
-          if (extractedItem && extractedItem.excerpt) {
+          if (matchingExtracted && matchingExtracted.excerpt) {
             try {
-              const cvTextHash = createHash('sha256').update(extractedItem.excerpt, 'utf8').digest('hex')
+              const cvTextHash = createHash('sha256').update(matchingExtracted.excerpt, 'utf8').digest('hex')
               
-              // Store CV text in cache
+              // Store CV text for on-demand resume generation
               await supabaseAdmin.from('cv_text_cache').upsert({
                 text_hash: cvTextHash,
-                cv_text: extractedItem.excerpt,
+                cv_text: matchingExtracted.excerpt,
                 candidate_name: result.name,
                 created_at: new Date().toISOString(),
                 expires_at: new Date(Date.now() + (2 * 60 * 60 * 1000)).toISOString()
               })
               
-              // Generate and cache resume
-              const resumeText = await generateResume(openai, result.name, extractedItem.excerpt)
-              if (resumeText) {
-                const resumeCacheKey = generateResumeCacheKey(result.name, extractedItem.excerpt)
-                await setCachedResume(resumeCacheKey, resumeText)
-                console.log(`✅ Background resume generated and cached for ${result.name}`)
-              }
+              console.log(`✅ CV text cached for ${result.name}`)
             } catch (error) {
-              console.warn(`Background processing failed for ${result.name}:`, error)
+              console.warn(`CV text caching failed for ${result.name}:`, error)
             }
           }
         }
       } catch (error) {
-        console.warn('Background resume processing failed:', error)
+        console.warn('CV text caching failed:', error)
       }
     })
 
