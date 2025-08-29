@@ -176,17 +176,18 @@ export function ResultsSection({ results }: ResultsSectionProps) {
                 </div>
                 <div className="flex flex-col items-end space-y-2">
                   <span
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary text-white"
-                    style={{ backgroundColor: i < 10 ? '#10b984' : undefined }}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white shadow-[4px_6px_16px_rgba(0,0,0,0.25)]"
+                    style={{ backgroundColor: '#10b984' }}
                   >
-                    #{i + 1} Prioritet
+                    #{i + 1}
                   </span>
                   
                   {/* Resume button for ALL candidates */}
                   {r.cv_text_hash && (
                     <button
                       onClick={() => fetchResume(r.name, r.cv_text_hash!)}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-200"
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white transition-colors duration-200 shadow-[4px_6px_16px_rgba(0,0,0,0.25)]"
+                      style={{ backgroundColor: '#B3D8A8' }}
                       title="Generer CV resumé"
                     >
                       CV Resumé
