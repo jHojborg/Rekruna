@@ -171,8 +171,8 @@ export function ResultsSection({ results }: ResultsSectionProps) {
                   <h3 className="text-xl font-bold text-gray-900">{r.name}</h3>
                   <div className="flex items-center mt-2 gap-4">
                     <div className="flex items-center">
-                      <span className="text-sm font-medium text-gray-600 mr-2">Overall:</span>
-                      <span className="text-2xl font-bold text-primary">{r.overall}/10</span>
+                      <span className="font-semibold text-gray-900 mb-2">Overall:</span>
+                      <span className="font-semibold text-primary mb-2">{r.overall}/10</span>
                     </div>
                     {/* Resume button positioned next to the score */}
                     {r.cv_text_hash && (
