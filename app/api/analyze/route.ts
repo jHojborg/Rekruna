@@ -822,12 +822,43 @@ ${cvText || '(intet udtræk)'}`
     const validResults = results.filter(result => result !== null)
     validResults.sort((a, b) => b.overall - a.overall)
 
-    // Create a map for faster lookup - use filename instead of extracted names
-    const extractedMap = new Map()
-    extractedData.forEach(item => {
-      if (item && item.excerpt) {
-        const fileName = decodeURIComponent(item.name.replace(/\.pdf$/i, ''))
-        extractedMap.set(fileName, item)
+    // Create mapping between results and extracted data using the processing order
+    // Since both arrays are processed in the same order, we can map by index
+    const resultToExtractedMap = new Map()
+    
+    // Map each result to its corresponding extracted data by finding the best match
+    validResults.forEach((result, resultIndex) => {
+      let bestMatch: { name: string; candidateName: string; excerpt: string } | null = null
+      let bestScore = 0
+      
+      extractedData.forEach((extracted, extractedIndex) => {
+        if (!extracted || !extracted.excerpt) return
+        
+        // Type guard to ensure extracted has the right type
+        const typedExtracted = extracted as { name: string; candidateName: string; excerpt: string }
+        
+        // Try multiple matching strategies
+        const extractedName = extractCandidateNameFromText(typedExtracted.excerpt, decodeURIComponent(typedExtracted.name.replace(/\.pdf$/i, '')))
+        const fileName = decodeURIComponent(typedExtracted.name.replace(/\.pdf$/i, ''))
+        
+        // Calculate match score
+        let score = 0
+        if (extractedName === result.name) score += 100  // Exact match
+        if (fileName.toLowerCase().includes(result.name.toLowerCase())) score += 50
+        if (result.name.toLowerCase().includes(extractedName.toLowerCase())) score += 50
+        if (resultIndex === extractedIndex) score += 25  // Same position bonus
+        
+        if (score > bestScore) {
+          bestScore = score
+          bestMatch = typedExtracted
+        }
+      })
+      
+      if (bestMatch) {
+        resultToExtractedMap.set(result.name, bestMatch)
+        console.log(`🔗 Mapped ${result.name} to ${(bestMatch as any).name} (score: ${bestScore})`)
+      } else {
+        console.warn(`❌ No match found for ${result.name}`)
       }
     })
 
@@ -835,11 +866,7 @@ ${cvText || '(intet udtræk)'}`
     const finalResults = validResults.map((result, index) => {
       let cvTextHash = null
       
-      // Find by original filename - more reliable than name matching
-      const matchingExtracted = Array.from(extractedMap.values()).find(item => {
-        const candidateName = extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, '')))
-        return candidateName === result.name
-      })
+      const matchingExtracted = resultToExtractedMap.get(result.name)
       
       if (matchingExtracted && matchingExtracted.excerpt) {
         try {
@@ -890,10 +917,7 @@ ${cvText || '(intet udtræk)'}`
         console.log('💾 Storing CV text cache for on-demand resume generation...')
         
         for (const result of validResults) {
-          const matchingExtracted = Array.from(extractedMap.values()).find(item => {
-            const candidateName = extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, '')))
-            return candidateName === result.name
-          })
+          const matchingExtracted = resultToExtractedMap.get(result.name)
           
           if (matchingExtracted && matchingExtracted.excerpt) {
             try {
