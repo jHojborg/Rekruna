@@ -4,6 +4,11 @@ import type { NextRequest } from 'next/server'
 // Basic authentication middleware to protect the site during development
 // This will prompt for username/password on all pages except API routes and static files
 export function middleware(request: NextRequest) {
+  // Skip authentication for API routes completely - they handle their own auth
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    return NextResponse.next()
+  }
+  
   const basicAuth = request.headers.get('authorization')
   
   if (basicAuth) {
