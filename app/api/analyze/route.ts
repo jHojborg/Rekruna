@@ -822,77 +822,97 @@ ${cvText || '(intet udtræk)'}`
     const validResults = results.filter(result => result !== null)
     validResults.sort((a, b) => b.overall - a.overall)
 
-    // Add resume functionality
-    const finalResults = await Promise.all(validResults.map(async (result) => {
-      let hasCachedResume = false
+    // Generate final results with cv_text_hash (synchronous for immediate response)
+    const finalResults = validResults.map((result, index) => {
       let cvTextHash = null
-
-      // Find the extracted CV text for this candidate
+      
       const extractedItem = extractedData.find(item => 
         item && extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, ''))) === result.name
       )
-
-      if (extractedItem) {
+      
+      if (extractedItem && extractedItem.excerpt) {
         try {
           cvTextHash = createHash('sha256').update(extractedItem.excerpt, 'utf8').digest('hex')
-          
-          // Store CV text in temporary cache for resume generation
-          try {
-            console.log(`💾 Storing CV text for ${result.name} with hash:`, cvTextHash.substring(0, 8) + '...')
-            await supabaseAdmin.from('cv_text_cache').upsert({
-              text_hash: cvTextHash,
-              cv_text: extractedItem.excerpt,
-              candidate_name: result.name,
-              created_at: new Date().toISOString(),
-              expires_at: new Date(Date.now() + (2 * 60 * 60 * 1000)).toISOString()
-            })
-            console.log(`✅ Successfully cached CV text for ${result.name}`)
-          } catch (cacheError) {
-            console.warn(`❌ Failed to cache CV text for ${result.name}:`, cacheError)
-          }
-
-          // Check for cached resume (top 3 candidates only)
-          if (validResults.indexOf(result) < 3) {
-            const resumeCacheKey = generateResumeCacheKey(result.name, extractedItem.excerpt)
-            const cachedResume = await getCachedResume(resumeCacheKey)
-            hasCachedResume = !!cachedResume
-          }
         } catch (error) {
           console.warn(`Hash generation failed for ${result.name}:`, error)
         }
       }
-
+      
       return {
         ...result,
-        has_cached_resume: hasCachedResume,
+        has_cached_resume: false, // Will be updated in background
         cv_text_hash: cvTextHash
       }
-    }))
+    })
 
     timer.mark('request-end')
     timer.logSummary()
 
     console.log(`✅ CV analysis completed: ${finalResults.length}/${cvBlobs.length} CVs processed successfully`)
 
-    // Optional database storage
-    try {
-      await supabaseAdmin.from('analysis_results').insert(
-        finalResults.map((r) => ({
-          user_id: userId,
-          analysis_id: analysisId,
-          name: r.name,
-          overall: r.overall,
-          scores: r.scores,
-          strengths: r.strengths,
-          concerns: r.concerns,
-          created_at: new Date().toISOString(),
-          title: title ?? null,
-        }))
-      )
-    } catch (e) {
-      console.warn('DB insert skipped/failed:', (e as any)?.message)
-    }
+    // Optional database storage (non-blocking)
+    setImmediate(async () => {
+      try {
+        await supabaseAdmin.from('analysis_results').insert(
+          finalResults.map((r) => ({
+            user_id: userId,
+            analysis_id: analysisId,
+            name: r.name,
+            overall: r.overall,
+            scores: r.scores,
+            strengths: r.strengths,
+            concerns: r.concerns,
+            created_at: new Date().toISOString(),
+            title: title ?? null,
+          }))
+        )
+      } catch (e) {
+        console.warn('DB insert failed:', (e as any)?.message)
+      }
+    })
 
+    // Background resume processing for top 3 candidates (non-blocking)
+    setImmediate(async () => {
+      try {
+        console.log('🔄 Starting background resume generation for top 3 candidates...')
+        
+        for (let i = 0; i < Math.min(3, validResults.length); i++) {
+          const result = validResults[i]
+          const extractedItem = extractedData.find(item => 
+            item && extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, ''))) === result.name
+          )
+          
+          if (extractedItem && extractedItem.excerpt) {
+            try {
+              const cvTextHash = createHash('sha256').update(extractedItem.excerpt, 'utf8').digest('hex')
+              
+              // Store CV text in cache
+              await supabaseAdmin.from('cv_text_cache').upsert({
+                text_hash: cvTextHash,
+                cv_text: extractedItem.excerpt,
+                candidate_name: result.name,
+                created_at: new Date().toISOString(),
+                expires_at: new Date(Date.now() + (2 * 60 * 60 * 1000)).toISOString()
+              })
+              
+              // Generate and cache resume
+              const resumeText = await generateResume(openai, result.name, extractedItem.excerpt)
+              if (resumeText) {
+                const resumeCacheKey = generateResumeCacheKey(result.name, extractedItem.excerpt)
+                await setCachedResume(resumeCacheKey, resumeText)
+                console.log(`✅ Background resume generated and cached for ${result.name}`)
+              }
+            } catch (error) {
+              console.warn(`Background processing failed for ${result.name}:`, error)
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('Background resume processing failed:', error)
+      }
+    })
+
+    // Return immediate response
     return NextResponse.json({
       ok: true,
       results: finalResults,
