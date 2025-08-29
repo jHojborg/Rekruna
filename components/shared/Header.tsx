@@ -58,7 +58,14 @@ export function Header() {
                 </Link>
               </>
             ) : (
-              <Button variant="outline" onClick={onLogout}>Log ud</Button>
+              <>
+                {/* Dashboard button - only visible when logged in */}
+                <Link href="/dashboard">
+                  <Button variant="outline">Dashboard</Button>
+                </Link>
+                {/* Logout button */}
+                <Button variant="outline" onClick={onLogout}>Log ud</Button>
+              </>
             )}
           </div>
         </div>
