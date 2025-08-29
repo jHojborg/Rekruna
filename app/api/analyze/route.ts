@@ -822,20 +822,34 @@ ${cvText || '(intet udtræk)'}`
     const validResults = results.filter(result => result !== null)
     validResults.sort((a, b) => b.overall - a.overall)
 
+    // Create a map for faster lookup - use filename instead of extracted names
+    const extractedMap = new Map()
+    extractedData.forEach(item => {
+      if (item && item.excerpt) {
+        const fileName = decodeURIComponent(item.name.replace(/\.pdf$/i, ''))
+        extractedMap.set(fileName, item)
+      }
+    })
+
     // Generate final results with cv_text_hash (synchronous for immediate response)
     const finalResults = validResults.map((result, index) => {
       let cvTextHash = null
       
-      const extractedItem = extractedData.find(item => 
-        item && extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, ''))) === result.name
-      )
+      // Find by original filename - more reliable than name matching
+      const matchingExtracted = Array.from(extractedMap.values()).find(item => {
+        const candidateName = extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, '')))
+        return candidateName === result.name
+      })
       
-      if (extractedItem && extractedItem.excerpt) {
+      if (matchingExtracted && matchingExtracted.excerpt) {
         try {
-          cvTextHash = createHash('sha256').update(extractedItem.excerpt, 'utf8').digest('hex')
+          cvTextHash = createHash('sha256').update(matchingExtracted.excerpt, 'utf8').digest('hex')
+          console.log(`✅ Generated hash for ${result.name}: ${cvTextHash.substring(0, 8)}...`)
         } catch (error) {
           console.warn(`Hash generation failed for ${result.name}:`, error)
         }
+      } else {
+        console.warn(`❌ No extracted data found for ${result.name}`)
       }
       
       return {
@@ -878,9 +892,12 @@ ${cvText || '(intet udtræk)'}`
         
         for (let i = 0; i < Math.min(3, validResults.length); i++) {
           const result = validResults[i]
-          const extractedItem = extractedData.find(item => 
-            item && extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, ''))) === result.name
-          )
+          
+          // Use the same lookup logic as the main processing
+          const extractedItem = Array.from(extractedMap.values()).find(item => {
+            const candidateName = extractCandidateNameFromText(item.excerpt, decodeURIComponent(item.name.replace(/\.pdf$/i, '')))
+            return candidateName === result.name
+          })
           
           if (extractedItem && extractedItem.excerpt) {
             try {
