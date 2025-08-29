@@ -169,9 +169,22 @@ export function ResultsSection({ results }: ResultsSectionProps) {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">{r.name}</h3>
-                  <div className="flex items-center mt-2">
-                    <span className="text-sm font-medium text-gray-600 mr-2">Overall:</span>
-                    <span className="text-2xl font-bold text-primary">{r.overall}/10</span>
+                  <div className="flex items-center mt-2 gap-4">
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium text-gray-600 mr-2">Overall:</span>
+                      <span className="text-2xl font-bold text-primary">{r.overall}/10</span>
+                    </div>
+                    {/* Resume button positioned next to the score */}
+                    {r.cv_text_hash && (
+                      <button
+                        onClick={() => fetchResume(r.name, r.cv_text_hash!)}
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white transition-colors duration-200 shadow-[4px_6px_16px_rgba(0,0,0,0.25)]"
+                        style={{ backgroundColor: '#B3D8A8' }}
+                        title="Generer CV resumé"
+                      >
+                        CV Resumé
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col items-end space-y-2">
@@ -181,18 +194,6 @@ export function ResultsSection({ results }: ResultsSectionProps) {
                   >
                     #{i + 1}
                   </span>
-                  
-                  {/* Resume button for ALL candidates */}
-                  {r.cv_text_hash && (
-                    <button
-                      onClick={() => fetchResume(r.name, r.cv_text_hash!)}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium text-white transition-colors duration-200 shadow-[4px_6px_16px_rgba(0,0,0,0.25)]"
-                      style={{ backgroundColor: '#B3D8A8' }}
-                      title="Generer CV resumé"
-                    >
-                      CV Resumé
-                    </button>
-                  )}
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-6">
