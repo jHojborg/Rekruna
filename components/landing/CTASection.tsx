@@ -11,13 +11,8 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
     <section className="py-25 bg-brand-softGrey">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl md:text-5xl font-bold text-black mb-6">
-        Effektivt og hurtig CV-screening!
-        </h2>
-        
-        <p className="text-xl text-black mb-8 max-w-2xl mx-auto">
-        Upload CV´r og stillingsopslag, lad systemet gøre arbejdet, og du har en liste med de bedst egnede kandidater.
-        </p>
-        
+        Er du klar til at frigøre tid til de vigtige samtaler med de bedst egnede kandidater?
+        </h2>    
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           {onCtaClick ? (
             <Button size="lg" onClick={onCtaClick} className="text-lg px-8 py-4 h-auto font-semibold">

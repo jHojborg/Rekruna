@@ -5,7 +5,7 @@ export function ProblemSolution() {
   const items = [
     {
       icon: HandCoins,
-      title: 'Ubegrænset analyser',
+      title: 'Bbegrænset analyser',
       description:
         'Vi tilbyder én pris med alt inklusiv, så du kan screene ubegrænset antal CV´r.'
     },

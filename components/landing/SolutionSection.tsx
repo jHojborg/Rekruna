@@ -21,9 +21,9 @@ export function SolutionSection() {
         {/* Headline and subheadline area */}
         <div className="text-center mb-12">
           {/* Headline: h2 with simple, readable styling */}
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Hurtig og Effektiv CV screening i 3 steps</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Hurtig og effektiv CV screening i 3 steps</h2>
           {/* Subheadline/description: keep the text exactly as requested */}
-          <p className="text-xl text-gray-600">Med tre simple steps har du en prioriteret kandidatliste som et stærkt beslutningsgrundlag for et videre proces i rekreuteringen</p>
+          <p className="text-xl text-gray-600">Med tre enkle steps har du en prioriteret kandidatliste som et stærkt beslutningsgrundlag i den videre proces.</p>
         </div>
 
         {/* Step 1: Image left, text right */}
@@ -97,13 +97,13 @@ export function SolutionSection() {
           <div className="p-0">
             <div className="flex items-center gap-4 mb-3">
               <NumberBadge value={3} />
-              <h3 className="text-2xl font-semibold text-gray-900">Analysen er klar på få minutter</h3>
+              <h3 className="text-2xl font-semibold text-gray-900">Analysen er klar på få sekunder</h3>
             </div>
             <p className="text-gray-700 leading-relaxed">
-              Efter få minutter får du en prioriteret kandidatliste. Hver kandidat får en score
+              Der går ikke mange sekuder før du har en prioriteret kandidatliste. Hver kandidat får en score
               og konkrete kommentarer, så du nemt kan spotte styrker og opmærksomhedspunkter.
             </p>
-            <p className="mt-4 text-gray-700">➔ 3 min. gennemsnitstid ved 50 CV’er.</p>
+            <p className="mt-4 text-gray-700">➔ 48 sek. gennemsnitstid ved 50 CV’er.</p>
           </div>
         </div>
       </div>

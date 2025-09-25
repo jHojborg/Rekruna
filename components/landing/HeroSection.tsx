@@ -62,11 +62,11 @@ export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectio
           <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-sm text-white/90">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>Opsig når det passer</span>
+              <span>Markedets mest præcise</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span>Ingen opstartsomkostninger
+              <span>Ingen opstartsgebyr
               </span>
             </div>
           </div>
