@@ -25,7 +25,7 @@ export default function LandingPage() {
     <main className="min-h-screen">
       <HeroSection 
         title="Screen job-kandidater 80% hurtigere med AI"
-        subtitle="Få en prioriteret kandidatliste på få minutter og se straks, hvem der bedst matcher jobbet"
+        subtitle="Få en prioriteret, objektiv kandidatliste på få minutter og se straks, hvem der bedst matcher jobbet"
         ctaText="Start allerede i dag"
       />
       
@@ -64,7 +64,7 @@ export default function LandingPage() {
                 priceSuffix: "kr/måned",
                 savingsText: "Spar 100 kr./måned",
                 features: [
-                  "Analyse af 1 stillingsopslag og 50 CV´r pr. måned.",
+                  "Et jobopslag og 50 CV´r pr. måned.",
                   "Opsig når det passer",
                   "AI-drevet scorecard model",
                   "PDF rapporter med detaljeret begrundelse",
@@ -79,7 +79,7 @@ export default function LandingPage() {
                 priceSuffix: "kr/måned",
                 savingsText: "Spar 200 kr./måned",
                 features: [
-                  "Op til 3 stillingsopslag og 300 CV´r pr. måned.",
+                  "Op til 5 jobopslag og 500 CV´r pr. måned.",
                   "Opsig når det passer",
                   "AI-drevet scorecard model",
                   "PDF rapporter med detaljeret begrundelse",

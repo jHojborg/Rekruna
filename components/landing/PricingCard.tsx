@@ -44,8 +44,10 @@ export function PricingCard({
       <div className="text-center mb-8">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">{title}</h3>
         <div className="flex flex-col items-center justify-center gap-2">
-          {originalPrice && (
+          {originalPrice ? (
             <div className="text-gray-500 line-through text-xl">{originalPrice}</div>
+          ) : (
+            <div className="text-xl h-7"></div>
           )}
           <div className="flex items-baseline justify-center">
             <span className="text-5xl font-bold text-gray-900">{finalPrice}</span>
