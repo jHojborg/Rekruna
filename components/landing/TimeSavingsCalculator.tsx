@@ -41,7 +41,7 @@ export function TimeSavingsCalculator() {
            </div>
           <h2 className="text-4xl font-bold text-gray-900">Så meget tid kan du spare med Rekruna</h2>
           <p className="text-lg text-gray-600 mt-3">
-            Beregn din tidsbesparelse ved at bruge Rekruna til at analysere og prioritere dine ansøgninger
+            Din tidsbesparelse ved at bruge Rekruna til at analysere og prioritere dine ansøgninger
           </p>
         </div>
 

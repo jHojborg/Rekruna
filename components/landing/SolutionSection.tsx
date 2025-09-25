@@ -21,7 +21,7 @@ export function SolutionSection() {
         {/* Headline and subheadline area */}
         <div className="text-center mb-12">
           {/* Headline: h2 with simple, readable styling */}
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">Hurtig og effektiv CV screening i 3 steps</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Objektiv og grundig CV screening i 3 steps</h2>
           {/* Subheadline/description: keep the text exactly as requested */}
           <p className="text-xl text-gray-600">Med tre enkle steps har du en prioriteret kandidatliste som et stærkt beslutningsgrundlag i den videre proces.</p>
         </div>
@@ -32,7 +32,7 @@ export function SolutionSection() {
           <div>
             <Image
               src="/images/upload_opslag.png"
-              alt="Upload stillingsbeskrivelse"
+              alt="Rekruna - Upload jobbeskrivelse"
               width={880}
               height={540}
               className="w-full h-auto rounded-xl bg-white shadow-[4px_6px_16px_rgba(0,0,0,0.25)]"
@@ -43,10 +43,10 @@ export function SolutionSection() {
           <div className="p-0">
             <div className="flex items-center gap-4 mb-3">
               <NumberBadge value={1} />
-              <h3 className="text-2xl font-semibold text-gray-900">Upload stillingsbeskrivelsen</h3>
+              <h3 className="text-2xl font-semibold text-gray-900">Upload jobbeskrivelsen</h3>
             </div>
             <p className="text-gray-700 leading-relaxed">
-              Upload stillingsbeskrivelsen som PDF. På få sekunder analyserer vores AI modellen
+              Upload jobbeskrivelsen som PDF. Vores AI model analyserer 
               indholdet og identificerer de centrale kriterier for kandidaten.
             </p>
             <p className="mt-4 text-gray-700">➔ Hurtigt, præcist og klar til næste skridt.</p>
@@ -62,7 +62,7 @@ export function SolutionSection() {
               <h3 className="text-2xl font-semibold text-gray-900">Vælg de vigtigste kriterier</h3>
             </div>
             <p className="text-gray-700 leading-relaxed">
-              Der identificeres op til syv centrale kriterier. Du vælger de tre vigtigste,
+              Ud af de identificered centrale kriterier vælger du de tre vigtigste,
               som kandidaten skal opfylde. Upload CV’er og start analysen – resten klarer systemet.
             </p>
             <p className="mt-4 text-gray-700">➔ 6 sek. gennemsnit for et to-siders jobopslag.</p>
@@ -72,7 +72,7 @@ export function SolutionSection() {
           <div>
             <Image
               src="/images/kriterier.png"
-              alt="Vælg must-have kriterier"
+              alt="Rekruna - Vælg must-have kriterier"
               width={880}
               height={540}
               className="w-full h-auto rounded-xl bg-white shadow-[4px_6px_16px_rgba(0,0,0,0.25)]"
@@ -97,13 +97,13 @@ export function SolutionSection() {
           <div className="p-0">
             <div className="flex items-center gap-4 mb-3">
               <NumberBadge value={3} />
-              <h3 className="text-2xl font-semibold text-gray-900">Analysen er klar på få sekunder</h3>
+              <h3 className="text-2xl font-semibold text-gray-900">Analyseresultatet er klar</h3>
             </div>
             <p className="text-gray-700 leading-relaxed">
-              Der går ikke mange sekuder før du har en prioriteret kandidatliste. Hver kandidat får en score
-              og konkrete kommentarer, så du nemt kan spotte styrker og opmærksomhedspunkter.
+              Med fx 50 CV´r har du en prioriteret kandidatliste indenfor 60 sek. Hver kandidat får en score
+              og kommentarer, så du nemt kan spotte styrker og opmærksomhedspunkter.
             </p>
-            <p className="mt-4 text-gray-700">➔ 48 sek. gennemsnitstid ved 50 CV’er.</p>
+            <p className="mt-4 text-gray-700">➔ 48 sek. gennemsnitstid med 50 CV’er.</p>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 "use client"
 import { useEffect } from 'react'
+import { Check } from 'lucide-react'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { ProblemSolution } from '@/components/landing/ProblemSolution'
 import { TimeSavingsCalculator } from '@/components/landing/TimeSavingsCalculator'
@@ -41,9 +42,33 @@ export default function LandingPage() {
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
               Simpel og transparent prissætning
             </h2>
-            <p className="text-xl text-gray-600">
-            Alt hvad du har brug for til effektivt at screene og priotitere kandidater.
-            </p>
+            {/* USPs with check icons */}
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-6 text-xl text-gray-600">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 mr-3">
+                  <div className="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+                <span>Én lav månedlig pris</span>
+              </div>
+              <div className="flex items-center">
+                <div className="flex-shrink-0 mr-3">
+                <div className="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center">
+                <Check className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+                <span>Ingen opstartsfee</span>
+              </div>
+              <div className="flex items-center">
+                <div className="flex-shrink-0 mr-3">
+                <div className="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center">
+                <Check className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+                <span>Kom i gang på under 1 minut</span>
+              </div>
+            </div>
           </div>
           
           {(() => {
