@@ -5,38 +5,37 @@ export function ProblemSolution() {
   const items = [
     {
       icon: HandCoins,
-      title: 'Bbegrænset analyser',
+      title: 'Reducer tidsforbrug og omkostninger',
       description:
-        'Vi tilbyder én pris med alt inklusiv, så du kan screene ubegrænset antal CV´r.'
+        'Med Rekruna som din interne CV-screener sparer du både tid og penge i den indledende prioritering - og kommer hurtigere frem til mødet med kandidaterne.'
     },
     {
       icon: HeartHandshakeIcon,
-      title: 'Objektiv vurdering uden bias',
+      title: 'Ingen opstartsgebyr',
       description:
-        'Med vores AI scoringsmodel sikres du en neutral, ensartet og retfærdig evaluering.'
+        'Du betaler kun den månedlige ydelse, når du anvender Rekruna. Ingen opstartsfee eller andre ekstraomkostninger.'
     },
     {
       icon: ListOrdered,
-      title: 'Prioriteret best-match liste',
+      title: 'Objektiv og bias-fri vurdering',
       description:
-        'Alle CV´r rangeres på en 10-skala med detaljeret begrundelse for placeringen.'
+        'Vores AI-model sikrer en ensartet og retfærdig vurdering af alle kandidater -  uden subjektive antagelser.'
     },
     {
       icon: Clock,
-      title: 'Reduceret tidsforbrug',
+      title: 'Brugervenlig og intuitiv proces',
       description:
-        'Analysér alle CV´r op til 80 % hurtigere så du straks kan se, hvem der bedst matcher jobbet. '
+        'Upload stillingsopslag og CV’er, vælg de vigtigste kriterier - så klarer Rekruna resten på få minutter.'
     },
-    // NYE USP-KORT (midlertidig tekst – opdateres senere)
     {
       icon: Target,
-      title: 'Automatisk matching',
-      description: 'Lirum larum pladsholdertekst der beskriver automatisk matching. Opdateres senere.'
+      title: 'Detaljeret rapportering og prioriteret best-match',
+      description: 'Du får en overskuelig rapport, med alle kandidater rangeret på en 10-skala med  kommentarer - et stærkt beslutningsgrundlag til næste fase.'
     },
     {
       icon: BarChart3,
-      title: 'Avanceret søgning',
-      description: 'Lirum larum pladsholdertekst for avanceret søgning og filtrering. Opdateres senere.'
+      title: 'GDPR-sikkerhed',
+      description: 'Alle data håndteres og lagres sikkert i EU og slettes automatisk efter 30 dage.'
     }
   ]
 
@@ -49,7 +48,7 @@ export function ProblemSolution() {
             Hvorfor vælge Rekruna?
           </h2>
           <p className="mt-8 text-xl text-gray-700">
-            Rekruna er udviklet til dig, der har rekrutteringsansvar og ønsker en hurtig og objektiv vurdering af alle ansøgninger ift. dine jobkrav. Vores AI-baserede system analyserer alle kandidater, scorer dem ud fra et detaljeret vurderingssystem og giver dig en prioriteret liste med konkrete kommentarer – så du straks kan se, hvem der bedst matcher jobbet.
+          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna frigør dig fra det tunge forarbejde og leverer en transparent, objektiv analyse, der sikrer, at ingen kvalificerede kandidater overses. Du får på få minutter en prioriteret kandidatliste, som danner et stærkt og objektivt beslutningsgrundlag. Resultatet er mere tid til at møde og evaluere de bedst egnede kandidater - og herved kortere time-to-hire.
           </p>
         </div>
 
