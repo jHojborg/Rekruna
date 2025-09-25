@@ -5,7 +5,7 @@ export function ProblemSolution() {
   const items = [
     {
       icon: HandCoins,
-      title: 'Reducer tidsforbrug og omkostninger',
+      title: 'Reducer tidsforbrug',
       description:
         'Med Rekruna som din interne CV-screener sparer du både tid og penge i den indledende prioritering - og kommer hurtigere frem til mødet med kandidaterne.'
     },
@@ -17,7 +17,7 @@ export function ProblemSolution() {
     },
     {
       icon: ListOrdered,
-      title: 'Objektiv og bias-fri vurdering',
+      title: 'Objektiv vurdering',
       description:
         'Vores AI-model sikrer en ensartet og retfærdig vurdering af alle kandidater -  uden subjektive antagelser.'
     },

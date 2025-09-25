@@ -17,29 +17,39 @@ export default function OmOsPage() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Overskrift med tydelig tone-of-voice */}
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
-            Rekruttering handler om mennesker – og det gør vi også.
+            Om Rekruna
           </h1>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">
+            Rekruttering handler om mennesker – det gør vi også.
+          </h2>
 
           <div className="prose prose-lg max-w-none text-gray-700">
-            {/* Afsnit 1: Problemet og konteksten */}
+            {/* Afsnit 1 */}
             <p>
-              Idéen til Rekruna opstod, da medstifter Jan Højborg Henriksen, med mere end 25 års erhvervserfaring og mange gennemførte rekrutteringsforløb, stod over for endnu en ny ansættelsesrunde. At finde den rette kandidat kræver normalt, at hvert CV og hver ansøgning læses grundigt igennem, evalueres og prioriteres – en proces, der ofte indebærer 50, 100 eller endnu flere dokumenter. Uanset om kandidaterne findes i ansøgerfeltet eller opspores via eksempelvis LinkedIn, er fællesnævneren den samme: det er både tids- og ressourcekrævende.
+            Idéen til Rekruna opstod, da medstifter Jan Højborg Henriksen – med over 25 års erhvervserfaring og mange gennemførte rekrutteringsforløb – endnu en gang stod over for en ny ansættelserunde. At finde de rette kandidater i et stort ansøgerfelt er en krævende opgave: hver ansøgning og CV skal vurderes, sammenlignes og prioriteres løbende. I praksis kan det betyde gennemgang af 75, 100 eller endnu flere dokumenter – en opgave, som kræver både skarp opmærksomhed og evnen til konstant at re-vurdere feltet.
             </p>
-            {/* Afsnit 2: Behovet og målet om fairness/effektivitet */}
+            {/* Afsnit 2 */}
             <p>
-              Netop de mange gennemgange af CV’er, analyser af kandidater og interviews, for til sidst at byde nye medarbejdere velkommen, gjorde behovet tydeligt: der måtte findes en smartere måde at skabe både højere effektivitet og større fairness i den indledende screening.
+            Uanset om kandidaterne findes i ansøgerfeltet eller bliver opsporet via platforme som LinkedIn, er udgangspunktet det samme: processen er tids- og ressourcekrævende. Og der er risiko for at kvaliteten lider, fordi omfang og tidsforbrug ikke står mål med dagligdagens travlhed.
             </p>
-            {/* Afsnit 3: Løsningens start og udvikling */}
+            {/* Afsnit 3 */}
             <p>
-              Det blev startskuddet til Rekruna. Hvad der begyndte som en lille specialbygget GPT, er i dag vokset til en professionel AI-løsning, der kombinerer hurtighed, grundighed og gennemsigtighed.
+            Det behov – at kombinere hastighed med grundighed og fairness – blev katalysatoren for Rekruna. Det, der startede som et lille skræddersyet GPT-projekt sat op på en formiddag, er i dag udviklet til en professionel AI-løsning, hvor transparens, pålidelighed og menneskefokus går hånd i hånd.
             </p>
-            {/* Afsnit 4: Hvad AI-motoren gør for brugeren */}
-            <p>
-              Rekrunas AI-motor analyserer ansøgninger og CV’er på få minutter, matcher kompetencer med virksomhedens krav og leverer en prioriteret kandidatliste, som gør det enkelt for den rekrutteringsansvarlige at vælge de rette kandidater til næste trin i processen.
+            {/* Afsnit 4 */}
+            <p>Med Rekruna’s AI-model kan du:
+Analysere hundredevis af ansøgninger og CV’er på få minutter.
+Matche kompetencer med virksomhedens krav.
+Få en prioriteret kandidatliste uden subjektive antagelser.
+Præsentere et stærkt beslutningsgrundlag til næste fase.
+Alt dette sker i baggrunden, mens du bevarer kontrollen — og altid med mennesket i centrum.
+
             </p>
-            {/* Afsnit 5: Slutnote med fokus på mennesket */}
-            <p>
-              Så enkelt og effektivt som det lyder – og altid med mennesket i centrum.
+            {/* Afsnit 5 */}
+            <p>Vores løfte til dig
+Du skal bruge din tid på det, som kun du kan – valg, samtaler, vurdering og menneskelig interaktion. Rekruna tager sig af den tunge screening, reducerer risikoen for fejl og giver dig ro og præcision i processen.
+Det er ikke blot teknologi — det er et værktøj, udviklet af rekrutteringsfolk for rekrutteringsfolk, en løsning du kan stole på.
+Velkommen til Rekruna — hvor mennesker og AI arbejder sammen for at finde de rette kandidater.
             </p>
           </div>
         </div>
