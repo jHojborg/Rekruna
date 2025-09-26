@@ -379,23 +379,32 @@ async function extractPdfText(buf: ArrayBuffer): Promise<string> {
 }
 
 // Resume generation prompts for Danish CV summaries
-const resumeSystemPrompt = `Du laver strukturerede CV-resuméer på dansk. Følg nøjagtigt den angivne struktur og ordgrænse.`;
+const resumeSystemPrompt = `Du laver strukturerede CV-resuméer på dansk. Følg nøjagtigt den angivne struktur og ordgrænse. 
+
+VIGTIG: Du SKAL holde arbejdserfaring (jobroller) og uddannelse (formelle uddannelser) adskilt. Bland ALDRIG disse kategorier sammen.`;
 
 const makeResumePrompt = (fileName: string, cvText: string) => {
   return `Lav et struktureret dansk resumé af denne kandidat på præcis 200 ord:
 
 STRUKTUR:
 **Profil:** [2-3 linjer - nuværende rolle og samlet erfaring]
-**Nøgleerfaring:** [3-4 mest relevante tidligere stillinger med år og virksomhed]
+**Nøgleerfaring:** [3-4 mest relevante ARBEJDSSTILLINGER med år og virksomhed - KUN joberfaring, IKKE uddannelse]
 **Kernekompetencer:** [job-relevante færdigheder og teknologier]
-**Uddannelse:** [relevante uddannelser og certificeringer]
+**Uddannelse:** [KUN formelle uddannelser, degrees, kurser og certificeringer - KUN uddannelse, IKKE job-erfaring]
 **Konkrete resultater:** [målbare achievements der understøtter kravene]
+
+VIGTIGE REGLER FOR KATEGORISERING:
+- **Nøgleerfaring**: Kun tidligere arbejdspladser, job-titler, ansættelsesperioder og virksomheder
+- **Uddannelse**: Kun formelle uddannelser, universiteter, højskoler, kurser, certificeringer og akademiske kvalifikationer
+- Bland ALDRIG arbejdserfaring og uddannelse sammen
+- Arbejdsrollerne skal være under "Nøgleerfaring", uddannelserne under "Uddannelse"
 
 FOKUS:
 - Fremhæv erfaring der matcher stillingsopslaget
 - Inkludér kun job-relevante information
 - Brug konkrete tal og resultater hvor muligt
 - Præcis 200 ord - ikke mere, ikke mindre
+- Hold arbejdserfaring og uddannelse adskilt
 
 UDELAD:
 - Personlige oplysninger (alder, adresse, familie)

@@ -20,8 +20,8 @@ export function JobUploadCard({ fileName, onFileSelected, onStart, canStart }: J
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
       <div className="flex flex-col items-center text-center">
         <Upload className="h-16 w-16 text-gray-400 mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Upload Stillingsbeskrivelse</h2>
-        <p className="text-gray-600 mb-8">Upload en PDF-fil med stillingsbeskrivelsen og klik Start analyse</p>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2"> (1) Upload Stillingsbeskrivelsen</h2>
+        <p className="text-gray-600 mb-8">Upload stillingsbeskrivelsen som PDF og klik Start analyse</p>
 
         <label className="w-full">
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
