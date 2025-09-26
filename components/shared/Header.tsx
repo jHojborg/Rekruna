@@ -43,7 +43,7 @@ export function Header() {
               priority
               className="h-8 w-auto"
             />
-            <span className="text-lg font-semibold text-gray-900">Rekruna</span>
+            <span className="text-3xl font-semibold text-gray-900">Rekruna</span>
           </Link>
 
           {/* Right: Actions */}

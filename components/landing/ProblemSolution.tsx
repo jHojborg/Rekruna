@@ -4,10 +4,15 @@ import { IconBadge } from '@/components/shared/IconBadge'
 export function ProblemSolution() {
   const items = [
     {
+      icon: ListOrdered,
+      title: 'Objektiv vurdering',
+      description:
+        'Rekruna sikrer en objektiv og kompetancebaseret vurdering af alle kandidater -  uden subjektive antagelser.'
+    },{
       icon: HandCoins,
       title: 'Reducer tidsforbrug',
       description:
-        'Med Rekruna som din interne CV-screener sparer du meget tid men også penge, og kommer hurtigere frem til mødet med de bedste kandidaterne.'
+        'Med Rekruna sparer du både tid og penge, og kommer hurtigere frem til mødet med de bedste kandidaterne.'
     },
     {
       icon: HeartHandshakeIcon,
@@ -16,21 +21,16 @@ export function ProblemSolution() {
         'Du betaler kun en lav månedlige ydelse, fra 149,- Ingen opstartsfee eller andre ekstraomkostninger.'
     },
     {
-      icon: ListOrdered,
-      title: 'Objektiv vurdering',
-      description:
-        'Vores AI-model sikrer en objektiv og retfærdig vurdering af alle kandidater -  uden subjektive antagelser.'
-    },
-    {
       icon: Clock,
-      title: 'Brugervenlig og intuitiv proces',
+      title: 'Brugervenligt og intuitivt',
       description:
         'Upload stillingsopslag og CV’er, vælg de vigtigste kriterier - så klarer Rekruna resten på få minutter.'
     },
+  
     {
       icon: Target,
-      title: 'Detaljeret rapportering med best-match',
-      description: 'Du får en overskuelig rapport, med alle kandidater rangeret på en 10-skala med  kommentarer - et stærkt beslutningsgrundlag til næste fase.'
+      title: 'Best-match rapportering',
+      description: 'Du får en overskuelig rapport, med alle kandidater rangeret på en 10-skala med  kommentarer - et stærkere beslutningsgrundlag til næste fase.'
     },
     {
       icon: BarChart3,
@@ -48,7 +48,7 @@ export function ProblemSolution() {
             Hvorfor vælge Rekruna?
           </h2>
           <p className="mt-8 text-xl text-gray-700">
-          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna analyserer alle CV´r objektivt, og sikrer, at ingen kvalificerede kandidater overses. Resultatet er et stærkere beslutningsgrundlag og mere tid til, at møde og evaluere de bedste kandidater - og herved kortere time-to-hire.
+          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna analyserer alle CV´r objektivt, og sikrer, at ingen kvalificerede kandidater overses. Resultatet er et stærkere beslutningsgrundlag og mere tid til, at du kan møde og evaluere de bedste kandidater - og herved kortere time-to-hire.
           </p>
         </div>
 

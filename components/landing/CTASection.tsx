@@ -14,8 +14,8 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Er du klar til Rekruna?
           </h2>
-          <p className="text-xl text-gray-600">
-          Effektiv screening og priotitering af alle kandidater.<br />Frigøre din tid til samtaler med de bedste kandidater.<br />Start nu og vær i gang om under ét minut. 
+          <p className="text-lg text-gray-600">
+          Effektiv screening og priotitering af alle kandidater.<br />Frigøre din tid til samtaler med de bedste kandidater.<br /><strong>Start nu og vær i gang om under ét minut.</strong> 
           </p>
         </div>  
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

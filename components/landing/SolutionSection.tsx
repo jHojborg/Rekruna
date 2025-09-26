@@ -27,7 +27,7 @@ export function SolutionSection() {
         </div>
 
         {/* Step 1: Image left, text right */}
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-14">
+        <div className="mt-20 grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-14">
           {/* Visual illustration */}
           <div>
             <Image
@@ -54,7 +54,7 @@ export function SolutionSection() {
         </div>
 
         {/* Step 2: Text left, image right */}
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-14">
+        <div className="mt-20 grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-14">
           {/* Descriptive card */}
           <div className="p-0">
             <div className="flex items-center gap-4 mb-3">
@@ -63,9 +63,9 @@ export function SolutionSection() {
             </div>
             <p className="text-gray-700 leading-relaxed">
               Ud af de identificered centrale kriterier vælger du de tre vigtigste,
-              som kandidaten skal opfylde. Upload CV’er og start analysen – resten klarer systemet.
+              som kandidaten skal opfylde. Upload CV’er, starte analysen og overlade resten til systemet.
             </p>
-            <p className="mt-4 text-gray-700">➔ 6 sek. gennemsnit for et to-siders jobopslag.</p>
+            <p className="mt-4 text-gray-700">➔ 6 sek. gns analysetid med et to-siders jobopslag.</p>
           </div>
 
           {/* Visual illustration */}
@@ -81,7 +81,7 @@ export function SolutionSection() {
         </div>
 
         {/* Step 3: Image left, text right */}
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+        <div className="mt-20 grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Visual illustration */}
           <div>
             <Image
@@ -103,7 +103,7 @@ export function SolutionSection() {
               Med fx 50 CV´r har du en prioriteret kandidatliste indenfor 60 sek. Hver kandidat får en score
               og kommentarer, så du nemt kan spotte styrker og opmærksomhedspunkter.
             </p>
-            <p className="mt-4 text-gray-700">➔ 48 sek. gennemsnitstid med 50 CV’er.</p>
+            <p className="mt-4 text-gray-700">➔ 48 sek. gns. analysetid med 50 CV’er.</p>
           </div>
         </div>
       </div>
