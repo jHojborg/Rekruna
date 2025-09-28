@@ -11,7 +11,7 @@ import { supabase } from '@/lib/supabase/client'
 // GDPR: Fjern direkte filuploads til Supabase Storage. CV'er og job sendes nu direkte til /api/analyze som FormData
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import jsPDF from 'jspdf'
+import { downloadAnalysisReportPdf, generatePdfForUpload } from '@/lib/pdf'
 
 export default function DashboardPage() {
   type Step = 1 | 2 | 3 | 4
@@ -205,135 +205,55 @@ export default function DashboardPage() {
   const downloadPdf = async () => {
     if (!results?.length) return
 
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' })
-
-    // Layout geometri
-    const margin = { x: 40, y: 60, right: 40, bottom: 60 }
-    const page = doc.internal.pageSize
-    const pageWidth = page.getWidth()
-    const pageHeight = page.getHeight()
-    const tableWidth = pageWidth - margin.x - margin.right
-    const rowHeight = 22
-
-    // Dynamiske kolonner som matcher resultattabellen på skærmen
-    const scoreKeys: string[] = Object.keys(results[0]?.scores || {})
-    const cols = [
-      { key: 'name', label: 'Kandidat', width: 220, align: 'left' as const },
-      { key: 'overall', label: 'Overall', width: 80, align: 'center' as const },
-      ...scoreKeys.map((k) => ({ key: k, label: k, width: 100, align: 'center' as const })),
-    ]
-    const scale = tableWidth / cols.reduce((s, c) => s + c.width, 0)
-    cols.forEach((c) => (c.width = c.width * scale))
-
-    // Titel
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(20)
-    doc.text('Analyse resultater', margin.x, margin.y)
-
-    // Headerbaggrund + multi-line centreret headertekst
-    let y = margin.y + 28
-    doc.setFillColor(245, 245, 245)
-    const headerBoxHeight = 40
-    doc.rect(margin.x, y - headerBoxHeight / 2, tableWidth, headerBoxHeight, 'F')
-    doc.setTextColor(0)
-    doc.setFont('helvetica', 'bold')
-    doc.setFontSize(11)
-    const headerLineHeight = 12
-
-    let x = margin.x
-    cols.forEach((col) => {
-      const centerX = x + col.width / 2
-      const lines = doc.splitTextToSize(col.label, col.width - 8)
-      const totalH = (lines.length - 1) * headerLineHeight
-      const startY = y - totalH / 2
-      lines.forEach((ln: string, i: number) => {
-        doc.text(ln, centerX, startY + i * headerLineHeight, { align: 'center' })
-      })
-      x += col.width
-    })
-
-    // Divider (ekstra luft under header)
-    doc.setLineWidth(0.6)
-    const dividerY = y + headerBoxHeight / 2 + 8
-    doc.line(margin.x, dividerY, margin.x + tableWidth, dividerY)
-    y = dividerY + 8
-
-    // Rækker
-    doc.setFont('helvetica', 'normal')
-    const cell = (r: any, key: string) => {
-      if (key === 'name') return String(r.name)
-      if (key === 'overall') return String(r.overall)
-      return String(r.scores?.[key] ?? '')
-    }
-
-    for (const r of results) {
-      // Sideskift og gentag header
-      if (y + rowHeight > pageHeight - margin.bottom) {
-        doc.addPage()
-        y = margin.y + 12
-        doc.setFillColor(245, 245, 245)
-        doc.rect(margin.x, y - headerBoxHeight / 2, tableWidth, headerBoxHeight, 'F')
-        doc.setFont('helvetica', 'bold')
-        doc.setFontSize(11)
-        let hx = margin.x
-        cols.forEach((col) => {
-          const centerX = hx + col.width / 2
-          const lines = doc.splitTextToSize(col.label, col.width - 8)
-          const totalH = (lines.length - 1) * headerLineHeight
-          const startY = y - totalH / 2
-          lines.forEach((ln: string, i: number) => {
-            doc.text(ln, centerX, startY + i * headerLineHeight, { align: 'center' })
-          })
-          hx += col.width
-        })
-        doc.setLineWidth(0.6)
-        const pageDividerY = y + headerBoxHeight / 2 + 8
-        doc.line(margin.x, pageDividerY, margin.x + tableWidth, pageDividerY)
-        y = pageDividerY + 8
-        doc.setFont('helvetica', 'normal')
-      }
-
-      let rx = margin.x
-      cols.forEach((col) => {
-        const tx = col.align === 'left' ? rx + 6 : rx + col.width / 2
-        doc.text(cell(r, col.key), tx, y, { align: col.align === 'left' ? 'left' : 'center' })
-        rx += col.width
-      })
-      y += rowHeight
-    }
-
-    doc.save('analyse-resultater.pdf')
-
-    // Upload rapport til Supabase Storage og opdatér localStorage entry
     try {
-      // Sikr at buckets findes (idempotent)
-      try { await fetch('/api/storage/ensure', { method: 'POST' }) } catch {}
+      // Use our new React-PDF generator
+      await downloadAnalysisReportPdf({ 
+        results, 
+        filename: 'cv-analyse-resultat.pdf' 
+      })
 
-      const analysisId = (window as any).__analysisId as string
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!analysisId || !user) return
-      const path = `${user.id}/${analysisId}/report.pdf`
-      const blob = doc.output('blob')
-      const { error: upErr } = await supabase.storage.from('reports').upload(path, blob, { contentType: 'application/pdf', upsert: true })
-      if (upErr) {
-        alert(`Upload af rapport fejlede: ${upErr.message}`)
-        return
+      // Upload rapport til Supabase Storage og opdatér localStorage entry
+      try {
+        // Sikr at buckets findes (idempotent)
+        try { await fetch('/api/storage/ensure', { method: 'POST' }) } catch {}
+
+        const analysisId = (window as any).__analysisId as string
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!analysisId || !user) return
+        
+        const path = `${user.id}/${analysisId}/report.pdf`
+        
+        // Generate PDF blob for upload using our React-PDF generator
+        const blob = await generatePdfForUpload({ results })
+        
+        const { error: upErr } = await supabase.storage.from('reports').upload(path, blob, { 
+          contentType: 'application/pdf', 
+          upsert: true 
+        })
+        
+        if (upErr) {
+          alert(`Upload af rapport fejlede: ${upErr.message}`)
+          return
+        }
+
+        // Verificér at objektet findes ved at lave en signerede URL
+        const { data: signed, error: signErr } = await supabase.storage.from('reports').createSignedUrl(path, 60)
+        if (signErr || !signed?.signedUrl) {
+          alert(`Kunne ikke verificere rapporten: ${signErr?.message ?? 'ukendt fejl'}`)
+          return
+        }
+
+        const stored: any[] = JSON.parse(localStorage.getItem('recent-analyses') || '[]')
+        const updated = stored.map((x) => (x.analysisId === analysisId ? { ...x, reportPath: path } : x))
+        localStorage.setItem('recent-analyses', JSON.stringify(updated))
+        setRecent(updated.map((x) => ({ ...x, createdAt: new Date(x.createdAt) })))
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('report upload failed:', (e as any)?.message)
       }
-
-      // Verificér at objektet findes ved at lave en signerede URL
-      const { data: signed, error: signErr } = await supabase.storage.from('reports').createSignedUrl(path, 60)
-      if (signErr || !signed?.signedUrl) {
-        alert(`Kunne ikke verificere rapporten: ${signErr?.message ?? 'ukendt fejl'}`)
-        return
-      }
-
-      const stored: any[] = JSON.parse(localStorage.getItem('recent-analyses') || '[]')
-      const updated = stored.map((x) => (x.analysisId === analysisId ? { ...x, reportPath: path } : x))
-      localStorage.setItem('recent-analyses', JSON.stringify(updated))
-      setRecent(updated.map((x) => ({ ...x, createdAt: new Date(x.createdAt) })))
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('report upload failed:', (e as any)?.message)
+    } catch (error) {
+      console.error('PDF generation failed:', error)
+      alert('Kunne ikke generere PDF rapport. Prøv venligst igen.')
     }
   }
 
@@ -351,6 +271,7 @@ export default function DashboardPage() {
     <main className="min-h-screen bg-brand-base">
       <AnalysisProgress currentStep={step} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
         {/* Admin: manual cleanup trigger (hidden unless flag is set) */}
         {process.env.NEXT_PUBLIC_ENABLE_ADMIN_CLEANUP === '1' && (
           <div className="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-end">
