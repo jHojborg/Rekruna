@@ -26,7 +26,7 @@ export default function LandingPage() {
     <main className="min-h-screen">
       <HeroSection 
         title="Screen job-kandidater 80% hurtigere med AI"
-        subtitle="Få en objektiv kompetancebaseret kandidatliste på få minutter og frigør tid til at mødes med de bedste kandidater"
+        subtitle="På få minutter har du en objektiv kompetencebaseret kandidatliste, der frigør tid til at møde de bedste kandidater."
         ctaText="Start allerede i dag"
       />
       

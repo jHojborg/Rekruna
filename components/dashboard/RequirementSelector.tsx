@@ -12,8 +12,8 @@ export function RequirementSelector({ requirements, onToggle, onContinue }: Requ
   const selected = requirements.filter(r => r.selected).length
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Vælg &quot;Must-Have&quot; krav</h2>
-      <p className="text-gray-600 mb-6">Rekruna har vurderet disse krav, som ufravigelige. Vælg de 3 vigtigste krav som kandidaten skal opfylde.</p>
+      <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">Vælg &quot;Must-Have&quot; krav</h2>
+      <p className="text-center text-gray-600 mb-6">Rekruna har vurderet disse krav, som ufravigelige. Vælg de 3 vigtigste krav som kandidaten skal opfylde.</p>
 
       <div className="space-y-3 mb-6">
         {requirements.map(r => {
@@ -44,7 +44,7 @@ export function RequirementSelector({ requirements, onToggle, onContinue }: Requ
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">Valgt: {selected}/3 krav</p>
+        <p className="text-l text-gray-600">Valgt: {selected}/3 krav</p>
         <Button onClick={onContinue} disabled={selected !== 3}>Fortsæt</Button>
       </div>
     </div>
