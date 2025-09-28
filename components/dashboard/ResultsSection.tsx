@@ -171,8 +171,8 @@ export function ResultsSection({ results }: ResultsSectionProps) {
                   <h3 className="text-xl font-bold text-gray-900">{r.name}</h3>
                   <div className="flex items-center mt-2 gap-4">
                     <div className="flex items-center">
-                      <span className="font-semibold text-gray-900 mb-2">Overall:</span>
-                      <span className="font-bold text-primary mb-2"> {r.overall}/10</span>
+                      <span className="font-semibold text-gray-900 mb-2">Score:</span>
+                      <span className="font-bold text-primary mb-2 ml-1"> {r.overall}/10</span>
                     </div>
                     {/* Resume button positioned next to the score */}
                     {r.cv_text_hash && (
@@ -198,13 +198,13 @@ export function ResultsSection({ results }: ResultsSectionProps) {
               </div>
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Styrker</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">Styrker:</h4>
                   <ul className="list-disc pl-5 text-sm text-gray-700">
                     {r.strengths.map((s, j) => <li key={j}>{s}</li>)}
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Opmærksomhedsområder</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">Opmærksomhedspunkter:</h4>
                   <ul className="list-disc pl-5 text-sm text-gray-700">
                     {r.concerns.map((s, j) => <li key={j}>{s}</li>)}
                   </ul>
@@ -222,19 +222,19 @@ export function ResultsSection({ results }: ResultsSectionProps) {
             <thead>
               <tr>
                 <th className="px-4 py-2 text-left font-semibold text-gray-900">Kandidat</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-900">Overall</th>
+                <th className="px-4 py-2 text-center font-semibold text-gray-900">Score</th>
                 {Object.keys(results[0]?.scores || {}).map((k) => (
-                  <th key={k} className="px-4 py-2 text-left font-semibold text-gray-900">{k}</th>
+                  <th key={k} className="px-4 py-2 text-center font-semibold text-gray-900">{k}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {results.map((r, i) => (
                 <tr key={i}>
-                  <td className="px-4 py-2 font-medium text-gray-900">{r.name}</td>
-                  <td className="px-4 py-2 text-primary">{r.overall}/10</td>
+                  <td className="px-4 py-2 font-medium text-gray-900 text-left">{r.name}</td>
+                  <td className="px-4 py-2 text-primary text-center">{r.overall}/10</td>
                   {Object.keys(results[0]?.scores || {}).map((k) => (
-                    <td key={k} className="px-4 py-2">{r.scores[k]}%</td>
+                    <td key={k} className="px-4 py-2 text-center">{r.scores[k]}%</td>
                   ))}
                 </tr>
               ))}
