@@ -124,7 +124,6 @@ const styles = StyleSheet.create({
   },
   
   table: {
-    display: 'table',
     width: '100%',
     borderStyle: 'solid',
     borderWidth: 1,
@@ -167,6 +166,7 @@ const styles = StyleSheet.create({
     borderRightStyle: 'solid',
     borderRightWidth: 1,
     borderRightColor: '#000000',
+    textAlign: 'left', // Required property for TypeScript consistency
     padding: 8,
     alignItems: 'center', // Vertical alignment to middle
     justifyContent: 'flex-start', // Left alignment for candidate names
@@ -234,29 +234,38 @@ export function PdfReportTemplate({ results }: PdfReportTemplateProps) {
   
   const getTableCol = (columnType: 'number' | 'candidate' | 'score' | 'requirement') => {
     let width: string
-    let baseStyle = styles.tableCol
     
     switch (columnType) {
       case 'number':
         width = '8%'
-        break
+        return {
+          ...styles.tableCol,
+          width,
+        }
       case 'candidate':
         width = '25%'
-        baseStyle = styles.tableColLeft // Use left-aligned style for candidate names
-        break
+        return {
+          ...styles.tableColLeft, // Use left-aligned style for candidate names
+          width,
+        }
       case 'score':
         width = '12%'
-        break
+        return {
+          ...styles.tableCol,
+          width,
+        }
       case 'requirement':
         width = `${requirementColumnWidth}%`
-        break
+        return {
+          ...styles.tableCol,
+          width,
+        }
       default:
         width = '15%'
-    }
-    
-    return {
-      ...baseStyle,
-      width,
+        return {
+          ...styles.tableCol,
+          width,
+        }
     }
   }
   
