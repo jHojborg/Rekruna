@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 import { PerformanceTimer } from '@/lib/performance'
 import { createHash } from 'crypto'
+import { CreditsService } from '@/lib/services/credits.service'
 // Dynamisk import af pdf-parse for at undgå sideeffekter i bundling
 
 export const runtime = 'nodejs'
@@ -665,6 +666,100 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: 'No CV files provided' }, { status: 400 })
     }
 
+    // =====================================================
+    // CREDIT SYSTEM INTEGRATION
+    // Check and deduct credits BEFORE analysis starts
+    // =====================================================
+    
+    const cvCount = cvBlobs.length
+    
+    // Step 1: Check if user has enough credits
+    console.log(`💳 Checking credits for ${cvCount} CVs...`)
+    const creditCheck = await CreditsService.hasEnoughCredits(userId, cvCount)
+    
+    if (!creditCheck.success) {
+      // Database error checking credits - might be user doesn't have balance record yet
+      console.warn('⚠️ Credit check failed, attempting to initialize balance...', creditCheck.error)
+      
+      // Try to initialize credit balance for this user
+      const initResult = await CreditsService.initializeBalance(userId)
+      
+      if (initResult.success) {
+        console.log('✅ Credit balance initialized for new user')
+        
+        // Retry credit check after initialization
+        const retryCheck = await CreditsService.hasEnoughCredits(userId, cvCount)
+        
+        if (!retryCheck.success) {
+          console.error('❌ Credit check still failed after initialization:', retryCheck.error)
+          return NextResponse.json({ 
+            ok: false, 
+            error: 'Failed to check credit balance. Please contact support.' 
+          }, { status: 500 })
+        }
+        
+        // Use retry result for the rest of the flow
+        if (!retryCheck.data.hasCredits) {
+          console.warn(`⚠️ New user has insufficient credits: need ${retryCheck.data.required}, have ${retryCheck.data.currentBalance}`)
+          return NextResponse.json({ 
+            ok: false, 
+            error: 'Insufficient credits',
+            required: retryCheck.data.required,
+            available: retryCheck.data.currentBalance,
+            shortfall: retryCheck.data.shortfall,
+            message: `Du mangler ${retryCheck.data.shortfall} credits. Du har ${retryCheck.data.currentBalance}, men skal bruge ${retryCheck.data.required}.`
+          }, { status: 402 })
+        }
+        
+        console.log(`✅ Credit check passed after initialization: ${retryCheck.data.currentBalance} credits available`)
+      } else {
+        // Failed to initialize - this is a real database error
+        console.error('❌ Failed to initialize credit balance:', initResult.error)
+        return NextResponse.json({ 
+          ok: false, 
+          error: 'Failed to check credit balance. Please contact support.' 
+        }, { status: 500 })
+      }
+    } else if (!creditCheck.data.hasCredits) {
+      // User doesn't have enough credits (and check was successful)
+      console.warn(`⚠️ Insufficient credits: need ${creditCheck.data.required}, have ${creditCheck.data.currentBalance}`)
+      return NextResponse.json({ 
+        ok: false, 
+        error: 'Insufficient credits',
+        required: creditCheck.data.required,
+        available: creditCheck.data.currentBalance,
+        shortfall: creditCheck.data.shortfall,
+        message: `Du mangler ${creditCheck.data.shortfall} credits. Du har ${creditCheck.data.currentBalance}, men skal bruge ${creditCheck.data.required}.`
+      }, { status: 402 }) // 402 Payment Required
+    } else {
+      // Credit check passed - user has enough credits
+      console.log(`✅ Credit check passed: ${creditCheck.data.currentBalance} credits available`)
+    }
+    
+    // Step 2: Deduct credits BEFORE processing starts
+    // This ensures users are charged before we do any expensive AI work
+    console.log(`💳 Deducting ${cvCount} credits for analysis ${analysisId}...`)
+    const deductResult = await CreditsService.deductCredits(userId, analysisId, cvCount)
+    
+    if (!deductResult.success) {
+      // Deduction failed (shouldn't happen if check passed, but handle anyway)
+      console.error('❌ Credit deduction failed:', deductResult.error)
+      return NextResponse.json({ 
+        ok: false, 
+        error: 'Failed to deduct credits. Please try again.' 
+      }, { status: 500 })
+    }
+    
+    console.log(`✅ Deducted ${deductResult.data.deducted} credits. New balance: ${deductResult.data.balanceAfter}`)
+    console.log(`   Transactions:`, deductResult.data.transactions.map(t => 
+      `${t.amount} from ${t.creditType}`
+    ).join(', '))
+    
+    // =====================================================
+    // END CREDIT SYSTEM INTEGRATION
+    // Processing will continue below. If it fails, credits will be auto-refunded.
+    // =====================================================
+
     // OpenAI system prompt for CV analysis
     const sys = `Du er en dansk HR-analytiker. Vurder en kandidat ift. en jobbeskrivelse og MUST-HAVE krav. Returnér KUN JSON i dette schema:
 {
@@ -696,6 +791,12 @@ ${cvText || '(intet udtræk)'}`
     }
 
     console.log(`🚀 Starting CV analysis: ${cvBlobs.length} CVs, ${requirements.length} requirements`)
+
+    // =====================================================
+    // WRAP PROCESSING IN TRY-CATCH FOR AUTO-REFUND
+    // If anything fails during processing, credits will be automatically refunded
+    // =====================================================
+    try {
 
     // Step 1: Extract PDF text in parallel
     timer.mark('extraction-start')
@@ -932,13 +1033,13 @@ ${cvText || '(intet udtræk)'}`
             try {
               const cvTextHash = createHash('sha256').update(matchingExtracted.excerpt, 'utf8').digest('hex')
               
-              // Store CV text for on-demand resume generation
+              // Store CV text for on-demand resume generation (30 days like reports)
               await supabaseAdmin.from('cv_text_cache').upsert({
                 text_hash: cvTextHash,
                 cv_text: matchingExtracted.excerpt,
                 candidate_name: result.name,
                 created_at: new Date().toISOString(),
-                expires_at: new Date(Date.now() + (2 * 60 * 60 * 1000)).toISOString()
+                expires_at: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)).toISOString()
               })
               
               console.log(`✅ CV text cached for ${result.name}`)
@@ -964,6 +1065,49 @@ ${cvText || '(intet udtræk)'}`
         aiProcessingTime: timer.getMarkDuration('ai-start', 'ai-end')
       }
     })
+
+    // =====================================================
+    // CATCH BLOCK: Auto-refund credits if processing failed
+    // =====================================================
+    } catch (processingError: any) {
+      // Processing failed - refund the credits that were deducted
+      console.error('❌ CV analysis processing failed:', processingError?.message || processingError)
+      console.log('💳 Attempting to refund credits...')
+      
+      try {
+        const refundResult = await CreditsService.refundAnalysis(
+          userId,
+          analysisId,
+          cvCount,
+          `Analysis failed: ${processingError?.message || 'Unknown error'}`
+        )
+        
+        if (refundResult.success) {
+          console.log(`✅ Successfully refunded ${refundResult.data.refunded} credits`)
+          console.log(`   New balance: ${refundResult.data.balanceAfter}`)
+        } else {
+          // Refund failed - this is serious, log it prominently
+          console.error('⚠️⚠️⚠️ CRITICAL: Credit refund failed!', refundResult.error)
+          console.error('   User ID:', userId)
+          console.error('   Analysis ID:', analysisId)
+          console.error('   Amount to refund:', cvCount)
+          console.error('   MANUAL INTERVENTION REQUIRED - Check credit_transactions table')
+        }
+      } catch (refundError: any) {
+        // Refund attempt itself threw an error
+        console.error('⚠️⚠️⚠️ CRITICAL: Refund attempt threw error!', refundError?.message || refundError)
+        console.error('   User ID:', userId)
+        console.error('   Analysis ID:', analysisId)
+        console.error('   Amount to refund:', cvCount)
+      }
+      
+      // Re-throw the original processing error
+      // This ensures the user gets an error response
+      throw processingError
+    }
+    // =====================================================
+    // END TRY-CATCH BLOCK
+    // =====================================================
 
   } catch (error: any) {
     return NextResponse.json({ ok: false, error: error?.message ?? 'Unknown error' }, { status: 500 })

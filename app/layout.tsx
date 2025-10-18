@@ -4,6 +4,7 @@ import './globals.css'
 import { Header } from '@/components/shared/Header'
 import { Footer } from '@/components/shared/Footer'
 import { HashRecoveryRouter } from '@/components/shared/HashRecoveryRouter'
+import { Toaster } from 'react-hot-toast'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -31,6 +32,34 @@ export default function RootLayout({
       <body className={inter.className}>
         {/* Fanger Supabase password-recovery links uanset hvilken route brugeren rammer */}
         <HashRecoveryRouter />
+        {/* Toast notifications - vises i top-right hjørne */}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            // Default options for all toasts
+            duration: 5000,
+            style: {
+              background: '#fff',
+              color: '#333',
+              padding: '16px',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              maxWidth: '500px',
+            },
+            success: {
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
         <Header />
         {children}
         <Footer />

@@ -1,0 +1,37 @@
+# Rekruna Stripe Integration
+
+## Hvad skal bygges
+Stripe betalingsintegration + credit system til CV screening platform.
+
+## Quick Start for Cursor AI
+1. Læs `master-prompt-stripe.md` - Din opgave og tilgang
+2. Læs `pricing-and-rules-stripe.md` - Forretningslogik
+3. Læs `technical-implementation-stripe.md` - Database + integration points
+4. Stil spørgsmål før du bygger noget
+
+## Hvad eksisterer allerede
+- ✅ `/app/api/analyze/route.ts` - CV analyse endpoint
+- ✅ `/lib/supabase/server.ts` - Database client
+- ✅ OpenAI integration fungerer
+- ✅ PDF parsing fungerer
+- ✅ Authentication fungerer
+
+## Hvad skal bygges
+- [ ] Database tabeller til credit tracking
+- [ ] Credits service (check/deduct/refund)
+- [ ] Stripe checkout endpoint
+- [ ] Stripe webhook handler
+- [ ] Credit check i analyze endpoint
+- [ ] Dashboard UI for credits/subscription
+
+## Environment Variables Needed
+```bash
+STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+# + Price IDs efter Stripe setup
+```
+
+## Stack
+Next.js 14, TypeScript, Supabase, Stripe, OpenAI
+

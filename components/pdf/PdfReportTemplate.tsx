@@ -195,6 +195,29 @@ const styles = StyleSheet.create({
     color: '#ff6f61',
     fontWeight: 'bold',
   },
+  
+  // Requirement legend styles (below comparison table)
+  requirementLegend: {
+    marginTop: 20,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    borderTopStyle: 'solid',
+  },
+  
+  requirementLegendTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#000000',
+  },
+  
+  requirementLegendItem: {
+    fontSize: 10,
+    color: '#333333',
+    marginBottom: 4,
+    lineHeight: 1.4,
+  },
 })
 
 export function PdfReportTemplate({ results }: PdfReportTemplateProps) {
@@ -336,9 +359,9 @@ export function PdfReportTemplate({ results }: PdfReportTemplateProps) {
             <View style={getTableColHeader('score')}>
               <Text style={styles.tableCellHeader}>Score</Text>
             </View>
-            {requirementKeys.map((key) => (
+            {requirementKeys.map((key, index) => (
               <View key={key} style={getTableColHeader('requirement')}>
-                <Text style={styles.tableCellHeader}>{key}</Text>
+                <Text style={styles.tableCellHeader}>{String.fromCharCode(65 + index)}</Text>
               </View>
             ))}
           </View>
@@ -355,12 +378,22 @@ export function PdfReportTemplate({ results }: PdfReportTemplateProps) {
               <View style={getTableCol('score')}>
                 <Text style={styles.tableCellScore}>{candidate.overall} / 10</Text>
               </View>
-              {requirementKeys.map((key) => (
+              {requirementKeys.map((key, reqIndex) => (
                 <View key={key} style={getTableCol('requirement')}>
                   <Text style={styles.tableCell}>{candidate.scores[key]}%</Text>
                 </View>
               ))}
             </View>
+          ))}
+        </View>
+        
+        {/* Requirement Legend (Krav forklaring) */}
+        <View style={styles.requirementLegend}>
+          <Text style={styles.requirementLegendTitle}>Krav:</Text>
+          {requirementKeys.map((key, index) => (
+            <Text key={key} style={styles.requirementLegendItem}>
+              {String.fromCharCode(65 + index)}) {key}
+            </Text>
           ))}
         </View>
       </Page>

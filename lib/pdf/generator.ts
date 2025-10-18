@@ -1,5 +1,6 @@
 import { pdf } from '@react-pdf/renderer'
 import { PdfReportTemplate } from '@/components/pdf/PdfReportTemplate'
+import { CompareReportDocument } from './compareReport.tsx'
 
 // Types matching your existing results structure
 interface ResultItem {
@@ -72,4 +73,52 @@ export async function downloadAnalysisReportPdf({
  */
 export async function generatePdfForUpload({ results }: { results: ResultItem[] }): Promise<Blob> {
   return generateAnalysisReportPdf({ results })
+}
+
+/**
+ * Generates a combined comparison PDF report from multiple analyses
+ */
+export async function generateCompareReportPdf(comparisonData: any): Promise<Blob> {
+  try {
+    // Create the PDF document using compare template
+    const document = CompareReportDocument({ data: comparisonData })
+    
+    // Generate the PDF blob
+    const blob = await pdf(document).toBlob()
+    
+    return blob
+  } catch (error) {
+    console.error('Error generating compare PDF:', error)
+    throw new Error('Failed to generate comparison PDF report')
+  }
+}
+
+/**
+ * Downloads the comparison PDF report directly to the user's device
+ */
+export async function downloadCompareReportPdf(
+  comparisonData: any, 
+  filename = 'samlet-analyse.pdf'
+): Promise<void> {
+  try {
+    // Generate the PDF blob
+    const blob = await generateCompareReportPdf(comparisonData)
+    
+    // Create download link and trigger download
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    
+    // Trigger download
+    document.body.appendChild(link)
+    link.click()
+    
+    // Cleanup
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Error downloading compare PDF:', error)
+    throw new Error('Failed to download comparison PDF report')
+  }
 }

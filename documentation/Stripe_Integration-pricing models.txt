@@ -1,0 +1,256 @@
+Recurring pricing models
+
+URL: https://docs.stripe.com/products-prices/pricing-models
+
+Learn about the pricing models you can use with subscriptions.
+Ask about this page
+Copy for LLM
+
+View as Markdown
+Pricing models are patterns that represent your business on Stripe and consists of the products or services you sell, how much they cost, what currency you accept for payments and the service period for subscriptions. To build the pricing model, you use products (what you sell) and prices (how much and how often to charge for your products).
+
+Pricing model	Description
+Flat rate	Customers choose a service tier (for example, Basic, Starter, or Enterprise) and pay a flat rate for it.
+Per-seat	Each pricing unit represents one user. For example, a business purchases software for its employees and each employee requires a licence to access the software.
+Tiered	The unit cost changes with quantity (volume-based pricing) or usage (graduated pricing).
+Usage-based	Charge customers based on their usage of your product or service. It includes fixed fee and overage, pay as you go, and credit burndown pricing models.
+Flat-rate pricing
+Many SaaS businesses offer their customers a choice of escalating service options. Customers choose a service tier and pay a flat rate for it. Imagine a business called Typographic that sells a subscription webfont service. They offer three different service levels: Basic, Starter and Enterprise. For each service level, they offer a monthly and yearly price.
+
+
+Flat-rate pricing model
+
+In this example, Typographic has three products: Basic, Starter and Enterprise. Each product has several different prices. The basic level has prices for 10 DKK per month and 100 DKK per year. Both prices are for the same Basic product, so they share the same product description on the customer’s receipt and invoice.
+
+
+Dashboard
+
+API
+First, create the Basic product. To learn about all the options for creating a product, see the prices guide.
+
+Go to Product catalogue.
+Click + Create product.
+Enter a Name for the product.
+(Optional) Add a Description. The description appears at checkout, on the customer portal, and in quotes.
+Next, create the monthly price for the Basic product:
+
+Click More pricing options.
+Select Recurring.
+For Choose your pricing model, select Flat rate.
+For Amount, enter a price amount.
+For Billing period, select Monthly.
+Click Next to save the price.
+Then, create the yearly price for the Basic product:
+
+Click + Add another price.
+Select Recurring.
+For Choose your pricing model, select Flat rate.
+For Amount, enter a price amount.
+For Billing period, select Yearly.
+Click Next.
+Click Add product to save the product and price. You can only edit the product and price until you create a subscription with them.
+Per-seat pricing
+Per-seat pricing is a linear pricing model where the number of seats (for example, software licences) maps to the number of units (for example, users). Typographic, our example company, also wants to offer a per-seat plan. Typographic’s customers pick how many seats they’ll use and Typographic charges based on that amount.
+
+
+Per-seat pricing model
+
+To create a model for this scenario, Typographic creates a product and price structure where each unit represents a user. When Typographic creates a subscription for a customer, the customer specifies the number of users for that subscription.
+
+
+Dashboard
+
+API
+First, create the Per-seat product. To learn about all the options for creating a product, see the prices guide.
+
+Go to Product catalogue.
+Click + Create product.
+Enter a Name for the product.
+(Optional) Add a Description. The description appears at checkout, on the customer portal, and in quotes.
+Next, create the monthly price for the product:
+
+Select Recurring.
+For Amount, enter a price amount.
+For Billing period, select Monthly.
+Click Add product to save the product and price. You can only edit the product and price until you create a subscription with them.
+To create a subscription using that price:
+
+Go to the Billing > Subscriptions page.
+Click + Create subscription.
+Find or add a customer.
+Search for the product you created and select the price you want to use.
+(Optional) Select Collect tax automatically to use Stripe Tax.
+Click Start subscription to start it immediately or Schedule subscription to start it on another schedule.
+Tiered pricing
+Prices can represent tiers, allowing the unit cost to change with quantity or usage. Use tiers if you need non-linear pricing when quantity or usage changes. You can also combine tiered pricing with base fees to create usage-based pricing models.
+
+For example, Typographic wants to offer lower rates for customers who use more fonts per month. The following tiered pricing models show two different ways to adjust pricing as usage increases: volume-based pricing and graduated pricing. To demonstrate these approaches to tiered pricing, we’ll use the following tiers:
+
+Number of fonts	Price per tier
+First tier	1-5	7 DKK
+Second tier	6-10	6.5 DKK
+Third tier	11+	6 DKK
+Volume-based pricing
+With volume-based pricing, the subscription item bills at the tier corresponding to the amount of usage at the end of the period. The entire quantity (or usage) is multiplied by the unit cost of the tier. Because the tier price applies to the entire quantity (or usage), the total might decrease when calculating the final cost.
+
+For example, a customer with 5 fonts is charged 35 DKK (5 × 7 DKK). If they use 6 fonts the following month, then all fonts bill at the 6-10 rate. That month, they’re charged 39 DKK (6 × 6.5 DKK).
+
+Quantity and usage at end of the period	Unit cost	Total monthly cost
+1	7 DKK	7 DKK
+5	7 DKK	35 DKK
+6	6.5 DKK	39 DKK
+20	6 DKK	120 DKK
+25	6 DKK	150 DKK
+
+Dashboard
+
+API
+Go to the Product catalogue.
+Click + Create product.
+Enter a Name for the product.
+(Optional) Add a Description. The description appears at checkout, on the customer portal, and in quotes.
+Next, create the monthly price for the product:
+
+Click More pricing options.
+Select Recurring.
+For Choose your pricing model, select Tiered pricing and Volume.
+Under Price, create three tiers:
+First unit	Last unit	Per unit	Flat rate
+First tier	1	5	7 DKK	0 DKK
+Second tier	6	10	6.5 DKK	0 DKK
+Third tier	11	∞	6 DKK	0 DKK
+For Billing period, select Monthly.
+Click Add product to save the product and price. You can only edit the product and price until you create a subscription with them.
+Graduated pricing
+While similar to volume pricing, graduated pricing charges for the usage in each tier instead of applying a single price for overall usage. The quantity is multiplied by the amount for each tier and the totals for each tier are added together.
+
+For example, 5 fonts result in the same charge as volume-based pricing – 35 DKK total at 7 DKK per font. This changes as usage exceeds the first tier. A customer with more than 5 fonts is charged 7 DKK per font for the first 5 fonts, then 6.5 DKK for fonts 6 to 10 and finally 6 DKK per font thereafter. A customer with 6 fonts is charged 41.5 DKK, 35 DKK for the first 5 fonts and 6.5 DKK for the 6th font.
+
+Quantity and usage at end of the period	Total for graduated tiered pricing
+1	7 DKK
+5	35 DKK
+6	41.5 DKK
+20	127.5 DKK
+25	157.5 DKK
+
+Dashboard
+
+API
+Go to the Product catalogue.
+Click + Create product.
+Enter a Name for the product.
+(Optional) Add a Description. The description appears at checkout, on the customer portal, and in quotes.
+Next, create the monthly price for the product:
+
+Click More pricing options.
+Select Recurring.
+For Choose your pricing model, select Tiered pricing and Graduated.
+Under Price, create three tiers:
+First unit	Last unit	Per unit	Flat rate
+First tier	1	5	7 DKK	0 DKK
+Second tier	6	10	6.5 DKK	0 DKK
+Third tier	11	∞	6 DKK	0 DKK
+For the Billing period, select Monthly.
+Click Add product to save the product and price. You can only edit the product and price until you create a subscription with them.
+Add a flat rate
+You can specify a flat rate (flat_amount) to add to the invoice. This works for both volume and graduated pricing. For example, you can have a flat fee that increases when your customer exceeds certain usage thresholds:
+
+Tier	Amount (unit cost)	Flat rate
+1-5 (up_to=5)	5 DKK (unit_amount=500)	10 DKK (flat_amount=1000)
+6-10 (up_to=10)	4 DKK (unit_amount=400)	20 DKK (flat_amount=2000)
+10-15 (up_to=15)	3 DKK (unit_amount=300)	30 DKK (flat_amount=3000)
+15-20 (up_to=20)	2 DKK (unit_amount=200)	40 DKK (flat_amount=4000)
+20+ (up_to=inf)	1 DKK (unit_amount=100)	50 DKK (flat_amount=5000)
+Volume-based pricing flat rate example
+If quantity is 12 and tiers_mode=volume, the total amount billed is:
+
+12 × 3 DKK + 30 DKK = 66 DKK
+
+Graduated pricing flat rate example
+If quantity is 12 and tiers_mode=graduated, the total amount billed is:
+
+(5 × 5 DKK + 10 DKK) + (5 × 4 DKK + 20 DKK) + (2 × 3 DKK + 30 DKK) = 111 DKK
+
+A tier can have either a unit_amount or a flat_amount or both, but it must have at least one of the two. If quantity is 0, the total amount is 10 DKK regardless of the tiered pricing model used. Stripe always bills the first flat rate tier when quantity=0. To bill 0 when there’s no usage, set up an up_to=1 tier with an unit_amount equal to the flat rate and omit the flat_amount.
+
+Usage-based pricing
+Usage-based pricing enables you to charge based on a customer’s usage of your product or service. Usage-based pricing includes models such as fixed fee and overage, pay as you go, and credit burndown.
+
+Fixed fee and overage
+Use the fixed fee and overage model to charge a flat rate per month for your service at the beginning of the period. The flat rate has some included usage entitlement and any additional usage (overage) charges at the end of the period.
+
+You can use the Stripe Dashboard or API to set this up with two prices within the same product. For example, Alpaca AI introduces an advanced model called Llama AI. Priced at 200 DKK per month, this model includes 100,000 tokens. They charge any usage above the included tokens at an additional rate of 0.001 DKK per token.
+
+
+Dashboard
+
+API
+On the Product catalogue page, click Create product.
+
+On the Add a product page, do the following:
+
+For Name, enter the name of your product. For the Alpaca AI example, enter “Llama AI”.
+(Optional) For Description, add a description that appears at checkout in the customer portal and in quotes.
+Under Billing period, select More pricing options.
+On the Add price page, do the following:
+
+Under Choose your pricing model, select Flat rate.
+Under Price, set the Amount to 200 DKK.
+Click Next
+To add a second recurring price to the product, click Add another price on the Add a product page.
+
+On the Add price page,do the following:
+
+Under Choose your pricing model, select Usage-based, Per tier, and Graduated.
+
+Under Price, create two graduated pricing tiers:
+
+First unit	Last unit	Per unit	Flat rate
+First tier	0	100,000	0 DKK	0 DKK
+Second tier	100,001	∞	0.001 DKK	0 DKK
+Under Meter, create a new meter to record usage. For the Alpaca AI example, use the meter name “llama_api_tokens”.
+
+Click Next.
+
+Click Add product. When you create subscriptions, specify both prices.
+
+Pay as you go
+The pay as you go model (also called “in arrears billing”) lets you track usage incurred over a determined period, then charge the customer at the end of the period.
+
+You can use any of the following pricing strategies:
+
+Per unit: Charge the same amount for each unit.
+Per package: Charge an amount for a package or bundle of units or usage.
+Volume-based pricing: Charge the subscription item at the tier that corresponds to the usage amount at the end of the period.
+Graduated pricing: Charge for the usage in each tier instead of applying a single price to all usage.
+This model might cause customers to accumulate significant usage, and affect their payment method status at the end of the month.
+
+Credit burndown
+The credit burndown model lets you collect prepayment for usage-based products and services. Customers can use billing credits to pay an initial amount, and then apply their billing credits as they use the product.
+
+For example, Alpaca AI wants to sell a large enterprise contract to an existing self-serve customer for their new Llama AI Model. The customer commits to pay 100000 DKK up front for Llama AI, so they can get 120000 DKK of billing credit usage to use within 1 year.
+
+
+Dashboard
+
+API
+Collect prepayment from a customer
+On the Invoices page, click Create invoice.
+Select your customer from the Customer dropdown.
+Select the correct currency from the Currency dropdown.
+Under Items, select Add a new line item.
+Under Item details, do the following:
+For Item, enter “Llama AI Credits”.
+For Price, enter “100,000”.
+Click Save.
+Click Send invoice.
+After your customer pays the invoice, you can grant them billing credits.
+
+Grant billing credits to a customer
+On the Customers page, select the customer name.
+On the customer page, under Credit grants, click the plus (+) symbol.
+On the New credit grant page, do the following:
+For Name, enter a name for your credit grant.
+For Amount, specify the amount of the credit grant. For the Alpaca AI example, enter “120,000”.
+Under Expiry date, specify the date, if any, when the credits expire. For the Alpaca AI example, select Specific date and set a date 12 months from now.
+Click Create grant.

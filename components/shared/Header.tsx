@@ -59,6 +59,10 @@ export function Header() {
               </>
             ) : (
               <>
+                {/* Profile button - only visible when logged in */}
+                <Link href="/dinprofil">
+                  <Button variant="outline">Profil</Button>
+                </Link>
                 {/* Dashboard button - only visible when logged in */}
                 <Link href="/dashboard">
                   <Button variant="outline">Dashboard</Button>

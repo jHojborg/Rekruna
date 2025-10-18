@@ -1,0 +1,97 @@
+👋 Hej! Jeg er klar til at deploye Rekruna CV Screener til production.
+
+## 📋 Projekt Status
+
+**Platform**: Next.js 14 CV screening SaaS med AI (GPT-4)
+**Tech Stack**: Next.js 14, Supabase, Stripe, OpenAI, React-PDF
+**Status**: ✅ Fully tested i local miljø - klar til deployment
+
+## 🎯 Hvad virker (local test completed):
+
+1. ✅ Authentication (Supabase Auth)
+2. ✅ Job upload (PDF) → AI extracts 2-5 requirements
+3. ✅ CV upload (PDF, op til 50 stk.)
+4. ✅ AI Analysis (GPT-4) → Scoring + ranking
+5. ✅ PDF Report generation (med Requirements Legend: A, B, C, D design)
+6. ✅ Compare Mode (sammenlign flere analyser af samme job)
+7. ✅ Job Templates (gem/genbrug job beskrivelser)
+8. ✅ Credit System (Pay-as-you-go + subscriptions)
+9. ✅ Stripe Integration (checkout + webhooks)
+10. ✅ User Profiles (30 dage history)
+11. ✅ Custom Requirements (hvis AI extraction fejler)
+12. ✅ Error handling med Toast notifications (dansk)
+13. ✅ Responsive design (tablet/mobile)
+14. ✅ Singleton Supabase client (no auth conflicts)
+
+## 🗄️ Database Setup Required:
+
+Følgende migrations skal køres i Supabase (ligger i `database_migrations/`):
+1. `add_user_profiles_table.sql`
+2. `add_credit_system_complete.sql`
+3. `ensure_analysis_results_table.sql`
+4. `add_cache_tables.sql`
+5. `add_job_templates_table.sql`
+
+Storage bucket skal oprettes: `analysis-reports` (private, PDF only)
+
+## 🔐 Environment Variables Needed:
+
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# OpenAI
+OPENAI_API_KEY=
+
+# Stripe
+STRIPE_SECRET_KEY=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# App
+NEXT_PUBLIC_APP_URL=
+NODE_ENV=production
+```
+
+## 💳 Stripe Setup Needed:
+
+3 produkter skal oprettes:
+1. **Pay As You Go**: 99 DKK per analyse
+2. **Pro Plan**: 699 DKK/md (10 credits)
+3. **Business Plan**: 1499 DKK/md (25 credits)
+
+Webhook events: `checkout.session.completed`, `customer.subscription.*`, `invoice.payment_*`
+
+**VIGTIGT**: Product IDs skal opdateres i:
+- `app/api/checkout/route.ts`
+- `app/api/webhooks/route.ts`
+
+## 🎯 Deployment Mål:
+
+**Platform**: Vercel (EU region for GDPR)
+**Target**: Production ready deployment
+**Testing**: Staging environment først (Stripe test mode)
+
+## ❓ Spørgsmål til dig:
+
+1. Skal vi deploye til Vercel eller anden platform?
+2. Har du allerede Supabase project oprettet?
+3. Har du Stripe account klar?
+4. Skal vi køre staging først eller direkte til production?
+5. Skal vi opsætte custom domain med det samme?
+
+## 📚 Dokumentation:
+
+Alt er dokumenteret i `documentation/` folderen:
+- `DEPLOYMENT_PROMPT.md` ← Fuld deployment guide
+- `technical_architecture.md` ← System arkitektur
+- `CREDITS_SYSTEM_COMPLETE.md` ← Credit system spec
+- `COMPARE_MODE_FEATURE.md` ← Compare feature
+- `PDF_REQUIREMENTS_LEGEND.md` ← Requirements legend design
+
+## 🚀 Hvad skal vi starte med?
+
+Jeg er klar til at guide dig gennem hele deployment processen step-by-step.
+

@@ -1,0 +1,329 @@
+# Technical Implementation Guide
+
+## Database Schema
+
+### Tables to Create
+```sql
+-- 1. Credit Balances
+CREATE TABLE credit_balances (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL UNIQUE,
+  
+  subscription_credits INTEGER DEFAULT 0,
+  purchased_credits INTEGER DEFAULT 0,
+  total_credits INTEGER GENERATED ALWAYS AS 
+    (subscription_credits + purchased_credits) STORED,
+  
+  last_subscription_reset DATE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 2. Credit Transactions (audit log)
+CREATE TABLE credit_transactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  
+  amount INTEGER NOT NULL,
+  balance_after INTEGER NOT NULL,
+  credit_type TEXT NOT NULL,
+  transaction_type TEXT NOT NULL,
+  
+  stripe_payment_intent_id TEXT,
+  analysis_id TEXT,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 3. User Subscriptions
+CREATE TABLE user_subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL UNIQUE,
+  
+  stripe_customer_id TEXT NOT NULL,
+  stripe_subscription_id TEXT UNIQUE,
+  stripe_price_id TEXT,
+  
+  product_tier TEXT NOT NULL,
+  monthly_credit_allocation INTEGER,
+  status TEXT NOT NULL,
+  
+  current_period_end TIMESTAMP,
+  cancel_at_period_end BOOLEAN DEFAULT false,
+  
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX idx_credit_balances_user ON credit_balances(user_id);
+CREATE INDEX idx_credit_transactions_user ON credit_transactions(user_id, created_at DESC);
+CREATE INDEX idx_user_subscriptions_user ON user_subscriptions(user_id);
+
+-- RLS Policies
+ALTER TABLE credit_balances ENABLE ROW LEVEL SECURITY;
+ALTER TABLE credit_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_subscriptions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users view own balance" ON credit_balances 
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users view own transactions" ON credit_transactions 
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users view own subscription" ON user_subscriptions 
+  FOR SELECT USING (auth.uid() = user_id);
+```
+
+**Why this design:**
+- Separate `subscription_credits` vs `purchased_credits` for different expiry logic
+- Audit trail via `credit_transactions`
+- Stripe linkage via `user_subscriptions`
+
+---
+
+## API Endpoints to Build
+
+### 1. Checkout Endpoint
+```
+POST /api/checkout
+
+Request body:
+{
+  priceId: string,        // Stripe price ID
+  productType: 'subscription' | 'one_time',
+  tier: string,           // 'pro', 'business', 'pay_as_you_go', 'boost_100', etc
+  creditAmount: number    // For metadata
+}
+
+Response:
+{
+  url: string  // Stripe Checkout URL to redirect to
+}
+
+Logic:
+1. Get/create Stripe customer for user
+2. Check if top-up → verify user has subscription
+3. Create Stripe Checkout Session
+4. Return checkout URL
+```
+
+### 2. Webhook Endpoint
+```
+POST /api/webhooks/stripe
+
+Headers: stripe-signature
+
+Body: Stripe event (JSON)
+
+Events to handle:
+- checkout.session.completed (payment succeeded)
+- invoice.paid (subscription renewal)
+- customer.subscription.updated (status changes)
+- customer.subscription.deleted (cancelled)
+
+Logic:
+1. Verify webhook signature (security!)
+2. Parse event type
+3. Update database accordingly
+4. Add/reset credits as needed
+```
+
+### 3. Credits Service (Library)
+```typescript
+// lib/services/credits.service.ts
+
+class CreditsService {
+  static async hasEnoughCredits(userId: string, amount: number)
+  static async deductCredits(userId: string, analysisId: string, amount: number)
+  static async refundAnalysis(userId: string, analysisId: string, amount: number, reason: string)
+}
+```
+
+---
+
+## Integration med Eksisterende Kode
+
+### Modify: `/app/api/analyze/route.ts`
+
+**Current flow:**
+```typescript
+export async function POST(req: Request) {
+  // 1. Parse form data
+  // 2. Authenticate user
+  // 3. Extract CVs
+  // 4. Process with OpenAI
+  // 5. Return results
+}
+```
+
+**New flow:**
+```typescript
+export async function POST(req: Request) {
+  // 1. Parse form data
+  // 2. Authenticate user
+  // 3. Extract CVs
+  
+  // ====== NEW: Credit Check ======
+  const cvCount = cvs.length
+  const { hasCredits } = await CreditsService.hasEnoughCredits(userId, cvCount)
+  if (!hasCredits) {
+    return error('Insufficient credits')
+  }
+  
+  // ====== NEW: Deduct Credits ======
+  await CreditsService.deductCredits(userId, analysisId, cvCount)
+  
+  // ====== EXISTING: Process (wrapped for refund) ======
+  try {
+    // 4. Process with OpenAI
+    // 5. Return results
+  } catch (error) {
+    // ====== NEW: Refund on Error ======
+    await CreditsService.refundAnalysis(userId, analysisId, cvCount, error.message)
+    throw error
+  }
+}
+```
+
+**Integration points:**
+- After line ~595 (after auth, before rate limiting)
+- Wrap existing processing in try-catch
+- Don't refactor existing OpenAI logic - just add credit checks around it
+
+---
+
+## Stripe Configuration
+
+### Products to Create (Stripe Dashboard)
+```
+1. Pay as you go
+   - Type: One-time
+   - Price: 499 DKK
+   - Metadata: { "credits": "200", "tier": "pay_as_you_go" }
+
+2. Pro Plan
+   - Type: Recurring (monthly)
+   - Price: 349 DKK/month
+   - Metadata: { "monthly_credits": "400", "tier": "pro" }
+
+3. Business Plan
+   - Type: Recurring (monthly)
+   - Price: 699 DKK/month
+   - Metadata: { "monthly_credits": "1000", "tier": "business" }
+
+4-7. Top-ups (Boost 50, 100, 250, 500)
+   - Type: One-time
+   - Prices: 99, 159, 199, 249 DKK
+   - Metadata: { "credits": "50/100/250/500", "type": "top_up" }
+```
+
+Save Price IDs to `.env.local`:
+```bash
+STRIPE_PRO_PRICE_ID=price_xxx
+STRIPE_BUSINESS_PRICE_ID=price_xxx
+# ... etc
+```
+
+---
+
+## Testing Strategy
+
+### Phase 1: Database
+```sql
+-- Manual test in Supabase SQL Editor
+INSERT INTO credit_balances (user_id, purchased_credits) 
+VALUES ('your-user-id', 100);
+
+SELECT * FROM credit_balances WHERE user_id = 'your-user-id';
+```
+
+### Phase 2: Credits Service
+```typescript
+// In test file or directly in code
+const { hasCredits } = await CreditsService.hasEnoughCredits(userId, 10)
+console.log({ hasCredits }) // Should be true if you have 100
+
+await CreditsService.deductCredits(userId, 'test-123', 10)
+// Check database - should now have 90
+
+await CreditsService.refundAnalysis(userId, 'test-123', 10, 'Test refund')
+// Check database - should be back to 100
+```
+
+### Phase 3: Stripe Integration
+```bash
+# Use Stripe CLI to test webhooks locally
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+
+# In another terminal, trigger test payment
+stripe trigger checkout.session.completed
+```
+
+### Phase 4: Full Flow
+```
+1. Go to /pricing
+2. Click "Buy Pro"
+3. Complete test payment (use 4242 4242 4242 4242)
+4. Verify credits added in database
+5. Upload CVs and analyze
+6. Verify credits deducted
+7. Check transaction history
+```
+
+---
+
+## Security Checklist
+
+- [ ] Webhook signature verification (critical!)
+- [ ] RLS policies on all tables
+- [ ] No Stripe secret keys in client code
+- [ ] User can only access their own data
+- [ ] Input validation on all endpoints
+- [ ] Idempotency keys for Stripe operations
+- [ ] Rate limiting maintained on analyze endpoint
+
+---
+
+## Common Pitfalls
+
+1. **Forgetting to verify webhook signature** → Anyone can fake webhooks
+2. **Not handling idempotency** → Duplicate credits on retries
+3. **Checking credits AFTER processing starts** → Partial analysis, race conditions
+4. **Breaking existing analyze functionality** → Test thoroughly
+5. **Not handling Stripe test vs live mode** → Use separate Price IDs
+
+---
+
+## File Structure
+```
+/lib/services/
+  └─ credits.service.ts        [NEW]
+
+/app/api/
+  ├─ checkout/
+  │  └─ route.ts               [NEW]
+  ├─ webhooks/
+  │  └─ stripe/
+  │     └─ route.ts            [NEW]
+  └─ analyze/
+     └─ route.ts               [MODIFY]
+
+/app/dashboard/
+  ├─ credits/
+  │  └─ page.tsx               [NEW]
+  └─ subscription/
+     └─ page.tsx               [NEW]
+```
+
+---
+
+## Deployment Checklist
+
+Before production:
+- [ ] Switch to Stripe live keys
+- [ ] Update webhook URL to production domain
+- [ ] Test payment flow in live mode
+- [ ] Monitor first transactions closely
+- [ ] Set up error alerts
+- [ ] Backup database

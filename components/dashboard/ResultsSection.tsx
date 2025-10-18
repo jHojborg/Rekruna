@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import { parseError, errorToast } from '@/lib/errors/errorHandler'
 
 interface ResultItem {
   name: string
@@ -129,14 +130,28 @@ export function ResultsSection({ results }: ResultsSectionProps) {
         })
       } else {
         console.error('Resume fetch failed:', data.error || 'Unknown error')
+        
+        // Show user-friendly error toast
+        const error = parseError({ message: data.error || 'Resume fetch failed' })
+        errorToast.show({
+          type: 'unknown',
+          message: 'CV resumé kunne ikke genereres. CV data er måske udløbet. Kør analysen igen.',
+          technical: data.error
+        })
+        
         setSelectedResume({
           candidateName,
           resumeText: null,
           isLoading: false
         })
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch resume:', error)
+      
+      // Show user-friendly error toast
+      const parsedError = parseError(error)
+      errorToast.show(parsedError)
+      
       setSelectedResume({
         candidateName,
         resumeText: null,
@@ -223,8 +238,10 @@ export function ResultsSection({ results }: ResultsSectionProps) {
               <tr>
                 <th className="px-4 py-2 text-left font-semibold text-gray-900">Kandidat</th>
                 <th className="px-4 py-2 text-center font-semibold text-gray-900">Score</th>
-                {Object.keys(results[0]?.scores || {}).map((k) => (
-                  <th key={k} className="px-4 py-2 text-center font-semibold text-gray-900">{k}</th>
+                {Object.keys(results[0]?.scores || {}).map((k, index) => (
+                  <th key={k} className="px-4 py-2 text-center font-semibold text-gray-900">
+                    {String.fromCharCode(65 + index)}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -240,6 +257,18 @@ export function ResultsSection({ results }: ResultsSectionProps) {
               ))}
             </tbody>
           </table>
+        </div>
+        
+        {/* Requirements Legend */}
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <h4 className="font-semibold text-gray-900 mb-3">Krav:</h4>
+          <div className="space-y-2">
+            {Object.keys(results[0]?.scores || {}).map((requirement, index) => (
+              <p key={requirement} className="text-sm text-gray-700">
+                <span className="font-medium">{String.fromCharCode(65 + index)})</span> {requirement}
+              </p>
+            ))}
+          </div>
         </div>
       </div>
     </div>

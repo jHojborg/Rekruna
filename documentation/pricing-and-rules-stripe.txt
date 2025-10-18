@@ -1,0 +1,214 @@
+# Pricing Model & Business Rules
+
+## Produkter
+
+### Pay as you go
+- **Pris**: 499 DKK (one-time)
+- **Credits**: 200 CVs
+- **Expiry**: Lifetime (aldrig)
+- **Target**: Occasional users
+
+### Pro Plan  
+- **Pris**: 349 DKK/måned
+- **Credits**: 400 CVs/måned
+- **Reset**: Månedlig (ingen rollover)
+- **Target**: Regular recruiters
+
+### Business Plan
+- **Pris**: 699 DKK/måned  
+- **Credits**: 1000 CVs/måned
+- **Reset**: Månedlig (ingen rollover)
+- **Target**: High-volume agencies
+
+### Top-Up Credits
+**KUN for Pro/Business subscribers**
+
+| Package | Credits | Pris | 
+|---------|---------|------|
+| Boost 50 | 50 | 99 DKK |
+| Boost 100 | 100 | 159 DKK |
+| Boost 250 | 250 | 199 DKK |
+| Boost 500 | 500 | 249 DKK |
+
+**Rules**:
+- Never expire (lifetime)
+- NOT available for Pay as you go users
+- Used AFTER subscription credits
+
+---
+
+## Critical Business Rules
+
+### 1. Credit Deduction Priority
+```
+When user analyzes CVs:
+1. Use subscription_credits FIRST (they expire monthly)
+2. Use purchased_credits SECOND (they're lifetime)
+```
+
+**Example**:
+```
+User has:
+- 300 subscription credits
+- 100 purchased credits
+- Total: 400
+
+Analyzes 350 CVs:
+- Deduct 300 from subscription → 0 left
+- Deduct 50 from purchased → 50 left
+- Result: 0 subscription + 50 purchased = 50 total
+```
+
+### 2. Monthly Reset (Subscriptions)
+```
+Pro user on billing date:
+- Previous subscription credits → LOST (no rollover)
+- New allocation → 400 credits added
+- Purchased credits → KEPT (unchanged)
+```
+
+### 3. Credit Check Timing
+```
+CRITICAL: Check credits BEFORE analysis starts
+
+Flow:
+1. User uploads 50 CVs
+2. Clicks "Start Analysis"
+3. System checks: Do they have 50 credits?
+   → YES: Deduct 50, start analysis
+   → NO: Block and show "Need X more credits"
+4. Process CVs
+
+WHY: Avoid partial analysis, race conditions, unclear UX
+```
+
+### 4. Refund Policy
+```
+Auto-refund IF:
+- OpenAI API fails
+- PDF parsing fails  
+- Server error during processing
+
+NO refund IF:
+- Analysis completes successfully
+- User realizes they uploaded wrong CVs
+- User changes mind
+
+Fraud prevention:
+- If user has >3 failures in 30 days → flag for manual review
+```
+
+### 5. Top-Up Availability
+```typescript
+function canBuyTopUp(user) {
+  if (!user.subscription) return false
+  if (user.subscription.tier === 'pay_as_you_go') return false
+  if (user.subscription.status !== 'active') return false
+  return true
+}
+```
+
+---
+
+## Edge Cases (Critical!)
+
+### Scenario 1: User Cancels Subscription
+```
+User cancels Pro subscription on Jan 15:
+- Keep access until Feb 1 (period end)
+- Credits usable until Feb 1
+- On Feb 1:
+  → Subscription credits removed
+  → Purchased credits kept forever
+```
+
+### Scenario 2: Payment Fails
+```
+Feb 1 - Pro renewal payment fails:
+- Stripe retries automatically (up to 4 times over ~10 days)
+- Status: past_due
+- NO new credits allocated
+- Existing credits still usable
+- If all retries fail → subscription cancelled
+```
+
+### Scenario 3: Upgrade Mid-Month
+```
+Pro → Business upgrade on Jan 15:
+- Calculate prorated difference
+- Charge immediately
+- Add Business credits (1000) immediately
+- New billing date: Jan 15
+```
+
+### Scenario 4: Downgrade Mid-Month  
+```
+Business → Pro downgrade on Jan 15:
+- Scheduled for next billing cycle (Feb 1)
+- Keep Business access until Feb 1
+- On Feb 1: Switch to Pro, reset to 400 credits
+```
+
+### Scenario 5: Multiple Credit Sources
+```
+User history:
+- Bought Pay as you go (200 credits)
+- Subscribed to Pro (400 credits)
+- Bought Boost 100 (100 credits)
+
+Balance breakdown:
+- Subscription: 400
+- Purchased: 200 + 100 = 300
+- Total: 700
+
+Analyze 500 CVs:
+- Use 400 subscription → 0 left
+- Use 100 purchased → 200 left
+- Final: 0 + 200 = 200 total
+
+Next month:
+- Add 400 subscription (renewed)
+- Keep 200 purchased
+- Total: 600
+```
+
+---
+
+## Stripe Metadata (Important!)
+
+When creating products/prices i Stripe, add metadata:
+```javascript
+// Pay as you go
+metadata: {
+  credits: "200",
+  tier: "pay_as_you_go",
+  type: "one_time"
+}
+
+// Pro subscription
+metadata: {
+  monthly_credits: "400",
+  tier: "pro",
+  type: "subscription"
+}
+
+// Top-up
+metadata: {
+  credits: "100",
+  type: "top_up",
+  requires_subscription: "true"
+}
+```
+
+This lets your code extract credit amounts from Stripe events.
+
+---
+
+## Key Takeaways
+
+1. **1 CV = 1 credit** (simple)
+2. **Subscription credits expire, purchased don't**
+3. **Check credits BEFORE analysis**
+4. **Auto-refund on system errors**
+5. **Top-ups only for subscribers**
+6. **Cancellation = keep credits until period end**

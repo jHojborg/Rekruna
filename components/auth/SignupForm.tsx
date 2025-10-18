@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Mail, Lock, User, CreditCard } from 'lucide-react'
+import { Mail, Lock, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,11 +11,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 interface SignupFormProps {
   onSubmit?: (data: any) => void
   isLoading?: boolean
+  plan?: 'pay_as_you_go' | 'pro' | 'business'
+  price?: number
+  credits?: number
 }
 
 const passwordOk = (pwd: string) => /[A-Z]/.test(pwd) && /[a-z]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd) && pwd.length >= 8
 
-export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
+export function SignupForm({ 
+  onSubmit, 
+  isLoading = false, 
+  plan = 'pro',
+  price = 349,
+  credits = 400
+}: SignupFormProps) {
   const [form, setForm] = useState({
     companyName: '',
     address: '',
@@ -25,10 +34,7 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
     name: '',
     email: '',
     password: '',
-    cardNumber: '',
-    expiry: '',
-    cvv: '',
-    cardName: '',
+    marketing_consent: false,
     accept: false,
   })
 
@@ -47,14 +53,32 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
     if (!form.email) e.email = 'Email er påkrævet'
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Ugyldig email'
     if (!passwordOk(form.password)) e.password = 'Min. 8 tegn, store+små bogstaver og specialtegn'
-    if (!form.cardNumber) e.cardNumber = 'Kortnummer er påkrævet'
-    if (!form.expiry) e.expiry = 'Udløb er påkrævet'
-    if (!form.cvv) e.cvv = 'CVV er påkrævet'
-    if (!form.cardName) e.cardName = 'Navn på kort er påkrævet'
     if (!form.accept) e.accept = 'Husk at acceptere vores handelsbetingelser'
     setErrors(e)
     return Object.keys(e).length === 0
   }
+  
+  // Plan configuration for display
+  const planNames = {
+    pay_as_you_go: 'One',
+    pro: 'Pro',
+    business: 'Business'
+  }
+  
+  const planTypes = {
+    pay_as_you_go: 'one_time',
+    pro: 'subscription',
+    business: 'subscription'
+  }
+  
+  const planName = planNames[plan]
+  const isSubscription = planTypes[plan] === 'subscription'
+  
+  // Calculate VAT (Danish moms = 25%)
+  const VAT_RATE = 0.25
+  const priceExVat = price
+  const vatAmount = Math.round(priceExVat * VAT_RATE * 100) / 100
+  const totalInclVat = Math.round((priceExVat + vatAmount) * 100) / 100
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -122,66 +146,70 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
               </div>
               {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password}</p>}
             </div>
+            
+            {/* Marketing Consent */}
+            <div className="flex items-start gap-2 pt-2">
+              <input 
+                id="marketing" 
+                type="checkbox" 
+                className="mt-1 h-4 w-4 rounded border-gray-300" 
+                checked={form.marketing_consent} 
+                onChange={(e) => setField('marketing_consent', e.target.checked)} 
+              />
+              <Label htmlFor="marketing" className="text-gray-700">
+                Ja tak til relevante opdateringer og nyheder fra Rekruna
+              </Label>
+            </div>
           </CardContent>
         </Card>
 
         <div className="space-y-6">
-          {/* Plan */}
+          {/* Plan Display */}
           <Card className="relative">
             <CardHeader className="text-center">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <span className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium shadow-sm">
-                  Begrænset tilbud
-                </span>
-              </div>
-              <CardTitle className="text-3xl font-bold text-gray-900">Rekruna One</CardTitle>
+              <CardTitle className="text-3xl font-bold text-gray-900">Rekruna {planName}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="p-4 border-2 rounded-lg border-primary">
                 <div className="grid grid-cols-2 gap-y-3 items-baseline">
-                  <p className="text-gray-600">Månedlig normal pris:</p>
-                  <p className="text-right text-gray-500 line-through">249 kr.</p>
-                  <p className="text-green-700">Din rabat:</p>
-                  <p className="text-right text-green-700">100 kr.</p>
-                  <p className="text-lg font-semibold text-gray-900">Din månedlige pris:</p>
-                  <p className="text-right text-2xl font-bold text-gray-900">149 kr.</p>
+                  <p className="text-gray-600 font-bold">
+                    {isSubscription 
+                      ? `Pris pr. måned incl. ${credits} CVer:` 
+                      : `Pris incl. ${credits} CVer:`
+                    }
+                  </p>
+                  <p className="text-right text-2xl font-bold text-gray-900">{priceExVat} kr.</p>
+                  
+                  <p className="text-gray-600">Moms:</p>
+                  <p className="text-right text-gray-900">{vatAmount.toFixed(2)} kr.</p>
+                  
+                  <p className="text-gray-900">
+                    {isSubscription ? 'Månedlige pris incl. moms:' : 'Total incl. moms:'}
+                  </p>
+                  <p className="text-right text-gray-900">{totalInclVat.toFixed(2)} kr.</p>
                 </div>
               </div>
+              <p className="text-sm text-gray-600 mt-4 text-center">
+                {isSubscription 
+                  ? 'Fortløbende abonnementet indtil det opsiges. Opsigelsesfrist: Ibn mdr + 30 dage.'
+                  : 'Engangsbetaling. Ingen abonnement.'
+                }
+              </p>
             </CardContent>
           </Card>
 
-          {/* Betaling */}
+          {/* Terms & Conditions */}
           <Card>
-            <CardHeader>
-              <CardTitle>
-                <CreditCard className="inline h-6 w-6 mr-2" /> Betalingsoplysninger
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="cardNumber">Kortnummer</Label>
-                <Input id="cardNumber" value={form.cardNumber} onChange={(e) => setField('cardNumber', e.target.value)} placeholder="1234 5678 9012 3456" />
-                {errors.cardNumber && <p className="text-sm text-red-600 mt-1">{errors.cardNumber}</p>}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="expiry">Udløb</Label>
-                  <Input id="expiry" value={form.expiry} onChange={(e) => setField('expiry', e.target.value)} placeholder="MM/ÅÅ" />
-                  {errors.expiry && <p className="text-sm text-red-600 mt-1">{errors.expiry}</p>}
-                </div>
-                <div>
-                  <Label htmlFor="cvv">CVV</Label>
-                  <Input id="cvv" value={form.cvv} onChange={(e) => setField('cvv', e.target.value)} placeholder="123" />
-                  {errors.cvv && <p className="text-sm text-red-600 mt-1">{errors.cvv}</p>}
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="cardName">Navn på kort</Label>
-                <Input id="cardName" value={form.cardName} onChange={(e) => setField('cardName', e.target.value)} placeholder="Navn som det står på kortet" />
-                {errors.cardName && <p className="text-sm text-red-600 mt-1">{errors.cardName}</p>}
-              </div>
-              <div className="flex items-start gap-2 pt-2">
-                <input id="accept" required type="checkbox" className="mt-1 h-4 w-4 rounded border-gray-300" checked={form.accept} onChange={(e) => setField('accept', e.target.checked)} />
+            <CardContent className="pt-6 space-y-4">
+              <div className="flex items-start gap-2">
+                <input 
+                  id="accept" 
+                  required 
+                  type="checkbox" 
+                  className="mt-1 h-4 w-4 rounded border-gray-300" 
+                  checked={form.accept} 
+                  onChange={(e) => setField('accept', e.target.checked)} 
+                />
                 <Label htmlFor="accept" className="text-gray-700">
                   Jeg bekræfter at have læst og accepterer Rekruna{' '}
                   <Link href="/handelsbetingelser" className="text-primary underline underline-offset-2">
@@ -189,19 +217,20 @@ export function SignupForm({ onSubmit, isLoading = false }: SignupFormProps) {
                   </Link>
                 </Label>
               </div>
-              <p className="text-sm text-gray-600 mt-2">
-                Abonnementet fornys automatisk med en måned, indtil det opsiges.
-              </p>
-              {errors.accept && <p className="text-sm text-red-600 mt-1">{errors.accept}</p>}
+              {errors.accept && <p className="text-sm text-red-600 mt-2">{errors.accept}</p>}
+              
+              {/* Button moved here - max 25% width, centered */}
+              <div className="flex flex-col items-center">
+                <Button type="submit" disabled={isLoading} className="px-8 py-3 text-base font-semibold" style={{ maxWidth: '25%', minWidth: '200px' }}>
+                  {isLoading ? 'Behandler...' : 'Til betaling'}
+                </Button>
+                <p className="text-sm text-gray-600 text-center mt-2">
+                  Åbner ny vindue hos Stripe, vores betalingspartner
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
-      </div>
-
-      <div className="text-center">
-        <Button type="submit" disabled={isLoading} className="px-12 py-6 text-lg font-semibold">
-          {isLoading ? 'Opretter...' : 'Opret konto'}
-        </Button>
       </div>
     </form>
   )

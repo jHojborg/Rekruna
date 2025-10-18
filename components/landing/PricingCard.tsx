@@ -31,15 +31,8 @@ export function PricingCard({
 }: PricingCardProps) {
   return (
     <div className={`bg-white rounded-xl p-8 shadow-sm ${
-      highlighted ? 'border-2 border-primary-500 relative' : 'border border-gray-200'
+      highlighted ? 'border-2 border-primary-500' : 'border border-gray-200'
     }`}>
-      {highlighted && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <span className="bg-primary-500 text-white px-4 py-2 rounded-full text-sm font-medium">
-            Kampagnepris
-          </span>
-        </div>
-      )}
       
       <div className="text-center mb-8">
         <h3 className="text-2xl font-bold text-gray-900 mb-2">{title}</h3>
@@ -55,8 +48,10 @@ export function PricingCard({
               <span className="text-xl text-gray-600 ml-2">{priceSuffix}</span>
             )}
           </div>
-          {savingsText && (
-            <span className="text-sm bg-green-100 text-green-700 rounded-full px-3 py-1">{savingsText}</span>
+          {savingsText ? (
+            <span className="text-sm text-green-700">{savingsText}</span>
+          ) : (
+            <div className="h-5"></div>
           )}
         </div>
       </div>
