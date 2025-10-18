@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { User, Building2, MapPin, Hash, Mail, Lock, CreditCard, Calendar, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -792,7 +793,7 @@ export default function ProfilPage() {
                 className="bg-blue-50"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Skal du ændre dit kodeord? <a href="/forgot-password" className="text-primary hover:underline">Klik her</a>
+                Skal du ændre dit kodeord? <Link href="/forgot-password" className="text-primary hover:underline">Klik her</Link>
               </p>
             </div>
 
