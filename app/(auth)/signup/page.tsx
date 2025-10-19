@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { SignupForm } from '@/components/auth/SignupForm'
 import { supabase } from '@/lib/supabase/client'
 
-export default function SignupPage() {
+// Component that uses useSearchParams (must be wrapped in Suspense)
+function SignupContent() {
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   
@@ -139,5 +140,20 @@ export default function SignupPage() {
         />
       </div>
     </main>
+  )
+}
+
+// Main page component with Suspense boundary (required by Next.js 15 for useSearchParams)
+export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-brand-base py-16 px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-gray-600">Indlæser...</p>
+        </div>
+      </main>
+    }>
+      <SignupContent />
+    </Suspense>
   )
 }
