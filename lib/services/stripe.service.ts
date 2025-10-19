@@ -33,6 +33,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 
 type ProductTier = 'pay_as_you_go' | 'pro' | 'business' | 'boost_50' | 'boost_100' | 'boost_250' | 'boost_500'
 
+// Extended Stripe types with missing properties
+interface StripeInvoiceExtended extends Stripe.Invoice {
+  subscription?: string | Stripe.Subscription | null
+  payment_intent?: string | Stripe.PaymentIntent | null
+}
+
 // =====================================================
 // CREDIT CONFIGURATION
 // Map Price IDs to credit amounts (since we're not using Stripe metadata)
@@ -486,7 +492,7 @@ export class StripeService {
    * Called from webhook when invoice is paid.
    * Resets subscription credits to monthly allocation.
    */
-  static async handleInvoicePaid(invoice: Stripe.Invoice): Promise<{
+  static async handleInvoicePaid(invoice: StripeInvoiceExtended): Promise<{
     success: boolean
     error?: string
   }> {

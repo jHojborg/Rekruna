@@ -19,6 +19,7 @@
 
 import { NextResponse } from 'next/server'
 import { StripeService } from '@/lib/services/stripe.service'
+import { supabaseAdmin } from '@/lib/supabase/server'
 import Stripe from 'stripe'
 
 // IMPORTANT: We need the raw body for webhook signature verification
@@ -86,15 +87,16 @@ export async function POST(req: Request) {
       // Monthly subscription payment succeeded
       // =====================================================
       case 'invoice.paid': {
-        const invoice = event.data.object as Stripe.Invoice
+        const invoice = event.data.object as Stripe.Invoice & { 
+          subscription?: string | Stripe.Subscription | null
+          payment_intent?: string | Stripe.PaymentIntent | null
+        }
         
         // Only process subscription invoices (not one-time payments)
-        // Type assertion needed for subscription field
-        const invoiceWithSub = invoice as Stripe.Invoice & { subscription?: string | Stripe.Subscription | null }
-        if (invoiceWithSub.subscription) {
+        if (invoice.subscription) {
           console.log('💰 Processing invoice.paid (subscription renewal)...')
           console.log(`   Invoice ID: ${invoice.id}`)
-          console.log(`   Subscription: ${invoiceWithSub.subscription}`)
+          console.log(`   Subscription: ${invoice.subscription}`)
           
           const result = await StripeService.handleInvoicePaid(invoice)
           
@@ -120,12 +122,12 @@ export async function POST(req: Request) {
         
         // Update subscription status in database
         try {
-          const { error } = await import('@/lib/supabase/server').then(m => m.supabaseAdmin)
+          const { error } = await supabaseAdmin
             .from('user_subscriptions')
             .update({
               status: subscription.status,
               current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-              cancel_at_period_end: subscription.cancel_at_period_end,
+              cancel_at_period_end: subscription.cancel_at_period_end ?? false,
               updated_at: new Date().toISOString()
             })
             .eq('stripe_subscription_id', subscription.id)
