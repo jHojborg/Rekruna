@@ -17,15 +17,21 @@ import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { CreditsService } from './credits.service'
 
-// Initialize Stripe with secret key (server-side only!)
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing STRIPE_SECRET_KEY environment variable')
-}
+// Lazy initialization - only create Stripe instance when needed (not during build)
+let stripeInstance: Stripe | null = null
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  // Using default API version from Stripe SDK
-  typescript: true,
-})
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('Missing STRIPE_SECRET_KEY environment variable')
+    }
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      // Using default API version from Stripe SDK
+      typescript: true,
+    })
+  }
+  return stripeInstance
+}
 
 // =====================================================
 // TYPE DEFINITIONS
@@ -146,7 +152,7 @@ export class StripeService {
       if (existing?.stripe_customer_id) {
         try {
           // Try to retrieve customer from Stripe to verify it exists
-          await stripe.customers.retrieve(existing.stripe_customer_id)
+          await getStripe().customers.retrieve(existing.stripe_customer_id)
           
           // Customer exists! Return it
           return {
@@ -161,7 +167,7 @@ export class StripeService {
       }
       
       // Create new Stripe customer
-      const customer = await stripe.customers.create({
+      const customer = await getStripe().customers.create({
         email,
         metadata: {
           user_id: userId // Link back to our user
@@ -232,7 +238,7 @@ export class StripeService {
       
       // Update customer with profile data if provided (pre-fills Stripe checkout)
       if (params.profile) {
-        await stripe.customers.update(customerId, {
+        await getStripe().customers.update(customerId, {
           name: params.profile.company_name,
           address: {
             line1: params.profile.address,
@@ -260,7 +266,7 @@ export class StripeService {
       const isSubscription = productConfig.isSubscription
       
       // Create Stripe checkout session
-      const session = await stripe.checkout.sessions.create({
+      const session = await getStripe().checkout.sessions.create({
         customer: customerId,
         mode: isSubscription ? 'subscription' : 'payment',
         payment_method_types: ['card'],
@@ -333,7 +339,7 @@ export class StripeService {
       }
       
       // Get the price ID from the session
-      const lineItems = await stripe.checkout.sessions.listLineItems(session.id)
+      const lineItems = await getStripe().checkout.sessions.listLineItems(session.id)
       const priceId = lineItems.data[0]?.price?.id
       
       if (!priceId) {
@@ -653,7 +659,7 @@ export class StripeService {
         }
       }
       
-      const event = stripe.webhooks.constructEvent(
+      const event = getStripe().webhooks.constructEvent(
         body,
         signature,
         webhookSecret
