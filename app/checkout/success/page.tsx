@@ -1,11 +1,12 @@
 "use client"
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-export default function CheckoutSuccessPage() {
+// Component that uses useSearchParams (must be wrapped in Suspense)
+function CheckoutSuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying')
@@ -80,7 +81,23 @@ export default function CheckoutSuccessPage() {
   )
 }
 
-
-
-
+// Main page component with Suspense boundary (required by Next.js 15 for useSearchParams)
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8 text-center">
+          <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Indlæser...
+          </h1>
+        </div>
+      </main>
+    }>
+      <CheckoutSuccessContent />
+    </Suspense>
+  )
+}
 
