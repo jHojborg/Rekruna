@@ -114,7 +114,10 @@ export async function POST(req: Request) {
       // Subscription status changed (e.g., payment failed, canceled, etc.)
       // =====================================================
       case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription
+        const subscription = event.data.object as Stripe.Subscription & {
+          current_period_end?: number
+          cancel_at_period_end?: boolean
+        }
         
         console.log('🔄 Processing subscription.updated...')
         console.log(`   Subscription ID: ${subscription.id}`)
@@ -126,7 +129,9 @@ export async function POST(req: Request) {
             .from('user_subscriptions')
             .update({
               status: subscription.status,
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              current_period_end: subscription.current_period_end 
+                ? new Date(subscription.current_period_end * 1000).toISOString()
+                : new Date().toISOString(),
               cancel_at_period_end: subscription.cancel_at_period_end ?? false,
               updated_at: new Date().toISOString()
             })
