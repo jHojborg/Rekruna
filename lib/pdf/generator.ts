@@ -1,6 +1,6 @@
 import { pdf } from '@react-pdf/renderer'
 import { PdfReportTemplate } from '@/components/pdf/PdfReportTemplate'
-import { CompareReportDocument } from './compareReport.tsx'
+import { CompareReportDocument } from './compareReport'
 
 // Types matching your existing results structure
 interface ResultItem {

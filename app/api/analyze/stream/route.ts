@@ -437,11 +437,11 @@ export async function POST(req: Request) {
           
           if (initResult.success) {
             const retryCheck = await CreditsService.hasEnoughCredits(userId, cvCount)
-            if (!retryCheck.success || !retryCheck.data.hasCredits) {
+            if (!retryCheck.success || (retryCheck.success && !retryCheck.data.hasCredits)) {
               sendSSE(controller, 'error', { 
                 error: 'Insufficient credits',
-                required: retryCheck.data?.required || cvCount,
-                available: retryCheck.data?.currentBalance || 0
+                required: retryCheck.success ? retryCheck.data.required : cvCount,
+                available: retryCheck.success ? retryCheck.data.currentBalance : 0
               })
               controller.close()
               return

@@ -8,4 +8,4 @@ export {
 } from './generator'
 
 export { PdfReportTemplate } from '@/components/pdf/PdfReportTemplate'
-export { CompareReportDocument } from './compareReport.tsx'
+export { CompareReportDocument } from './compareReport'

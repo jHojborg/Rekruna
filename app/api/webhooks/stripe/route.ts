@@ -89,10 +89,12 @@ export async function POST(req: Request) {
         const invoice = event.data.object as Stripe.Invoice
         
         // Only process subscription invoices (not one-time payments)
-        if (invoice.subscription) {
+        // Type assertion needed for subscription field
+        const invoiceWithSub = invoice as Stripe.Invoice & { subscription?: string | Stripe.Subscription | null }
+        if (invoiceWithSub.subscription) {
           console.log('💰 Processing invoice.paid (subscription renewal)...')
           console.log(`   Invoice ID: ${invoice.id}`)
-          console.log(`   Subscription: ${invoice.subscription}`)
+          console.log(`   Subscription: ${invoiceWithSub.subscription}`)
           
           const result = await StripeService.handleInvoicePaid(invoice)
           
