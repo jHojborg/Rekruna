@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { CreditCard, Plus, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase/client'
@@ -20,6 +21,7 @@ export function CreditsCard({ userId }: CreditsCardProps) {
 
   useEffect(() => {
     loadCredits()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
 
   const loadCredits = async () => {
@@ -206,7 +208,7 @@ export function CreditsCard({ userId }: CreditsCardProps) {
             💡 Opgrader til Pro eller Business for at kunne tilkøbe ekstra credits
           </p>
           <Button asChild variant="default" className="w-full">
-            <a href="/#pricing">Se Planer</a>
+            <Link href="/#pricing">Se Planer</Link>
           </Button>
         </div>
       )}
@@ -220,7 +222,7 @@ export function CreditsCard({ userId }: CreditsCardProps) {
             }
           </p>
           <Button asChild variant="default" className="w-full">
-            <a href="/#pricing">Køb Credits</a>
+            <Link href="/#pricing">Køb Credits</Link>
           </Button>
         </div>
       )}

@@ -82,6 +82,7 @@ export default function ProfilPage() {
   // Check authentication on mount
   useEffect(() => {
     checkAuth()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Load data when user is authenticated
@@ -91,6 +92,7 @@ export default function ProfilPage() {
       loadCredits()
       loadRecentAnalyses()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
 
   // Check if user is authenticated
