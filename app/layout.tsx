@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { Header } from '@/components/shared/Header'
 import { Footer } from '@/components/shared/Footer'
@@ -29,6 +30,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="da" suppressHydrationWarning>
+      {/* Google tag (gtag.js) - Loades på alle sider */}
+      <Script
+        async
+        src="https://www.googletagmanager.com/gtag/js?id=G-31RMZC70DP"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-31RMZC70DP');
+        `}
+      </Script>
+
       <body className={inter.className}>
         {/* Fanger Supabase password-recovery links uanset hvilken route brugeren rammer */}
         <HashRecoveryRouter />
