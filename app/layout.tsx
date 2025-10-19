@@ -30,22 +30,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="da" suppressHydrationWarning>
-      {/* Google tag (gtag.js) - Loades på alle sider */}
-      <Script
-        async
-        src="https://www.googletagmanager.com/gtag/js?id=G-31RMZC70DP"
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'G-31RMZC70DP');
-        `}
-      </Script>
-
       <body className={inter.className}>
+        {/* Google tag (gtag.js) - Loades på alle sider automatisk */}
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-31RMZC70DP"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-31RMZC70DP');
+          `}
+        </Script>
+
         {/* Fanger Supabase password-recovery links uanset hvilken route brugeren rammer */}
         <HashRecoveryRouter />
         {/* Toast notifications - vises i top-right hjørne */}
