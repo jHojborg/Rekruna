@@ -12,10 +12,11 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const templateId = params.id
+    // In Next.js 15, params is now async
+    const { id: templateId } = await params
 
     // Get user from auth header
     const authHeader = req.headers.get('authorization')
