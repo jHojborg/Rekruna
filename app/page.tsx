@@ -87,8 +87,8 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen">
       <HeroSection 
-        title="Screen job-kandidater 80% hurtigere med AI"
-        subtitle="På få minutter har du en objektiv kompetencebaseret kandidatliste, der frigør tid til at møde de bedste kandidater."
+        title="Screen ansøgere 90% hurtigere med AI"
+        subtitle="- en mere objektiv og fair prioritering, der sikrer, at ingen ansøgere bliver overset."
         ctaText="Start allerede i dag"
         onCtaClick={handleHeroCta}
       />

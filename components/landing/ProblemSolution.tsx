@@ -7,35 +7,35 @@ export function ProblemSolution() {
       icon: ListOrdered,
       title: 'Objektiv vurdering',
       description:
-        'Rekruna sikrer en objektiv og kompetancebaseret vurdering af alle kandidater -  uden subjektive antagelser.'
+        'Rekruna sikrer en objektiv og kompetancebaseret vurdering af alle ansøgere -  uden subjektive antagelser.'
     },{
       icon: HandCoins,
-      title: 'Reducer tidsforbrug',
+      title: 'Mere tid til møder',
       description:
-        'Med Rekruna sparer du både tid og penge, og kommer hurtigere frem til mødet med de bedste kandidaterne.'
+        'Med Rekruna sparer du både tid og penge i screeningsfasen. Mere tid til at møde og evaluere ansøgerne.'
     },
     {
       icon: HeartHandshakeIcon,
       title: 'Ingen opstartsgebyr',
       description:
-        'Du betaler kun en lav månedlige ydelse, fra 149,- Ingen opstartsfee eller andre ekstraomkostninger.'
+        'Du betaler kun en fast månedlige ydelse. Ingen opstartsfee eller andre ekstraomkostninger.'
     },
     {
       icon: Clock,
       title: 'Brugervenligt og intuitivt',
       description:
-        'Upload stillingsopslag og CV’er, vælg de vigtigste kriterier - så klarer Rekruna resten på få minutter.'
+        'Upload stillingsopslag og CV’er - så klarer Rekruna resten på få minutter.'
     },
   
     {
       icon: Target,
-      title: 'Best-match rapportering',
-      description: 'Du får en overskuelig rapport, med alle kandidater rangeret på en 10-skala med  kommentarer - et stærkere beslutningsgrundlag til næste fase.'
+      title: 'Stærkt vurderingsgrundlag',
+      description: 'Med den prioriterede ansøgerliste, med kommentarer, har du et stærkt vurderingsgrundlag til den videre evaluering.'
     },
     {
       icon: BarChart3,
-      title: 'GDPR-sikkerhed',
-      description: 'Alle data håndteres og lagres sikkert i EU og slettes automatisk efter 30 dage.'
+      title: 'AI ACT & GDPR compliant',
+      description: 'Alle data håndteres efter gældende AI ACT og GDPR lovgivning.'
     }
   ]
 
@@ -48,7 +48,7 @@ export function ProblemSolution() {
             Hvorfor vælge Rekruna?
           </h2>
           <p className="mt-8 text-xl text-gray-700">
-          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna analyserer alle CV´r objektivt, og sikrer, at ingen kvalificerede kandidater overses. Resultatet er et stærkere beslutningsgrundlag og mere tid til, at du kan møde og evaluere de bedste kandidater - og herved kortere time-to-hire.
+          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna analyserer alle CV´r objektivt, og sikrer, at ingen ansøgere bliver overses. Den prioriterede  ansøgerliste fungere som støtte til vurdering i møder og evaluering af ansøgere.
           </p>
         </div>
 
