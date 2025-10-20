@@ -3,6 +3,7 @@ import OpenAI from 'openai'
 import { PerformanceTimer } from '@/lib/performance'
 import { createHash } from 'crypto'
 import { CreditsService } from '@/lib/services/credits.service'
+import { anonymizeCVText } from '@/lib/anonymization'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -526,7 +527,14 @@ ${cvText || '(intet udtræk)'}`
               const ab = await blob.arrayBuffer()
               const fullText = await extractPdfText(ab)
               const candidateName = extractCandidateNameFromText(fullText, decodeURIComponent(name.replace(/\.pdf$/i, '')))
-              const relevantExcerpt = extractJobRelevantInfo(fullText, jobText, requirements)
+              
+              // 🔒 ANONYMIZE CV TEXT: Remove all personal and bias-inducing information
+              // This ensures GDPR compliance and unbiased AI analysis
+              const anonymizedText = anonymizeCVText(fullText, candidateName)
+              console.log(`🔒 Anonymized CV for ${candidateName}: ${fullText.length} → ${anonymizedText.length} chars`)
+              
+              // Use anonymized text for job-relevant extraction and analysis
+              const relevantExcerpt = extractJobRelevantInfo(anonymizedText, jobText, requirements)
               
               // Send progress update for extraction
               sendSSE(controller, 'extraction-progress', { 
