@@ -48,7 +48,7 @@ export function ProblemSolution() {
             Hvorfor vælge Rekruna?
           </h2>
           <p className="mt-8 text-xl text-gray-700">
-          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna analyserer alle CV´r objektivt, og sikrer, at ingen ansøgere bliver overses. Den prioriterede  ansøgerliste fungere som støtte til vurdering i møder og evaluering af ansøgere.
+          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna tager sig af den tunge CV-screening, og sikrer, at ingen ansøgere bliver overset. Imens kan du, bruge tiden på det, kun du kan - samtaler, vurdering og menneskelig interaktion med ansøgerne.
           </p>
         </div>
 
