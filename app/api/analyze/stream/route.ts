@@ -7,6 +7,9 @@ import { anonymizeCVText } from '@/lib/anonymization'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+// Increase timeout for streaming analysis (can take time with multiple CVs)
+// NOTE: If using Hobby plan, this will cause timeout errors - upgrade to Pro recommended
+export const maxDuration = 60 // 60 seconds (requires Vercel Pro or higher)
 
 // SSE helper to send events to client
 // Formats data as Server-Sent Events protocol

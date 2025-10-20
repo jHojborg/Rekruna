@@ -8,6 +8,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/server'
 
+// Increase timeout for comparison analysis
+// NOTE: If using Hobby plan, this will cause timeout errors - upgrade to Pro recommended
+export const maxDuration = 60 // 60 seconds (requires Vercel Pro or higher)
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     // Get user from auth header

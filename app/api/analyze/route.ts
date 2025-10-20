@@ -9,6 +9,10 @@ import { anonymizeCVText } from '@/lib/anonymization'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+// Increase timeout for CV analysis (can take time with multiple PDFs + OpenAI calls)
+// Vercel Hobby: max 10s, Pro: max 60s, Enterprise: max 300s
+// NOTE: If using Hobby plan, this will cause timeout errors - upgrade to Pro recommended
+export const maxDuration = 60 // 60 seconds (requires Vercel Pro or higher)
 
 // Performance: concurrency control for parallel processing (in-memory only)
 const MAX_CONCURRENT_PROCESSING = 5 // Max parallel CV processing
