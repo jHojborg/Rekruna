@@ -689,7 +689,7 @@ ${cvText || '(intet udtræk)'}`
                 total: cvCount
               })
 
-              // Cache CV text for on-demand resume generation (30 days like reports)
+              // Cache CV text for on-demand resume generation (60 days like reports)
               if (cvTextHash && excerpt) {
                 try {
                   await supabaseAdmin.from('cv_text_cache').upsert({

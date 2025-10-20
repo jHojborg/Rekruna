@@ -125,7 +125,7 @@ See [Testing & Deployment Guide](specs/testing-deployment-guide.md) for detailed
 - **Danish Language**: Full Danish UI and language support
 - **Real-time Updates**: Progress tracking during analysis
 - **PDF Reports**: Downloadable candidate assessment reports
-- **GDPR Compliant**: 30-day automatic CV deletion
+- **GDPR Compliant**: 60-day automatic CV deletion
 
 ## 🤝 Contributing
 

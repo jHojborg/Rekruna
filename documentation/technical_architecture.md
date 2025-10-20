@@ -167,16 +167,16 @@ await supabase
 ### 6. Data Retention Policy
 
 #### CV Files
-- **Retention**: 30 days (GDPR compliant)
+- **Retention**: 60 days (GDPR compliant)
 - **Auto-cleanup**: Daily cron job via Supabase Edge Functions
 - **Implementation**:
 ```typescript
 // Cleanup function runs daily
 export async function cleanupOldCVs() {
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const sixtyDaysAgo = new Date()
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
   
-  // Delete CVs older than 30 days
+  // Delete CVs older than 60 days
   await supabase.storage
     .from('cvs')
     .list()

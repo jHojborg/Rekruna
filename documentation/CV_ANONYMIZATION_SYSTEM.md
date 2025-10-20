@@ -179,20 +179,20 @@ const stats = getAnonymizationStats(originalText, anonymizedText)
 2. **Processing**: Text is extracted and immediately anonymized
 3. **Analysis**: Only anonymized text is sent to OpenAI
 4. **Storage**: 
-   - `cv_text_cache`: Stores anonymized text (30 days)
+   - `cv_text_cache`: Stores anonymized text (60 days)
    - `analysis_cache`: Stores anonymized analysis results (24 hours)
 5. **Display**: Results show candidate name but no personal data
 
 ### Data Retention
 - **Original PDF**: Not stored on server (client-side only)
-- **Anonymized text**: 30 days (for resume generation)
+- **Anonymized text**: 60 days (for resume generation)
 - **Analysis results**: Permanent (contains no PII)
 - **Cached analysis**: 24 hours (performance optimization)
 
 ### OpenAI Data Processing
 According to OpenAI's data policy:
 - API calls are not used for training (as of March 2023)
-- Data is retained for 30 days for abuse monitoring
+- Data is retained for 60 days for abuse monitoring
 - **With anonymization**: No personal data reaches OpenAI
 
 ## 🚀 Deployment

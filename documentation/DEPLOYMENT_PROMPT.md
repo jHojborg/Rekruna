@@ -41,7 +41,7 @@ Rekruna CV Screener er en SaaS platform der automatisk analyserer CV'er mod job 
 ### Backend:
 - **Runtime**: Node.js (Next.js API Routes)
 - **Database**: Supabase (PostgreSQL with Row Level Security)
-- **Storage**: Supabase Storage (PDF files, max 30 days retention)
+- **Storage**: Supabase Storage (PDF files, max 60 days retention)
 - **Auth**: Supabase Auth (email/password)
 - **Payments**: Stripe (webhooks for subscription management)
 - **AI**: OpenAI GPT-4 API
@@ -60,14 +60,14 @@ Rekruna CV Screener er en SaaS platform der automatisk analyserer CV'er mod job 
 1. **`user_profiles`** - Company info og user metadata
 2. **`credit_balances`** - Credit tracking per user
 3. **`credit_transactions`** - Transaction history og audit log
-4. **`analysis_results`** - Alle analyse resultater (30 dage retention)
+4. **`analysis_results`** - Alle analyse resultater (60 dage retention)
 5. **`analysis_cache`** - Cache for analysis metadata
-6. **`cv_text_cache`** - Parsed CV text (30 dage, reducerer AI costs)
+6. **`cv_text_cache`** - Parsed CV text (60 dage, reducerer AI costs)
 7. **`resume_cache`** - Generated CV resumés
 8. **`job_templates`** - Saved job descriptions + requirements
 
 ### Storage Buckets:
-- **`analysis-reports`** - PDF rapporter (30 dage retention, private)
+- **`analysis-reports`** - PDF rapporter (60 dage retention, private)
 
 ### Row Level Security (RLS):
 - ✅ Alle tables har RLS enabled
@@ -245,10 +245,10 @@ vercel --prod
 - **Scaling**: Easily adjustable via `UPLOAD_LIMITS` config
 
 ### 3. Cache Expiry:
-- **CV text cache**: 30 dage (extended from 2 hours)
-- **Analysis results**: 30 dage retention
-- **Resume cache**: 30 dage
-- **Reports (Storage)**: 30 dage
+- **CV text cache**: 60 dage (extended from 2 hours)
+- **Analysis results**: 60 dage retention
+- **Resume cache**: 60 dage
+- **Reports (Storage)**: 60 dage
 
 ### 4. Rate Limiting:
 - **OpenAI**: Default API rate limits apply

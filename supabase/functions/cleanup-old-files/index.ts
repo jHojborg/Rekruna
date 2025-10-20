@@ -1,5 +1,5 @@
 // Edge Function: cleanup-old-files
-// Deletes Storage objects older than RETENTION_DAYS (default: 30)
+// Deletes Storage objects older than RETENTION_DAYS (default: 60)
 // Buckets covered: job-descriptions, cvs, reports
 // Secrets required (set in Supabase → Project Settings → Functions):
 // - SUPABASE_URL
@@ -45,7 +45,7 @@ serve(async () => {
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const RETENTION_DAYS = Number(Deno.env.get('RETENTION_DAYS') || '30')
+    const RETENTION_DAYS = Number(Deno.env.get('RETENTION_DAYS') || '60')
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
       auth: { persistSession: false, autoRefreshToken: false },

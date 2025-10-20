@@ -1041,7 +1041,7 @@ ${cvText || '(intet udtræk)'}`
             try {
               const cvTextHash = createHash('sha256').update(matchingExtracted.excerpt, 'utf8').digest('hex')
               
-              // Store CV text for on-demand resume generation (30 days like reports)
+              // Store CV text for on-demand resume generation (60 days like reports)
               await supabaseAdmin.from('cv_text_cache').upsert({
                 text_hash: cvTextHash,
                 cv_text: matchingExtracted.excerpt,

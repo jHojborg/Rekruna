@@ -150,15 +150,15 @@ export async function deleteUserData(userId: string) {
   await logDeletion(userId)
 }
 
-// Automatic CV deletion after 30 days
+// Automatic CV deletion after 60 days
 export async function cleanupOldCVs() {
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const sixtyDaysAgo = new Date()
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
   
   const { data: oldFiles } = await supabase
     .from('cv_files')
     .select('*')
-    .lt('created_at', thirtyDaysAgo.toISOString())
+    .lt('created_at', sixtyDaysAgo.toISOString())
   
   for (const file of oldFiles) {
     await supabase.storage

@@ -34,7 +34,7 @@ export async function POST() {
     }
 
     const buckets = ['job-descriptions', 'cvs', 'reports'] as const
-    const cutoffTs = Date.now() - 30 * 24 * 60 * 60 * 1000
+    const cutoffTs = Date.now() - 60 * 24 * 60 * 60 * 1000
 
     let deleted = 0
     for (const bucket of buckets) {

@@ -27,8 +27,9 @@ export function CVUploadCard({ files, onFilesSelected, onAnalyze, onBack }: CVUp
       return
     }
     
-    // 2. Validate file limits (count, size)
-    const validation = uploadHelpers.validateFiles(newFiles)
+    // 2. Validate file limits (count, size) - check combined total
+    const combinedFiles = [...files, ...newFiles]
+    const validation = uploadHelpers.validateFiles(combinedFiles)
     if (!validation.valid) {
       alert(validation.error)
       return
@@ -53,8 +54,8 @@ export function CVUploadCard({ files, onFilesSelected, onAnalyze, onBack }: CVUp
         return
       }
       
-      // All valid!
-      onFilesSelected(newFiles)
+      // All valid! Append new files to existing ones
+      onFilesSelected(combinedFiles)
       
     } catch (error) {
       alert('Kunne ikke validere PDF-filer. Prøv igen.')

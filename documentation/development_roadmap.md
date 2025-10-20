@@ -384,10 +384,10 @@
         - Return proper rate limit headers (X-RateLimit-Limit, X-RateLimit-Remaining)
         - Return error code `RATE_LIMIT_EXCEEDED` when exceeded
     *   [ ] Implement request validation on all endpoints using Zod schemas
-    *   [ ] Set up automated CV cleanup job (30 days):
+    *   [ ] Set up automated CV cleanup job (60 days):
         - Create Supabase Edge Function `cleanup-old-cvs`
         - Schedule to run daily at 2 AM
-        - Delete CV files older than 30 days from storage
+        - Delete CV files older than 60 days from storage
         - Update database records to reflect deletion
         - Log cleanup actions to audit table
     *   [ ] Create admin monitoring dashboard at `/admin`:
