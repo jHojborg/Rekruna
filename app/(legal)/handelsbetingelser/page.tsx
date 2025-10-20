@@ -10,13 +10,13 @@ export default function TermsPage() {
           <section className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">1. Parter og anvendelsesområde</h2>
             <p className="text-gray-700 mb-4">
-              Disse vilkår ("Vilkår") gælder for levering af adgang til Rekruna-platformen ("Tjenesten") 
+              Disse vilkår (&quot;Vilkår&quot;) gælder for levering af adgang til Rekruna-platformen (&quot;Tjenesten&quot;) 
               leveret af <strong>Blue Banana Framework ApS CVR: 45676099</strong>, Kristiansminde 21, 4000 Roskilde, 
-              e-mail:  til erhvervskunder ("Kunden").
+              e-mail:  til erhvervskunder (&quot;Kunden&quot;).
             </p>
             <p className="text-gray-700">
               Rekruna er en webbaseret SaaS-løsning, der anvender kunstig intelligens til at analysere og 
-              prioritere CV'er i forhold til stillingsopslag. Tjenesten fungerer som beslutningsstøtte – 
+              prioritere CV&apos;er i forhold til stillingsopslag. Tjenesten fungerer som beslutningsstøtte – 
               ikke som en juridisk eller endelig rekrutteringsafgørelse.
             </p>
           </section>
@@ -214,7 +214,7 @@ export default function TermsPage() {
           <section className="mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">7. Hændelser og myndighedsunderretning</h2>
             <p className="text-gray-700">
-              Ved alvorlig hændelse ("serious incident") efter AI Act art. 73 underretter Rekruna relevant 
+              Ved alvorlig hændelse (&quot;serious incident&quot;) efter AI Act art. 73 underretter Rekruna relevant 
               myndighed og Kunden uden ugrundet ophold. Kunden skal straks informere Rekruna om hændelser, 
               der kan påvirke systemets sikkerhed eller resultater.
             </p>

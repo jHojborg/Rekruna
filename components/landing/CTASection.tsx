@@ -21,7 +21,7 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           {onCtaClick ? (
             <Button size="lg" onClick={onCtaClick} className="text-lg px-8 py-4 h-auto font-semibold">
-              Kom i gang i 
+              Kom i gang i dag
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           ) : (
