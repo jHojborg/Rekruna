@@ -15,7 +15,7 @@ export function CTASection({ onCtaClick }: CTASectionProps) {
             Er du klar til Rekruna?
           </h2>
           <p className="text-lg text-gray-600">
-          Effektiv og fair screening af alle ansøgere.<br />Frigøre mere tid til samtaler med ansøgerne.<br /><strong>Start nu og vær i gang om under ét minut.</strong> 
+          Grundig og fair screening af alle ansøgere.<br />Frigør mere tid til samtale og vurdering af ansøgerne.<br /><strong>Start nu og vær i gang om under ét minut.</strong> 
           </p>
         </div>  
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

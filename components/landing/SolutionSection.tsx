@@ -46,8 +46,8 @@ export function SolutionSection() {
               <h3 className="text-2xl font-semibold text-gray-900">Upload stillingsbeskrivelsen</h3>
             </div>
             <p className="text-gray-700 leading-relaxed">
-              Upload jobbeskrivelsen. Rekruna analyserer 
-              indholdet og identificerer de mest centrale krav til ansøgeren.
+              Rekruna analyserer 
+              stillingsbeskrivelsen og identificerer de mest centrale krav til ansøgeren.
             </p>
             <p className="mt-4 text-gray-700">➔ Hurtigt, præcist og klar til næste skridt.</p>
           </div>
@@ -62,7 +62,7 @@ export function SolutionSection() {
               <h3 className="text-2xl font-semibold text-gray-900">Vælg de vigtigste krav</h3>
             </div>
             <p className="text-gray-700 leading-relaxed">
-            Vælg op til fem, eller skriv jeres egne, krav, som ansøgerne skal opfylde. Upload CV’er og Start analyse - resten klarer Rekruna.
+            Vælg op til fem, eller skriv jeres egne, krav, som ansøgeren skal opfylde. Upload CV’er og Start analyse - resten klarer Rekruna.
             </p>
             <p className="mt-4 text-gray-700">➔ 6 sek. gns analysetid med et to-siders jobopslag.</p>
           </div>
@@ -99,8 +99,7 @@ export function SolutionSection() {
               <h3 className="text-2xl font-semibold text-gray-900">Analyseresultatet er klar</h3>
             </div>
             <p className="text-gray-700 leading-relaxed">
-            Efter få minutter er analysen klar med en prioriteret ansøgerliste, med score og konkrete kommentarer, så du nemt kan spotte styrker og opmærksomhedspunkter.
-            .
+            Efter få minutter er den prioriterede ansøgerliste med score og konkrete kommentarer klar, så du nemt kan spotte styrker og opmærksomhedspunkter.
             </p>
             <p className="mt-4 text-gray-700">➔ 48 sek. gns. analysetid med 50 CV’er.</p>
           </div>

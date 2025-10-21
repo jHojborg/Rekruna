@@ -14,6 +14,14 @@ export function FAQAccordion() {
 
   const faqItems: FAQItem[] = [
     {
+      question: "Hvad betyder credits?",
+      answer: "En credit er lig med et CV. Dvs. hvis du vil screene 10 CV´r bruger du 10 credits."
+    },
+    {
+      question: "Kan man lave løbende sammenligninger?",
+      answer: "Ja - i takt med at du modtager ansøgninger, kan du løbende gennemføre CV-screeninger. Når alle ansøgninger er modtaget, kan du foretage en samlet analyse på tværs af de tidligere screeninger."
+    },
+    {
       question: "Hvor mange CV'r må jeg analysere?",
       answer: "Der er ikke loft over hvor mange CV´r du kan uploade, men har du mere end 50 CV´r, bliver de uploaded i puljer af 50 stk. pr. gang."
     },
@@ -23,15 +31,15 @@ export function FAQAccordion() {
     },
     {
       question: "Hvor præcis er AI-vurderingen?",
-      answer: "Vores AI-model giver en konsistent, objektiv vurdering baseret på dine specifikke krav. Og med 10 point skalaen får du en granuleret feedback på alle kandidater. "
+      answer: "Vores test viser at vurderingerne er meget konsistente og objektive. Med 10 point skalaen får du en granuleret feedback på alle CV´r."
     },
     {
       question: "Hvordan håndteres mine data?",
-      answer: "Alle data lagres indenfor EUs grænser iht gældende regler, og bliver automatisk efter 30 dage. Data du har downloaded har du selv ansavr for. "
+      answer: "Alle data lagres indenfor EUs grænser iht gældende regler, og bliver automatisk efter 30 dage. Rekruna er complient med gældende AI ACT og GDPR regler. Brugen af systemet, samt downloaded er du selv ansvarlig for. "
     },
     {
       question: "Kan jeg opsige når som helst?",
-      answer: "Ja, du kan opsige dit abonnement når som helst med løbende + dage 30. Du kan naturligvis benytte systemet i hele opsigelsesperioden."
+      answer: "Ja, du kan opsige dit abonnement når som helst med løbende mdr. + dage 30. Du kan naturligvis benytte systemet i hele opsigelsesperioden."
     }
   ]
 

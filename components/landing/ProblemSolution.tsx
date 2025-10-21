@@ -30,12 +30,12 @@ export function ProblemSolution() {
     {
       icon: Target,
       title: 'Stærkt vurderingsgrundlag',
-      description: 'Med den prioriterede ansøgerliste, med kommentarer, har du et stærkt vurderingsgrundlag til den videre evaluering.'
+      description: 'Den prioriterede ansøgerliste er et stærkt vurderingsgrundlag for det videre forløb.'
     },
     {
       icon: BarChart3,
       title: 'AI ACT & GDPR compliant',
-      description: 'Alle data håndteres efter gældende AI ACT og GDPR lovgivning.'
+      description: 'Alle data håndteres efter gældende AI ACT og GDPR regler.'
     }
   ]
 
@@ -48,7 +48,7 @@ export function ProblemSolution() {
             Hvorfor vælge Rekruna?
           </h2>
           <p className="mt-8 text-xl text-gray-700">
-          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna tager sig af den tunge CV-screening, og sikrer, at ingen ansøgere bliver overset. Imens kan du, bruge tiden på det, kun du kan - samtaler, vurdering og menneskelig interaktion med ansøgerne.
+          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna løser den tunge CV-screening og sikrer, at ingen ansøgere bliver overset. Imens kan du bruge tiden på det, kun du kan – samtaler, vurderinger og menneskelig interaktion med ansøgerne.
           </p>
         </div>
 

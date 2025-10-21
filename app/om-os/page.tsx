@@ -14,10 +14,10 @@ export const metadata: Metadata = {
 export default function OmOsPage() {
   // AI capabilities list - extracted for better structure
   const capabilities = [
-    'Analysere hundredevis af ansøgninger og CV\'er på få minutter.',
+    'Kompetencebaseret CV analyse uden subjektive antagelser.',
     'Matche kompetencer med virksomhedens krav.',
     'Få en prioriteret kandidatliste uden subjektive antagelser.',
-    'Præsentere et stærkt beslutningsgrundlag til næste fase.'
+    'Et objektivt og fair vurderingsgrundlag til næste fase i rekrutteringen.'
   ]
 
   return (

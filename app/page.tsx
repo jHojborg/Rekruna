@@ -88,7 +88,7 @@ export default function LandingPage() {
     <main className="min-h-screen">
       <HeroSection 
         title="Screen ansøgere 90% hurtigere med AI"
-        subtitle="- en mere objektiv og fair prioritering, der sikrer, at ingen ansøgere bliver overset."
+        subtitle="- en mere objektiv og fair prioritering, der sikrer, at ingen ansøgere eller kompetencer bliver overset."
         ctaText="Start allerede i dag"
         onCtaClick={handleHeroCta}
       />
@@ -152,24 +152,24 @@ export default function LandingPage() {
                 priceSuffix: "kr.",
                 features: [
                   "200 credits",
+                  "Ad hoc ansættelser",
                   "Engangsbetaling",
-                  "Ingen binding",
-                  "Credits udløber aldrig",
+                  "Ingen bindingsperiode",
                 ],
                 highlighted: false,
                 tier: 'pay_as_you_go',
               },
               {
                 title: "Rekruna Pro",
-                originalPrice: "549 kr/måned",
+                originalPrice: "549 kr/mdr.",
                 finalPrice: "349",
-                priceSuffix: "kr/måned",
-                savingsText: "Spar 200 kr./måned",
+                priceSuffix: "kr/mdr.",
+                savingsText: "Spar 200 kr./mdr.",
                 features: [
-                  "400 credits/måned",
-                  "Muligt at tilkøb ekstra",
-                  "Credits nulstilles hver måned",
-                  "Opsig når som helst",
+                  "400 credits pr. mdr.",
+                  "Typisk 1-2 ansættelser pr. måned",
+                  "Muligt at tilkøb ekstra credits",
+                  "Ingen bindingsperiode",
                 ],
                 highlighted: true,
                 tier: 'pro',
@@ -177,12 +177,12 @@ export default function LandingPage() {
               {
                 title: "Rekruna Business",
                 finalPrice: "699",
-                priceSuffix: "kr/måned",
+                priceSuffix: "kr/mdr.",
                 features: [
-                  "1000 credits pr. måned",
-                  "Muligt at tilkøb ekstra",
-                  "Credits nulstilles hver måned",
-                  "Prioriteret support",
+                  "1000 credits pr. mdr.",
+                  "Recruiter eller 2+ ansættelser/måned",
+                  "Muligt at tilkøb ekstra credits",
+                  "Ingen bindingsperiode",
                 ],
                 highlighted: false,
                 tier: 'business',
@@ -208,7 +208,7 @@ export default function LandingPage() {
               </div>
             )
           })()}
-          <p className="mt-6 text-center text-sm text-gray-500">Alle priser eksl. moms. Abonnementer kan opsiges når som helst.</p>
+          <p className="mt-6 text-center text-sm text-gray-500">Alle priser eksl. moms. Ubrugte ekstra credits overløber til følgende måned. Abonnement opsigelsesfrist er løbende mdr. + 30 dage.</p>
         </div>
       </section>
 
