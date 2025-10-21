@@ -7,18 +7,18 @@ export function ProblemSolution() {
       icon: ListOrdered,
       title: 'Objektiv vurdering',
       description:
-        'Rekruna sikrer en objektiv og kompetancebaseret vurdering af alle ansøgere -  uden subjektive antagelser.'
+        'Du får en en kompetancebaseret og objektiv vurdering af alle ansøgere -  uden subjektive antagelser.'
     },{
       icon: HandCoins,
       title: 'Mere tid til møder',
       description:
-        'Med Rekruna sparer du både tid og penge i screeningsfasen. Mere tid til at møde og evaluere ansøgerne.'
+        'Du sparer både tid og penge i screeningsfasen. Mere tid til at møde og evaluere ansøgerne.'
     },
     {
       icon: HeartHandshakeIcon,
       title: 'Ingen opstartsgebyr',
       description:
-        'Du betaler kun en fast månedlige ydelse. Ingen opstartsfee eller andre ekstraomkostninger.'
+        'Du betaler en fast månedlige ydelse. Ingen opstartsfee eller andre ekstraomkostninger.'
     },
     {
       icon: Clock,
