@@ -11,26 +11,48 @@ const OPENAI_RETRY_ATTEMPTS = 3
 const OPENAI_RETRY_DELAY = 1000
 const CACHE_EXPIRY_HOURS = 24
 
-// Resume generation prompts for Danish CV summaries
-const resumeSystemPrompt = `Du laver strukturerede CV-resuméer på dansk. Følg nøjagtigt den angivne struktur og ordgrænse. 
+// Resume generation prompts for Danish CV summaries - simplified format without markdown
+const resumeSystemPrompt = `Du laver strukturerede CV-resuméer på dansk. Følg nøjagtigt den angivne struktur og ordgrænse.
+
+VIGTIG FORMATERING: Brug IKKE markdown (**) eller andre formateringssymboler. Skriv almindelig tekst med kun sektionsoverskrifter.
 
 VIGTIG: Du SKAL holde arbejdserfaring (jobroller) og uddannelse (formelle uddannelser) adskilt. Bland ALDRIG disse kategorier sammen.`;
 
 const makeResumePrompt = (fileName: string, cvText: string) => {
   return `Lav et struktureret dansk resumé af denne kandidat på præcis 200 ord:
 
-STRUKTUR:
-**Profil:** [2-3 linjer - nuværende rolle og samlet erfaring]
-**Nøgleerfaring:** [3-4 mest relevante ARBEJDSSTILLINGER med år og virksomhed - KUN joberfaring, IKKE uddannelse]
-**Kernekompetencer:** [job-relevante færdigheder og teknologier]
-**Uddannelse:** [KUN formelle uddannelser, degrees, kurser og certificeringer - KUN uddannelse, IKKE job-erfaring]
-**Konkrete resultater:** [målbare achievements der understøtter kravene]
+STRUKTUR (brug ingen markdown eller ** symboler):
+Profil:
+[2-3 linjer - nuværende rolle og samlet erfaring]
+
+Nøgleerfaring:
+- [Mest relevant ARBEJDSSTILLING med årstal og virksomhed]
+- [Næstmest relevant ARBEJDSSTILLING med årstal og virksomhed]
+- [Tredje relevant ARBEJDSSTILLING med årstal og virksomhed]
+[KUN joberfaring, IKKE uddannelse]
+
+Kernekompetencer:
+- [Kompetence 1]
+- [Kompetence 2]
+- [Kompetence 3]
+[Job-relevante færdigheder og teknologier]
+
+Uddannelse:
+- [Grad/titel - Institution (årstal)]
+[KUN formelle uddannelser, degrees, kurser og certificeringer - IKKE job-erfaring]
+
+Konkrete resultater:
+- [Målbart achievement 1]
+- [Målbart achievement 2]
+- [Målbart achievement 3]
+[Målbare achievements der understøtter kravene]
 
 VIGTIGE REGLER FOR KATEGORISERING:
-- **Nøgleerfaring**: Kun tidligere arbejdspladser, job-titler, ansættelsesperioder og virksomheder
-- **Uddannelse**: Kun formelle uddannelser, universiteter, højskoler, kurser, certificeringer og akademiske kvalifikationer
+- Nøgleerfaring: Kun tidligere arbejdspladser, job-titler, ansættelsesperioder og virksomheder
+- Uddannelse: Kun formelle uddannelser, universiteter, højskoler, kurser, certificeringer
 - Bland ALDRIG arbejdserfaring og uddannelse sammen
-- Arbejdsrollerne skal være under "Nøgleerfaring", uddannelserne under "Uddannelse"
+- Brug INGEN markdown symboler (**, *, _, etc.) - kun almindelig tekst
+- Sektionsoverskrifter skal stå alene på en linje efterfulgt af kolon
 
 FOKUS:
 - Fremhæv erfaring der matcher stillingsopslaget
@@ -41,7 +63,7 @@ FOKUS:
 
 UDELAD:
 - Personlige oplysninger (alder, adresse, familie)
-- Irrelevante hobbyer eller kurser
+- Irrelevante hobbyer
 - Vage beskrivelser uden konkret indhold
 
 KANDIDAT: ${fileName}
@@ -69,7 +91,7 @@ async function generateResume(
     const resumeText = resp.choices?.[0]?.message?.content?.trim() || '';
     
     // Basic validation - should contain some Danish resume structure markers
-    if (resumeText.length < 100 || !resumeText.includes('**')) {
+    if (resumeText.length < 100) {
       throw new Error('Generated resume too short or missing structure');
     }
 

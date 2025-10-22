@@ -1065,6 +1065,45 @@ ${cvText || '(intet udtræk)'}`
       }
     })
 
+    // Trigger background resume generation (non-blocking)
+    // This pre-generates all CV resumes so they're ready when user clicks the button
+    setImmediate(async () => {
+      try {
+        // Prepare resume generation jobs for all candidates with CV text hash
+        const resumeJobs = finalResults
+          .filter(r => r.cv_text_hash) // Only candidates with CV text cached
+          .map(r => ({
+            candidateName: r.name,
+            cvTextHash: r.cv_text_hash
+          }))
+
+        if (resumeJobs.length > 0) {
+          console.log(`🚀 Triggering background resume generation for ${resumeJobs.length} candidates`)
+          
+          // Call internal batch endpoint to generate resumes in background
+          const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+          const response = await fetch(`${baseUrl}/api/resume/batch`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-internal-key': process.env.INTERNAL_API_KEY || 'dev-internal-key'
+            },
+            body: JSON.stringify({ jobs: resumeJobs })
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            console.log(`✅ Background resume generation completed:`, data.stats)
+          } else {
+            console.warn('⚠️ Background resume generation failed:', await response.text())
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Background resume generation error (non-critical):', error)
+        // Non-critical - don't affect the main analysis response
+      }
+    })
+
     // Return immediate response
     return NextResponse.json({
       ok: true,
