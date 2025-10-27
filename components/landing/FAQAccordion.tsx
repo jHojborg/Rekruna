@@ -14,8 +14,12 @@ export function FAQAccordion() {
 
   const faqItems: FAQItem[] = [
     {
+      question: "Hvordan håndteres mine data?",
+      answer: "Vi tager vores datasikkerhedsansvar alvorligt og behandler data i fuld overensstemmelse med gældende EU-lovgivning. Alle data lagres sikkert inden for EU’s grænser. CV-oplysninger anonymiseres, før AI-modellen modtager dem – der videregives ingen personhenførbare data. CV’er og analyseresultater opbevares i en separat database og slettes automatisk efter 30 dage. Rekruna er compliant med EU’s AI Act og GDPR. Vi overvåger løbende lovgivningen og opdaterer systemet for at sikre fortsat compliance og maksimal datasikkerhed. Husk at du som bruger er du selv ansvarlig for den endelige anvendelse af analyser og resultater, der downloades fra systemet."
+    },
+    {
       question: "Hvad betyder credits?",
-      answer: "En credit er lig med et CV. Dvs. hvis du vil screene 10 CV´r bruger du 10 credits."
+      answer: "En credit er lig med et CV. Dvs. hvis du vil screene 10 CV´r bruger du 10 credits. Eller hvis du screener fx tre pulje af ti CVér (30 ialt) og herfter screener på tværs af de tre screening resultater, har du brugt 60 credits"
     },
     {
       question: "Kan man lave løbende sammenligninger?",
@@ -23,23 +27,19 @@ export function FAQAccordion() {
     },
     {
       question: "Hvor mange CV'r må jeg analysere?",
-      answer: "Der er ikke loft over hvor mange CV´r du kan uploade, men har du mere end 50 CV´r, bliver de uploaded i puljer af 50 stk. pr. gang."
+      answer: "Der er ikke loft over hvor mange CV´r du kan uploade, men har du mere end 50 CV´r, bliver de uploaded i puljer af 50 stk. pr. gang. Det påvirker ikke det samlede analyseresultat"
     },
     {
       question: "Hvilke filformater understøttes?",
-      answer: "Vi understøtter PDF-filer for både jobopslag og CV´r. Vi arbejder på at tilføje support for andre formaler."
+      answer: "Vi understøtter pt. kun upload af PDF-filer. Men der arbejdes på at tilføje support for andre formater."
     },
     {
       question: "Hvor præcis er AI-vurderingen?",
-      answer: "Vores test viser at vurderingerne er meget konsistente og objektive. Med 10 point skalaen får du en granuleret feedback på alle CV´r."
-    },
-    {
-      question: "Hvordan håndteres mine data?",
-      answer: "Alle data lagres indenfor EUs grænser iht gældende regler, og bliver automatisk efter 30 dage. Rekruna er complient med gældende AI ACT og GDPR regler. Brugen af systemet, samt downloaded er du selv ansvarlig for. "
+      answer: "Vores test viser at vurderingerne er meget konsistente og objektive. Med 10 point skalaen får du en granuleret feedback på alle CV´r. Den måde vi anonymiserer CVérne sikre tillige en bias-fri analyse."
     },
     {
       question: "Kan jeg opsige når som helst?",
-      answer: "Ja, du kan opsige dit abonnement når som helst med løbende mdr. + dage 30. Du kan naturligvis benytte systemet i hele opsigelsesperioden."
+      answer: "Ja absolut, abonnementerne Pro og Business kan opsiges med løbende mdr. + dage 30. Du kan naturligvis benytte systemet i hele opsigelsesperioden."
     }
   ]
 
