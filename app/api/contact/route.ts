@@ -43,10 +43,10 @@ export async function POST(req: NextRequest) {
       from: 'Rekruna Kontaktformular <noreply@rekruna.dk>',
       to: ['support@rekruna.dk'],
       replyTo: email, // Så I kan svare direkte til kunden
-      subject: subject ? `Kontakt: ${subject}` : 'Ny henvendelse fra kontaktformular',
+      subject: subject ? `Kontakt: ${subject}` : 'Ny henvendelse fra Rekruna',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Ny henvendelse fra kontaktformular</h2>
+          <h2 style="color: #333;">Ny henvendelse fra Rekruna</h2>
           
           <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 10px 0;"><strong>Navn:</strong> ${name}</p>

@@ -90,7 +90,7 @@ export default function KontaktPage() {
               Kontakt os
             </h1>
             <p className="text-xl text-gray-700">
-              Skriv og vi svarer indenfor 24 timer
+              Vi tilstræber at svare på din besked indenfor 24 timer
             </p>
           </div>
         </div>
