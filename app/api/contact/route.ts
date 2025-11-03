@@ -3,8 +3,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-// Initialize Resend with API key
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy initialize Resend - only when API is called, not during build
+// This prevents build errors when RESEND_API_KEY is not available
+function getResendClient() {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not configured')
+  }
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,6 +45,7 @@ export async function POST(req: NextRequest) {
 
     // Send email via Resend
     // Dette sender en professionel email til support@rekruna.dk
+    const resend = getResendClient()
     const { data, error } = await resend.emails.send({
       from: 'Rekruna Kontaktformular <noreply@rekruna.dk>',
       to: ['support@rekruna.dk'],
