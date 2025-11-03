@@ -52,7 +52,18 @@ export function SignupForm({
     if (!form.name) e.name = 'Navn er påkrævet'
     if (!form.email) e.email = 'Email er påkrævet'
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Ugyldig email'
-    if (!passwordOk(form.password)) e.password = 'Min. 8 tegn, store+små bogstaver og specialtegn'
+    
+    // More detailed password validation
+    if (!form.password || form.password.length < 8) {
+      e.password = 'Kodeord skal være mindst 8 tegn'
+    } else if (!/[A-Z]/.test(form.password)) {
+      e.password = 'Kodeord mangler store bogstaver (A-Z)'
+    } else if (!/[a-z]/.test(form.password)) {
+      e.password = 'Kodeord mangler små bogstaver (a-z)'
+    } else if (!/[^A-Za-z0-9]/.test(form.password)) {
+      e.password = 'Kodeord mangler specialtegn (f.eks. !@#$%^&*)'
+    }
+    
     if (!form.accept) e.accept = 'Husk at acceptere vores handelsbetingelser'
     setErrors(e)
     return Object.keys(e).length === 0
@@ -82,7 +93,21 @@ export function SignupForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!validate()) return
+    
+    // Run validation and show errors if any
+    const isValid = validate()
+    
+    if (!isValid) {
+      // Small delay to let error state update, then scroll to first error
+      setTimeout(() => {
+        const firstErrorElement = document.querySelector('.text-red-600') as HTMLElement
+        if (firstErrorElement) {
+          firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      }, 100)
+      return
+    }
+    
     onSubmit?.(form)
   }
 
