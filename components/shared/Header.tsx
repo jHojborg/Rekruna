@@ -3,11 +3,13 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase/client'
 
 export function Header() {
   const [loggedIn, setLoggedIn] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
     let mounted = true
@@ -26,6 +28,19 @@ export function Header() {
   const onLogout = async () => {
     await supabase.auth.signOut()
     window.location.href = '/'
+  }
+
+  // Handle dashboard button click
+  // If already on dashboard, force refresh to reset to step 1
+  const handleDashboardClick = (e: React.MouseEvent) => {
+    console.log('Dashboard button clicked. Current path:', pathname)
+    if (pathname === '/dashboard') {
+      e.preventDefault()
+      console.log('Already on dashboard - forcing reload')
+      // Force page reload to reset dashboard to step 1
+      // Use router.refresh() first, then fallback to full reload
+      window.location.reload()
+    }
   }
 
   return (
@@ -64,7 +79,8 @@ export function Header() {
                   <Button variant="outline">Profil</Button>
                 </Link>
                 {/* Dashboard button - only visible when logged in */}
-                <Link href="/dashboard">
+                {/* Refreshes page if already on dashboard to reset to step 1 */}
+                <Link href="/dashboard" onClick={handleDashboardClick}>
                   <Button variant="outline">Dashboard</Button>
                 </Link>
                 {/* Logout button */}

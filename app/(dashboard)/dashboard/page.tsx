@@ -946,6 +946,22 @@ export default function DashboardPage() {
     }
   }
 
+  // Reset dashboard to initial view (step 1)
+  // Used when user clicks "Tilbage til dashboard" button
+  const goBackToDashboard = () => {
+    console.log('🔄 Going back to dashboard - resetting to step 1')
+    // Clear results and reset to main dashboard
+    setResults([])
+    setStep(1)
+    setTotal(0)
+    setProcessed(0)
+    setCurrentFile(undefined)
+    // Scroll to top so user sees the main dashboard
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 100)
+  }
+
   const startNewAnalysis = () => {
     setStep(1)
     setJobFile(null)
@@ -1376,9 +1392,7 @@ export default function DashboardPage() {
         {step === 4 && (
           <>
             <div className="flex items-center justify-center gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/dashboard">Tilbage til dashboard</Link>
-              </Button>
+              <Button variant="outline" onClick={goBackToDashboard}>Tilbage til dashboard</Button>
               <Button variant="outline" onClick={startNewAnalysis}>Start ny analyse</Button>
               <Button onClick={downloadPdf}>Download</Button>
             </div>
