@@ -266,9 +266,9 @@ export class StripeService {
       const isSubscription = productConfig.isSubscription
       
       // Create Stripe checkout session
+      // Note: When using 'customer', do NOT use 'customer_email' - Stripe uses email from customer object
       const session = await getStripe().checkout.sessions.create({
         customer: customerId,
-        customer_email: params.userEmail, // Ensure email is set for receipts
         mode: isSubscription ? 'subscription' : 'payment',
         payment_method_types: ['card'],
         line_items: [
