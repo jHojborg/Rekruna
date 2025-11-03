@@ -52,12 +52,9 @@ function SignupContent() {
         return
       }
       
-      // Wait a bit for auth to propagate
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Get session token
-      const { data: sessionData } = await supabase.auth.getSession()
-      const token = sessionData?.session?.access_token
+      // Use the session that was returned directly from signUp
+      // This is more reliable than calling getSession() again
+      const token = authData.session?.access_token
       
       if (!token) {
         alert('Kunne ikke hente auth token. Prøv at logge ind.')
