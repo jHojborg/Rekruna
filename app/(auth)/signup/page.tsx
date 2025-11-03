@@ -29,10 +29,12 @@ function SignupContent() {
     
     try {
       // 1. Create Supabase auth user
+      // emailRedirectTo prevents email confirmation requirement
       const { data: authData, error: signupError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
           data: {
             name: data.name,
             company_name: data.companyName
@@ -41,6 +43,7 @@ function SignupContent() {
       })
       
       if (signupError) {
+        console.error('Signup error:', signupError)
         alert(`Signup fejl: ${signupError.message}`)
         setIsLoading(false)
         return
@@ -52,12 +55,21 @@ function SignupContent() {
         return
       }
       
+      // Debug logging to understand what we got from signUp
+      console.log('Auth data from signUp:', {
+        hasUser: !!authData.user,
+        hasSession: !!authData.session,
+        userEmail: authData.user?.email
+      })
+      
       // Use the session that was returned directly from signUp
       // This is more reliable than calling getSession() again
       const token = authData.session?.access_token
       
       if (!token) {
-        alert('Kunne ikke hente auth token. Prøv at logge ind.')
+        // If no session, check if email confirmation is required
+        console.error('No session token received. This likely means email confirmation is required.')
+        alert('Der blev oprettet en bruger, men systemet kræver email-bekræftelse. Kontakt support@rekruna.dk')
         setIsLoading(false)
         return
       }
