@@ -396,19 +396,38 @@ export class StripeService {
           }
         }
         
-        // Add subscription credits
-        const { data: balance } = await supabaseAdmin
+        // Get or create credit balance for subscription
+        let { data: balance } = await supabaseAdmin
           .from('credit_balances')
           .select('*')
           .eq('user_id', userId)
           .single()
         
+        // Initialize balance if doesn't exist
         if (!balance) {
-          // Initialize if doesn't exist
+          console.log(`Initializing credit balance for subscription user ${userId}`)
           await CreditsService.initializeBalance(userId)
+          
+          // Re-fetch the balance after initialization
+          const { data: newBalance } = await supabaseAdmin
+            .from('credit_balances')
+            .select('*')
+            .eq('user_id', userId)
+            .single()
+          
+          balance = newBalance
         }
         
-        // Set subscription credits (not add, but set)
+        // Safety check
+        if (!balance) {
+          console.error('Failed to get or create balance for user:', userId)
+          return {
+            success: false,
+            error: 'Failed to initialize credit balance'
+          }
+        }
+        
+        // Set subscription credits (not add, but set to allocation)
         const { error: creditError } = await supabaseAdmin
           .from('credit_balances')
           .update({
@@ -419,12 +438,15 @@ export class StripeService {
           .eq('user_id', userId)
         
         if (creditError) {
-          console.error('Failed to update credits:', creditError)
+          console.error('Failed to update subscription credits:', creditError)
           return {
             success: false,
             error: 'Failed to update credits'
           }
         }
+        
+        // Calculate new total (subscription credits + existing purchased credits)
+        const newTotalCredits = credits + balance.purchased_credits
         
         // Log transaction
         await supabaseAdmin
@@ -432,7 +454,7 @@ export class StripeService {
           .insert({
             user_id: userId,
             amount: credits,
-            balance_after: (balance?.total_credits || 0) + credits,
+            balance_after: newTotalCredits,
             credit_type: 'subscription',
             transaction_type: 'subscription_allocation',
             stripe_payment_intent_id: session.payment_intent as string,
@@ -440,24 +462,49 @@ export class StripeService {
           })
         
         console.log(`✅ Subscription activated for user ${userId}: ${credits} credits`)
+        console.log(`   Subscription: ${credits} | Purchased: ${balance.purchased_credits} | Total: ${newTotalCredits}`)
         
       } else {
         // This is a one-time payment (Pay as you go or Top-up)
-        const { data: balance } = await supabaseAdmin
+        
+        // Step 1: Get or create credit balance
+        let { data: balance } = await supabaseAdmin
           .from('credit_balances')
           .select('*')
           .eq('user_id', userId)
           .single()
         
+        // If balance doesn't exist, initialize it
         if (!balance) {
+          console.log(`Initializing credit balance for user ${userId}`)
           await CreditsService.initializeBalance(userId)
+          
+          // Re-fetch the balance after initialization
+          const { data: newBalance } = await supabaseAdmin
+            .from('credit_balances')
+            .select('*')
+            .eq('user_id', userId)
+            .single()
+          
+          balance = newBalance
         }
         
-        // Add to purchased_credits
+        // Safety check - balance should exist now
+        if (!balance) {
+          console.error('Failed to get or create balance for user:', userId)
+          return {
+            success: false,
+            error: 'Failed to initialize credit balance'
+          }
+        }
+        
+        // Step 2: Add credits to purchased_credits
+        const newPurchasedCredits = balance.purchased_credits + credits
+        
         const { error: creditError } = await supabaseAdmin
           .from('credit_balances')
           .update({
-            purchased_credits: (balance?.purchased_credits || 0) + credits,
+            purchased_credits: newPurchasedCredits,
             updated_at: new Date().toISOString()
           })
           .eq('user_id', userId)
@@ -470,20 +517,39 @@ export class StripeService {
           }
         }
         
-        // Log transaction
+        // Step 3: Calculate new total for transaction log
+        const newTotalCredits = balance.subscription_credits + newPurchasedCredits
+        
+        // Step 4: Update user_subscriptions status to 'active' for pay_as_you_go
+        // This ensures the user's plan shows as active after purchase
+        if (type === 'one_time' && tier === 'pay_as_you_go') {
+          await supabaseAdmin
+            .from('user_subscriptions')
+            .update({
+              product_tier: 'pay_as_you_go',
+              status: 'active',
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', userId)
+          
+          console.log(`✅ Updated subscription status to 'active' for pay_as_you_go user ${userId}`)
+        }
+        
+        // Step 5: Log transaction
         await supabaseAdmin
           .from('credit_transactions')
           .insert({
             user_id: userId,
             amount: credits,
-            balance_after: (balance?.total_credits || 0) + credits,
+            balance_after: newTotalCredits,
             credit_type: 'purchased',
             transaction_type: 'purchase',
             stripe_payment_intent_id: session.payment_intent as string,
             description: `Purchased ${credits} credits (${tier})`
           })
         
-        console.log(`✅ One-time purchase for user ${userId}: ${credits} credits`)
+        console.log(`✅ One-time purchase for user ${userId}: ${credits} credits added`)
+        console.log(`   Previous: ${balance.purchased_credits} | New: ${newPurchasedCredits} | Total: ${newTotalCredits}`)
       }
       
       return { success: true }
@@ -531,7 +597,37 @@ export class StripeService {
       const userId = subscription.user_id
       const credits = subscription.monthly_credit_allocation
       
-      // Reset subscription credits (not add!)
+      // Get or create credit balance
+      let { data: balance } = await supabaseAdmin
+        .from('credit_balances')
+        .select('*')
+        .eq('user_id', userId)
+        .single()
+      
+      // Initialize if doesn't exist (shouldn't happen, but safety check)
+      if (!balance) {
+        console.log(`Initializing credit balance for renewal user ${userId}`)
+        await CreditsService.initializeBalance(userId)
+        
+        // Re-fetch
+        const { data: newBalance } = await supabaseAdmin
+          .from('credit_balances')
+          .select('*')
+          .eq('user_id', userId)
+          .single()
+        
+        balance = newBalance
+      }
+      
+      if (!balance) {
+        console.error('Failed to get balance for renewal:', userId)
+        return {
+          success: false,
+          error: 'Failed to get credit balance'
+        }
+      }
+      
+      // Reset subscription credits to monthly allocation (not add!)
       const { error: creditError } = await supabaseAdmin
         .from('credit_balances')
         .update({
@@ -542,26 +638,23 @@ export class StripeService {
         .eq('user_id', userId)
       
       if (creditError) {
-        console.error('Failed to reset credits:', creditError)
+        console.error('Failed to reset subscription credits:', creditError)
         return {
           success: false,
           error: 'Failed to reset credits'
         }
       }
       
-      // Log transaction
-      const { data: balance } = await supabaseAdmin
-        .from('credit_balances')
-        .select('total_credits')
-        .eq('user_id', userId)
-        .single()
+      // Calculate new total after reset
+      const newTotalCredits = credits + balance.purchased_credits
       
+      // Log transaction
       await supabaseAdmin
         .from('credit_transactions')
         .insert({
           user_id: userId,
           amount: credits,
-          balance_after: balance?.total_credits || 0,
+          balance_after: newTotalCredits,
           credit_type: 'subscription',
           transaction_type: 'subscription_reset',
           stripe_payment_intent_id: invoice.payment_intent as string,
@@ -569,6 +662,7 @@ export class StripeService {
         })
       
       console.log(`✅ Subscription renewed for user ${userId}: ${credits} credits`)
+      console.log(`   Old subscription credits lost, new allocation: ${credits} | Purchased kept: ${balance.purchased_credits} | Total: ${newTotalCredits}`)
       
       return { success: true }
       
