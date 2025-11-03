@@ -268,6 +268,7 @@ export class StripeService {
       // Create Stripe checkout session
       const session = await getStripe().checkout.sessions.create({
         customer: customerId,
+        customer_email: params.userEmail, // Ensure email is set for receipts
         mode: isSubscription ? 'subscription' : 'payment',
         payment_method_types: ['card'],
         line_items: [
@@ -281,6 +282,10 @@ export class StripeService {
         billing_address_collection: 'auto', // Show billing address fields
         // Enable automatic tax calculation (requires Stripe Tax to be enabled in dashboard)
         automatic_tax: {
+          enabled: true
+        },
+        // Phone number collection for better customer support
+        phone_number_collection: {
           enabled: true
         },
         metadata: {
