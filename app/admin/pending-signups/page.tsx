@@ -81,6 +81,7 @@ export default function AdminPendingSignupsPage() {
   // Load on mount and when filter changes
   useEffect(() => {
     fetchSignups()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter])
   
   // =====================================================

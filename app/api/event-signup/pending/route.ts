@@ -26,9 +26,10 @@ const supabaseAdmin = createClient(
 
 // Tjek om email allerede eksisterer i auth.users eller pending
 async function emailExists(email: string): Promise<boolean> {
-  // Tjek i Supabase auth
-  const { data: authUser } = await supabaseAdmin.auth.admin.getUserByEmail(email)
-  if (authUser.user) return true
+  // Tjek i Supabase auth - brug listUsers med filter
+  const { data: users } = await supabaseAdmin.auth.admin.listUsers()
+  const userExists = users?.users?.some(u => u.email?.toLowerCase() === email.toLowerCase())
+  if (userExists) return true
   
   // Tjek i pending signups
   const { data: pending } = await supabaseAdmin
