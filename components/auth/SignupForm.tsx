@@ -44,16 +44,97 @@ export function SignupForm({
 
   const validate = () => {
     const e: Record<string, string> = {}
-    if (!form.companyName) e.companyName = 'Firmanavn er påkrævet'
-    if (!form.address) e.address = 'Adresse er påkrævet'
-    if (!form.postalCode) e.postalCode = 'Postnummer er påkrævet'
-    if (!form.city) e.city = 'By er påkrævet'
-    if (!form.cvr) e.cvr = 'CVR er påkrævet'
-    if (!form.name) e.name = 'Navn er påkrævet'
-    if (!form.email) e.email = 'Email er påkrævet'
-    else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = 'Ugyldig email'
     
-    // More detailed password validation
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    // Check if field is empty (including whitespace-only strings)
+    const isEmpty = (val: string) => !val || val.trim().length === 0
+    
+    // Check if string contains only digits
+    const isOnlyDigits = (val: string) => /^\d+$/.test(val.trim())
+    
+    // Check if string contains letters (including Danish letters)
+    const hasLetters = (val: string) => /[a-zA-ZæøåÆØÅ]/.test(val.trim())
+    
+    // ============================================
+    // FIRMANAVN - Required, must contain letters
+    // ============================================
+    if (isEmpty(form.companyName)) {
+      e.companyName = 'Firmanavn er påkrævet'
+    } else if (!hasLetters(form.companyName)) {
+      e.companyName = 'Firmanavn skal indeholde bogstaver'
+    }
+    
+    // ============================================
+    // ADRESSE - Required, must contain letters
+    // ============================================
+    if (isEmpty(form.address)) {
+      e.address = 'Adresse er påkrævet'
+    } else if (!hasLetters(form.address)) {
+      e.address = 'Adresse skal indeholde bogstaver'
+    }
+    
+    // ============================================
+    // POSTNUMMER - Required, must be exactly 4 digits, range 1000-9999
+    // ============================================
+    if (isEmpty(form.postalCode)) {
+      e.postalCode = 'Postnummer er påkrævet'
+    } else if (!isOnlyDigits(form.postalCode)) {
+      e.postalCode = 'Postnummer skal kun indeholde tal'
+    } else if (form.postalCode.trim().length !== 4) {
+      e.postalCode = 'Postnummer skal være 4 cifre'
+    } else {
+      const postalNum = parseInt(form.postalCode.trim())
+      if (postalNum < 1000 || postalNum > 9999) {
+        e.postalCode = 'Postnummer skal være mellem 1000 og 9999'
+      }
+    }
+    
+    // ============================================
+    // BY - Required, must contain letters
+    // ============================================
+    if (isEmpty(form.city)) {
+      e.city = 'By er påkrævet'
+    } else if (!hasLetters(form.city)) {
+      e.city = 'By skal indeholde bogstaver'
+    }
+    
+    // ============================================
+    // CVR - Required, must be exactly 8 digits
+    // ============================================
+    if (isEmpty(form.cvr)) {
+      e.cvr = 'CVR er påkrævet'
+    } else if (!isOnlyDigits(form.cvr)) {
+      e.cvr = 'CVR skal kun indeholde tal'
+    } else if (form.cvr.trim().length !== 8) {
+      e.cvr = 'CVR skal være 8 cifre'
+    }
+    
+    // ============================================
+    // FULDE NAVN - Required, must contain letters, min 2 characters
+    // ============================================
+    if (isEmpty(form.name)) {
+      e.name = 'Navn er påkrævet'
+    } else if (!hasLetters(form.name)) {
+      e.name = 'Navn skal indeholde bogstaver'
+    } else if (form.name.trim().length < 2) {
+      e.name = 'Navn skal være mindst 2 tegn'
+    }
+    
+    // ============================================
+    // EMAIL - Required, must be valid email format
+    // ============================================
+    if (isEmpty(form.email)) {
+      e.email = 'Email er påkrævet'
+    } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+      e.email = 'Ugyldig email'
+    }
+    
+    // ============================================
+    // PASSWORD - Complex validation for security
+    // ============================================
     if (!form.password || form.password.length < 8) {
       e.password = 'Kodeord skal være mindst 8 tegn'
     } else if (!/[A-Z]/.test(form.password)) {
@@ -64,7 +145,13 @@ export function SignupForm({
       e.password = 'Kodeord mangler specialtegn (f.eks. !@#$%^&*)'
     }
     
-    if (!form.accept) e.accept = 'Husk at acceptere vores handelsbetingelser'
+    // ============================================
+    // HANDELSBETINGELSER - Required checkbox
+    // ============================================
+    if (!form.accept) {
+      e.accept = 'Husk at acceptere vores handelsbetingelser'
+    }
+    
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -108,7 +195,21 @@ export function SignupForm({
       return
     }
     
-    onSubmit?.(form)
+    // Trim all string fields before submitting to clean up whitespace
+    // This ensures clean data is stored in the database
+    const cleanedData = {
+      ...form,
+      companyName: form.companyName.trim(),
+      address: form.address.trim(),
+      postalCode: form.postalCode.trim(),
+      city: form.city.trim(),
+      cvr: form.cvr.trim(),
+      name: form.name.trim(),
+      email: form.email.trim(),
+      // Note: password is NOT trimmed - whitespace can be part of the password
+    }
+    
+    onSubmit?.(cleanedData)
   }
 
   return (

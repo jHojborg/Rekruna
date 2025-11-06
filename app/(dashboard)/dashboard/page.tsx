@@ -28,6 +28,11 @@ export default function DashboardPage() {
   
   // User profile state for welcome message
   const [userName, setUserName] = useState<string>('')
+  
+  // EVENT account tracking
+  const [isEventAccount, setIsEventAccount] = useState(false)
+  const [eventDaysRemaining, setEventDaysRemaining] = useState(0)
+  const [eventExpired, setEventExpired] = useState(false)
 
   // Simple client-side route protection
   const [checkingAuth, setCheckingAuth] = useState(true)
@@ -113,6 +118,25 @@ export default function DashboardPage() {
         if (result.success && result.data?.contact_person) {
           const firstName = result.data.contact_person.split(' ')[0].toUpperCase()
           setUserName(firstName)
+        }
+        
+        // Check if EVENT account and calculate days remaining
+        if (result.success && result.data) {
+          const profile = result.data
+          
+          if (profile.account_type === 'EVENT') {
+            setIsEventAccount(true)
+            
+            // Calculate days remaining
+            if (profile.event_expiry_date) {
+              const expiryDate = new Date(profile.event_expiry_date)
+              const now = new Date()
+              const daysRemaining = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+              
+              setEventDaysRemaining(daysRemaining)
+              setEventExpired(daysRemaining <= 0 || !profile.is_active)
+            }
+          }
         }
       } catch (error) {
         console.error('Error loading profile:', error)
@@ -1089,6 +1113,58 @@ export default function DashboardPage() {
     <main className="min-h-screen bg-brand-base">
       <AnalysisProgress currentStep={step} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        
+        {/* EVENT Account Banner */}
+        {isEventAccount && !eventExpired && eventDaysRemaining > 0 && (
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-blue-500 text-white flex items-center justify-center text-xl font-bold">
+                  {eventDaysRemaining}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-900">
+                    Demo konto aktiv
+                  </h3>
+                  <p className="text-blue-700">
+                    Du har <strong>{eventDaysRemaining} dage</strong> tilbage af din demo periode
+                  </p>
+                </div>
+              </div>
+              <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                <Link href="/">
+                  Køb credits for at fortsætte
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {/* EVENT Account Expired Banner */}
+        {isEventAccount && eventExpired && (
+          <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-red-500 text-white flex items-center justify-center">
+                  <span className="text-2xl">⚠</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-red-900">
+                    Din demo er udløbet
+                  </h3>
+                  <p className="text-red-700">
+                    For at fortsætte skal du købe credits eller vælge en plan
+                  </p>
+                </div>
+              </div>
+              <Button asChild className="bg-red-600 hover:bg-red-700">
+                <Link href="/">
+                  Køb credits her
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
         
         {/* Only show overview sections when on step 1 (main dashboard) */}
         {step === 1 && (

@@ -343,6 +343,54 @@ export class StripeService {
         }
       }
       
+      // CRITICAL: Verify payment was actually completed
+      // checkout.session.completed fires even if payment failed or wasn't required
+      if (session.payment_status !== 'paid') {
+        console.warn(`⚠️ Checkout session ${session.id} completed but payment status is: ${session.payment_status}`)
+        console.warn(`   User: ${userId} - NOT adding credits until payment is confirmed`)
+        return {
+          success: false,
+          error: `Payment not completed. Status: ${session.payment_status}`
+        }
+      }
+      
+      console.log(`✅ Payment confirmed for session ${session.id} (status: ${session.payment_status})`)
+      
+      // =====================================================
+      // EVENT → STANDARD CONVERSION
+      // If this is an EVENT customer making their first purchase,
+      // convert them to a STANDARD customer
+      // =====================================================
+      
+      const { data: userProfile } = await supabaseAdmin
+        .from('user_profiles')
+        .select('account_type, is_active')
+        .eq('user_id', userId)
+        .single()
+      
+      if (userProfile?.account_type === 'EVENT') {
+        console.log(`🔄 Converting EVENT customer ${userId} to STANDARD after purchase`)
+        
+        // Update profile: Convert to STANDARD and activate
+        const { error: profileError } = await supabaseAdmin
+          .from('user_profiles')
+          .update({
+            account_type: 'STANDARD',
+            is_active: true,
+            // Clear EVENT-specific fields
+            event_expiry_date: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+        
+        if (profileError) {
+          console.error('Failed to convert EVENT to STANDARD:', profileError)
+          // Continue anyway - payment succeeded
+        } else {
+          console.log(`✅ EVENT customer ${userId} converted to STANDARD successfully`)
+        }
+      }
+      
       // Get the price ID from the session
       const lineItems = await getStripe().checkout.sessions.listLineItems(session.id)
       const priceId = lineItems.data[0]?.price?.id

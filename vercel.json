@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/expire-event-accounts",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}
+
