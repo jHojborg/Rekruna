@@ -34,6 +34,7 @@ async function isAdmin(request: NextRequest): Promise<boolean> {
   const adminEmails = [
     'jan@rekruna.dk',
     'support@rekruna.dk',
+    'janhojborghenriksen@gmail.com', // Jan's Gmail
   ]
   
   return adminEmails.includes(user.email || '')
