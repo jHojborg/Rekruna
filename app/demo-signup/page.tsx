@@ -4,6 +4,7 @@
 "use client"
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
 
@@ -113,12 +114,12 @@ export default function DemoSignupPage() {
             
             {/* Link tilbage til forsiden */}
             <div className="mt-8">
-              <a
+              <Link
                 href="/"
                 className="text-primary-600 hover:text-primary-700 font-medium"
               >
                 ← Tilbage til forsiden
-              </a>
+              </Link>
             </div>
           </div>
         </div>
