@@ -10,9 +10,19 @@ interface HeroSectionProps {
   subtitle: string
   ctaText: string
   onCtaClick?: () => void
+  // Optional secondary CTA button props
+  secondaryCtaText?: string
+  secondaryCtaLink?: string
 }
 
-export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectionProps) {
+export function HeroSection({ 
+  title, 
+  subtitle, 
+  ctaText, 
+  onCtaClick,
+  secondaryCtaText,
+  secondaryCtaLink 
+}: HeroSectionProps) {
   return (
     <section className="relative min-h-[100vh] min-h-[100dvh] flex items-center bg-gray-900 overflow-hidden">
       {/* Background image */}
@@ -44,6 +54,7 @@ export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectio
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4">
+            {/* Primary CTA button */}
             {onCtaClick ? (
               <Button size="lg" onClick={onCtaClick} className="text-lg px-8 py-4 h-auto">
                 {ctaText}
@@ -53,6 +64,21 @@ export function HeroSection({ title, subtitle, ctaText, onCtaClick }: HeroSectio
               <Button size="lg" asChild className="text-lg px-8 py-4 h-auto">
                 <Link href="/#pricing">
                   {ctaText}
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            )}
+            
+            {/* Secondary CTA button - shown if props are provided */}
+            {/* Using custom green color (#B3D8A8) matching the CV analysis page */}
+            {secondaryCtaText && secondaryCtaLink && (
+              <Button 
+                size="lg" 
+                asChild 
+                className="text-lg px-8 py-4 h-auto bg-[#B3D8A8] hover:bg-[#9fc794] text-gray-900"
+              >
+                <Link href={secondaryCtaLink}>
+                  {secondaryCtaText}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>

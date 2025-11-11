@@ -1,6 +1,8 @@
 "use client"
 import { useEffect, useState } from 'react'
-import { Check } from 'lucide-react'
+import { Check, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { ProblemSolution } from '@/components/landing/ProblemSolution'
 import { TimeSavingsCalculator } from '@/components/landing/TimeSavingsCalculator'
@@ -91,6 +93,8 @@ export default function LandingPage() {
         subtitle="- en mere objektiv og fair prioritering, der sikrer, at ingen ansøgere eller kompetencer bliver overset."
         ctaText="Start allerede i dag"
         onCtaClick={handleHeroCta}
+        secondaryCtaText="Book en demo"
+        secondaryCtaLink="/demo-signup"
       />
       
       <ProblemSolution />
@@ -209,6 +213,30 @@ export default function LandingPage() {
             )
           })()}
           <p className="mt-6 text-center text-sm text-gray-500">Alle priser eksl. moms. Ubrugte ekstra credits overløber til følgende måned. Abonnement opsigelsesfrist er løbende mdr. + 30 dage.</p>
+        </div>
+      </section>
+
+      {/* CTA section before FAQ - prompting users to book a demo */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+            {/* Text on the left */}
+            <p className="text-2xl font-semibold text-gray-900">
+              Er du ikke helt overbevist endnu?
+            </p>
+            
+            {/* Green CTA button on the right */}
+            <Button 
+              size="lg" 
+              asChild 
+              className="text-lg px-8 py-4 h-auto bg-[#B3D8A8] hover:bg-[#9fc794] text-gray-900"
+            >
+              <Link href="/demo-signup">
+                Book en demo
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
