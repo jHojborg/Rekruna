@@ -138,7 +138,7 @@ export default function DemoSignupPage() {
               Velkommen til Rekruna Demo
             </h1>
             <p className="text-xl text-gray-700">
-              Udfyld formularen nedenfor, så kontakter vi dig hurtigst muligt
+              Udfyld formularen nedenfor, så kontakter vi dig for aftale af et tidspunkt.
             </p>
           </div>
         </div>
@@ -263,7 +263,7 @@ export default function DemoSignupPage() {
                     disabled={loading}
                     className="w-full py-6 text-lg"
                   >
-                    {loading ? 'Sender...' : 'Send anmodning'}
+                    {loading ? 'Sender...' : 'Send - så kontakter vi dig'}
                   </Button>
                 </div>
               </form>
