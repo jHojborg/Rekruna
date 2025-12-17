@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { isAdminRequest } from '@/lib/auth/admin'
 
 // =====================================================
 // ADMIN: APPROVE EVENT SIGNUP ENDPOINT
@@ -20,24 +21,15 @@ const supabaseAdmin = createClient(
 
 // =====================================================
 // HELPER: Check om bruger er admin
+// SECURITY FIX: Now uses centralized admin auth (no hardcoded emails)
 // =====================================================
 
 async function isAdmin(request: NextRequest): Promise<boolean> {
   const authHeader = request.headers.get('authorization')
   if (!authHeader) return false
   
-  const token = authHeader.replace('Bearer ', '')
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
-  if (error || !user) return false
-  
-  // Admin email whitelist
-  const adminEmails = [
-    'jan@rekruna.dk',
-    'support@rekruna.dk',
-    'janhojborghenriksen@gmail.com', // Jan's Gmail
-  ]
-  
-  return adminEmails.includes(user.email || '')
+  // Use centralized admin check (reads from ADMIN_EMAILS env variable)
+  return await isAdminRequest(authHeader)
 }
 
 // =====================================================

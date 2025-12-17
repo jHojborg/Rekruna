@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { isAdminRequest } from '@/lib/auth/admin'
 
 // =====================================================
 // ADMIN: PENDING SIGNUPS ENDPOINT
@@ -20,6 +21,7 @@ const supabaseAdmin = createClient(
 
 // =====================================================
 // HELPER: Check om bruger er admin
+// SECURITY FIX: Now uses centralized admin auth (no hardcoded emails)
 // =====================================================
 
 async function isAdmin(request: NextRequest): Promise<boolean> {
@@ -27,23 +29,8 @@ async function isAdmin(request: NextRequest): Promise<boolean> {
   const authHeader = request.headers.get('authorization')
   if (!authHeader) return false
   
-  const token = authHeader.replace('Bearer ', '')
-  
-  // Verificer token og få bruger
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
-  if (error || !user) return false
-  
-  // Tjek om bruger har admin role i user metadata
-  // Du kan tilføje en admin flag i Supabase Auth user metadata
-  // For nu: Tjek hvis email matcher en whitelist (du kan ændre dette)
-  const adminEmails = [
-    'jan@rekruna.dk',
-    'support@rekruna.dk',
-    'janhojborghenriksen@gmail.com', // Jan's Gmail
-    // Tilføj flere admin emails her
-  ]
-  
-  return adminEmails.includes(user.email || '')
+  // Use centralized admin check (reads from ADMIN_EMAILS env variable)
+  return await isAdminRequest(authHeader)
 }
 
 // =====================================================
