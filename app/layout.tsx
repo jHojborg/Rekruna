@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import Script from 'next/script'
+import { Suspense } from 'react'
 import './globals.css'
 import { Header } from '@/components/shared/Header'
 import { Footer } from '@/components/shared/Footer'
 import { HashRecoveryRouter } from '@/components/shared/HashRecoveryRouter'
+import { MetaPixelRouteTracker } from '@/components/shared/MetaPixelRouteTracker'
 import { Toaster } from 'react-hot-toast'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -112,6 +114,10 @@ export default function RootLayout({
             },
           }}
         />
+        {/* Sender PageView ved hver client-side navigation (Link-klik) */}
+        <Suspense fallback={null}>
+          <MetaPixelRouteTracker />
+        </Suspense>
         <Header />
         {children}
         <Footer />

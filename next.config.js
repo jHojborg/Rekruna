@@ -29,7 +29,7 @@ const nextConfig = {
       img-src 'self' data: https: blob:;
       font-src 'self' data:;
       connect-src 'self' https://*.supabase.co https://api.openai.com https://api.stripe.com https://www.facebook.com https://*.google-analytics.com https://*.googletagmanager.com;
-      frame-src 'self' https://js.stripe.com https://hooks.stripe.com;
+      frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://www.youtube.com https://player.vimeo.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
