@@ -28,6 +28,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Meta Pixel ID: fra env, eller fallback hvis ikke sat (fx på Vercel). Tom = pixel slået fra.
+  const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? '937295408872749'
+
   return (
     <html lang="da" suppressHydrationWarning>
       <body className={inter.className}>
@@ -47,8 +50,7 @@ export default function RootLayout({
         </Script>
 
         {/* Meta Pixel Code - Loades på alle sider automatisk (samme sted som Google Analytics) */}
-        {/* Pixel ID kan ændres via NEXT_PUBLIC_META_PIXEL_ID i .env.local. Sæt til tom for at slå fra. */}
-        {process.env.NEXT_PUBLIC_META_PIXEL_ID && (
+        {metaPixelId && (
           <>
             <Script
               id="meta-pixel"
@@ -63,7 +65,7 @@ export default function RootLayout({
                   t.src=v;s=b.getElementsByTagName(e)[0];
                   s.parentNode.insertBefore(t,s)}(window, document,'script',
                   'https://connect.facebook.net/en_US/fbevents.js');
-                  fbq('init', '${process.env.NEXT_PUBLIC_META_PIXEL_ID}');
+                  fbq('init', '${metaPixelId}');
                   fbq('track', 'PageView');
                 `,
               }}
@@ -73,7 +75,7 @@ export default function RootLayout({
                 height="1"
                 width="1"
                 style={{ display: 'none' }}
-                src={`https://www.facebook.com/tr?id=${process.env.NEXT_PUBLIC_META_PIXEL_ID}&ev=PageView&noscript=1`}
+                src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
                 alt=""
               />
             </noscript>
