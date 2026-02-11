@@ -24,11 +24,11 @@ const nextConfig = {
     // Prevents XSS attacks and unauthorized resource loading
     const ContentSecurityPolicy = `
       default-src 'self';
-      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://connect.facebook.net;
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://connect.facebook.net https://www.googletagmanager.com;
       style-src 'self' 'unsafe-inline';
       img-src 'self' data: https: blob:;
       font-src 'self' data:;
-      connect-src 'self' https://*.supabase.co https://api.openai.com https://api.stripe.com https://www.facebook.com;
+      connect-src 'self' https://*.supabase.co https://api.openai.com https://api.stripe.com https://www.facebook.com https://www.google-analytics.com https://www.googletagmanager.com;
       frame-src 'self' https://js.stripe.com https://hooks.stripe.com;
       object-src 'none';
       base-uri 'self';
