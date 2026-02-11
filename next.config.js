@@ -28,7 +28,7 @@ const nextConfig = {
       style-src 'self' 'unsafe-inline';
       img-src 'self' data: https: blob:;
       font-src 'self' data:;
-      connect-src 'self' https://*.supabase.co https://api.openai.com https://api.stripe.com https://www.facebook.com https://www.google-analytics.com https://www.googletagmanager.com;
+      connect-src 'self' https://*.supabase.co https://api.openai.com https://api.stripe.com https://www.facebook.com https://*.google-analytics.com https://*.googletagmanager.com;
       frame-src 'self' https://js.stripe.com https://hooks.stripe.com;
       object-src 'none';
       base-uri 'self';
