@@ -109,7 +109,8 @@ export default function DashboardPage() {
         const response = await fetch('/api/profile', {
           headers: {
             'Authorization': `Bearer ${accessToken}`
-          }
+          },
+          cache: 'no-store'  // Altid hent friske profil-data (fx efter demo-forlængelse i Supabase)
         })
         
         const result = await response.json()

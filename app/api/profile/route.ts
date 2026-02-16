@@ -60,9 +60,14 @@ export async function GET(req: Request) {
       }, { status: 500 })
     }
     
+    // Cache-Control: Profil ændres ofte (fx demo-forlængelse i Supabase) - undgå browser cache
     return NextResponse.json({
       success: true,
       data: profile
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0'
+      }
     })
     
   } catch (error: any) {
