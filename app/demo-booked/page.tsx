@@ -1,5 +1,5 @@
 /**
- * Demo booked – Tak-side efter form submit på demo-a/demo-b
+ * Demo booked – Tak-side efter form submit på /demo
  *
  * Bruger lander her efter succesfuld indsendelse af demo-video formular.
  * TrackCompleteRegistration sender kun CompleteRegistration event fra denne side.
@@ -20,8 +20,8 @@ export default function DemoBookedPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Tak for din booking</h1>
-            <p className="text-xl text-gray-700 mb-8">Vi kontakter dig snarest muligt.</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Tak for din henvendelse!</h1>
+            <p className="text-xl text-gray-700 mb-8">Vi kontakter dig indenfor 24 timer.</p>
             <Link
               href="/"
               className="text-primary-600 hover:text-primary-700 font-medium"

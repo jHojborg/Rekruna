@@ -1,5 +1,5 @@
 /**
- * API endpoint til demo video signup (demo-a og demo-b)
+ * API endpoint til demo video signup (bruges ikke længere – /demo bruger demo-signup)
  *
  * Modtager: navn, firma, e-mail, wantsVideo (checkbox)
  * Sender email til support@rekruna.dk med lead-info.

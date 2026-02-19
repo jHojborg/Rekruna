@@ -1,7 +1,7 @@
 /**
- * Demo-A landing page
+ * Demo landing page – rekruna.dk/demo
  *
- * Indhold: topbillede (50% hero) + video + ProblemSolution + tekstfelt + kontaktform
+ * Indhold: hero-bjælke + video + ProblemSolution + tekstfelt + kontaktform
  * Ikke indekseret i søgemaskiner eller generativ AI.
  * Rediger indhold i lib/demo-content.ts
  */
@@ -10,10 +10,10 @@ import { DemoHeroImage } from '@/components/landing/DemoHeroImage'
 import { DemoVideoSection } from '@/components/landing/DemoVideoSection'
 import { ProblemSolution } from '@/components/landing/ProblemSolution'
 import { DemoContactForm } from '@/components/landing/DemoContactForm'
-import { DEMO_VIDEO_CTA_TEXT } from '@/lib/demo-content'
+import { DEMO_VIDEO_CTA_TEXT_LINE1, DEMO_VIDEO_CTA_TEXT_LINE2, DEMO_VIDEO_CTA_TEXT_LINE3 } from '@/lib/demo-content'
 
 export const metadata: Metadata = {
-  title: 'Demo A - Rekruna',
+  title: 'Demo - Rekruna',
   description: 'Se Rekruna demo',
   // Bloker indeksering i søgemaskiner og generativ AI
   robots: {
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   }
 }
 
-export default function DemoAPage() {
+export default function DemoPage() {
   return (
     <main className="min-h-screen bg-white">
       <DemoHeroImage />
@@ -38,9 +38,22 @@ export default function DemoAPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto">
             <p className="text-xl text-gray-700 text-center mb-10">
-              {DEMO_VIDEO_CTA_TEXT}
+              {DEMO_VIDEO_CTA_TEXT_LINE1}
+              <br />
+              {DEMO_VIDEO_CTA_TEXT_LINE2}
+              <br />
+              {DEMO_VIDEO_CTA_TEXT_LINE3}
             </p>
             <DemoContactForm />
+            {/* Alternative kontakt info (som på demo-signup) */}
+            <div className="mt-8 text-center text-gray-600">
+              <p className="text-sm">
+                Eller send direkte email til:{' '}
+                <a href="mailto:support@rekruna.dk" className="text-primary-600 hover:text-primary-700 font-medium">
+                  support@rekruna.dk
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </section>

@@ -1,50 +1,57 @@
 'use client'
 
 /**
- * DemoContactForm – Kontaktformular til demo-sider
+ * DemoContactForm – Kontaktformular til demo-siden (/demo)
  *
- * Felter: navn, firma, e-mail, checkbox "Ja tak til at modtage video samt ...."
- * Sender til API som mailer til support@rekruna.dk.
+ * Matcher formularen på /demo-signup: Firmanavn, Dit navn, Tel.nr, E-mail,
+ * Træffes bedst dag, Træffes bedst tidspunkt. Sender til /api/demo-signup.
  */
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
-import { DEMO_FORM } from '@/lib/demo-content'
 
 export function DemoContactForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    name: '',
-    company: '',
+    companyName: '',
+    contactName: '',
+    phone: '',
     email: '',
-    wantsVideo: false
+    bestDay: '',
+    bestTime: ''
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value
-    setFormData({ ...formData, [e.target.name]: value })
+    setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.name || !formData.email) {
-      toast.error('Udfyld venligst navn og e-mail')
+    if (!formData.companyName || !formData.contactName || !formData.phone ||
+        !formData.email || !formData.bestDay || !formData.bestTime) {
+      toast.error('Udfyld venligst alle felter')
       return
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
-      toast.error('Indtast venligst en gyldig e-mail')
+      toast.error('Indtast venligst en gyldig email')
+      return
+    }
+
+    const phoneDigits = formData.phone.replace(/\D/g, '')
+    if (phoneDigits.length < 8) {
+      toast.error('Indtast venligst et gyldigt telefonnummer (mindst 8 cifre)')
       return
     }
 
     setLoading(true)
 
     try {
-      const response = await fetch('/api/demo-video-signup', {
+      const response = await fetch('/api/demo-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -56,10 +63,10 @@ export function DemoContactForm() {
         throw new Error(data.error || 'Noget gik galt')
       }
 
-      toast.success('Tak! Vi sender dig videoen snarest.')
+      toast.success('Tak! Vi kontakter dig snarest.')
       router.push('/demo-booked')
     } catch (error) {
-      console.error('Demo video signup error:', error)
+      console.error('Demo signup error:', error)
       toast.error('Der skete en fejl. Prøv venligst igen.')
     } finally {
       setLoading(false)
@@ -69,40 +76,64 @@ export function DemoContactForm() {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-[4px_6px_16px_rgba(0,0,0,0.25)]">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Firmanavn */}
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-            {DEMO_FORM.nameLabel} <span className="text-red-500">*</span>
+          <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-2">
+            Firmanavn <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
-            id="name"
-            name="name"
-            value={formData.name}
+            id="companyName"
+            name="companyName"
+            value={formData.companyName}
             onChange={handleChange}
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            placeholder={DEMO_FORM.namePlaceholder}
+            placeholder="Jeres firmanavn"
           />
         </div>
 
+        {/* Dit navn */}
         <div>
-          <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
-            {DEMO_FORM.companyLabel}
+          <label htmlFor="contactName" className="block text-sm font-medium text-gray-700 mb-2">
+            Dit navn <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
-            id="company"
-            name="company"
-            value={formData.company}
+            id="contactName"
+            name="contactName"
+            value={formData.contactName}
             onChange={handleChange}
+            required
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            placeholder={DEMO_FORM.companyPlaceholder}
+            placeholder="Dit fulde navn"
           />
         </div>
 
+        {/* Dit tel.nr */}
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+            Dit tel.nr <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            placeholder="12345678"
+          />
+          <p className="mt-1 text-sm text-gray-500">
+            Indtast dit telefonnummer uden mellemrum
+          </p>
+        </div>
+
+        {/* Din e-mail */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-            {DEMO_FORM.emailLabel} <span className="text-red-500">*</span>
+            Din e-mail <span className="text-red-500">*</span>
           </label>
           <input
             type="email"
@@ -112,27 +143,48 @@ export function DemoContactForm() {
             onChange={handleChange}
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            placeholder={DEMO_FORM.emailPlaceholder}
+            placeholder="din@email.dk"
           />
         </div>
 
-        <div className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            id="wantsVideo"
-            name="wantsVideo"
-            checked={formData.wantsVideo}
-            onChange={handleChange}
-            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-          />
-          <label htmlFor="wantsVideo" className="text-sm text-gray-700">
-            {DEMO_FORM.checkboxLabel}
+        {/* Træffes bedst dag */}
+        <div>
+          <label htmlFor="bestDay" className="block text-sm font-medium text-gray-700 mb-2">
+            Træffes bedst dag <span className="text-red-500">*</span>
           </label>
+          <input
+            type="text"
+            id="bestDay"
+            name="bestDay"
+            value={formData.bestDay}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            placeholder="F.eks. mandag-onsdag, alle hverdage, mv."
+          />
         </div>
 
+        {/* Træffes bedst tidspunkt */}
+        <div>
+          <label htmlFor="bestTime" className="block text-sm font-medium text-gray-700 mb-2">
+            Træffes bedst tidspunkt <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="bestTime"
+            name="bestTime"
+            value={formData.bestTime}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            placeholder="F.eks. mellem 9-12, efter kl. 14, mv."
+          />
+        </div>
+
+        {/* Submit button */}
         <div className="pt-4">
           <Button type="submit" disabled={loading} className="w-full py-6 text-lg">
-            {loading ? DEMO_FORM.submitLoading : DEMO_FORM.submitButton}
+            {loading ? 'Sender...' : 'Send - så kontakter vi dig'}
           </Button>
         </div>
       </form>

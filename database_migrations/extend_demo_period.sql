@@ -58,6 +58,11 @@ BEGIN
     v_new_expiry := v_current_expiry + (v_days_to_add || ' days')::INTERVAL;
   END IF;
   
+  -- VIKTIGT: Deaktiver trigger midlertidigt!
+  -- Triggeren "set_event_expiry_date" overskriver event_expiry_date med event_signup_date + 14 dage
+  -- ved hver UPDATE. Uden at deaktivere den, bliver vores forlængelse overskrevet.
+  ALTER TABLE user_profiles DISABLE TRIGGER trigger_set_event_expiry_date;
+  
   -- Opdater user_profiles: forlæng expiry og reaktiver konto
   UPDATE user_profiles
   SET 
@@ -65,6 +70,9 @@ BEGIN
     is_active = true,  -- Reaktiver hvis cron har deaktiveret
     updated_at = NOW()
   WHERE user_id = v_user_id;
+  
+  -- Genaktiver trigger (vigtigt for nye EVENT signups)
+  ALTER TABLE user_profiles ENABLE TRIGGER trigger_set_event_expiry_date;
   
   -- Vis resultat
   RAISE NOTICE 'SUCCESS! Demo perioden er forlænget med % dage.', v_days_to_add;

@@ -52,8 +52,8 @@ export function ProblemSolution() {
           </p>
         </div>
 
-        {/* USP-kort i 3x2 grid som i illustrationen (hvidt kortdesign) */}
-        <div className="mt-32 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* USP-kort: 3 rækker × 2 kolonner på bred skærm, 1 kolonne på mobile */}
+        <div className="mt-32 grid grid-cols-1 lg:grid-cols-2 gap-8">
           {items.map((item, idx) => (
             <div
               key={idx}

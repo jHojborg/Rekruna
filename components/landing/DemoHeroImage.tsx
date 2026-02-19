@@ -1,26 +1,28 @@
 'use client'
 
 /**
- * DemoHeroImage – Topbillede til demo-sider
+ * DemoHeroBar – Bjælke øverst på demo-siden (som på Kontakt-siden)
  *
- * Bruger 50% højde af nuværende hero (hero er 100vh, så dette er 50vh).
- * Samme billede som forsiden, men kun halv højde.
+ * Erstatter det store hero-billede med en let bjælke med headline og undertekst.
+ * Rediger DEMO_HERO_HEADLINE_LINE1, LINE2 og DEMO_HERO_SUBHEADLINE i lib/demo-content.ts.
  */
-import Image from 'next/image'
-import { DEMO_HERO_IMAGE, DEMO_HERO_IMAGE_ALT } from '@/lib/demo-content'
+import { DEMO_HERO_HEADLINE_LINE1, DEMO_HERO_HEADLINE_LINE2, DEMO_HERO_SUBHEADLINE } from '@/lib/demo-content'
 
 export function DemoHeroImage() {
   return (
-    <section className="relative h-[50vh] min-h-[300px] w-full overflow-hidden bg-gray-900">
-      <Image
-        src={DEMO_HERO_IMAGE}
-        alt={DEMO_HERO_IMAGE_ALT}
-        fill
-        priority
-        className="object-cover object-center"
-      />
-      {/* Subtle dark overlay for readability if text is added later */}
-      <div className="absolute inset-0 bg-black/20" />
+    <section className="py-20 bg-brand-base">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
+            {DEMO_HERO_HEADLINE_LINE1}
+            <br />
+            {DEMO_HERO_HEADLINE_LINE2}
+          </h1>
+          <p className="text-xl text-gray-700">
+            {DEMO_HERO_SUBHEADLINE}
+          </p>
+        </div>
+      </div>
     </section>
   )
 }
