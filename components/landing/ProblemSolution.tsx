@@ -48,7 +48,7 @@ export function ProblemSolution() {
             Hvorfor vælge Rekruna?
           </h2>
           <p className="mt-8 text-xl text-gray-700">
-          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna løser den tunge CV-screening og sikrer, at ingen ansøgere bliver overset. Imens kan du bruge tiden på det, kun du kan – samtaler, vurderinger og menneskelig relation medansøgerne.
+          Enhver rekrutteringsansvarlig ved, hvor tidskrævende en grundig CV-gennemgang er. Rekruna løser den tunge CV-screening og sikrer, at ingen ansøgere bliver overset. Imens kan du bruge tiden på det, kun du kan – samtaler, vurderinger og menneskelig relation med ansøgeren.
           </p>
         </div>
 
