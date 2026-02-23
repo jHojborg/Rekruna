@@ -10,8 +10,8 @@
 // ============================================
 // Headline og undertekst til bjælken øverst (som på Kontakt-siden).
 // Bruges to linjer for tvungen linjeskift – LINE1 vises før <br/>, LINE2 efter.
-export const DEMO_HERO_HEADLINE_LINE1 = 'Rekruna CV screener.'
-export const DEMO_HERO_HEADLINE_LINE2 = 'Video demo.'
+export const DEMO_HERO_HEADLINE_LINE1 = 'Rekruna'
+export const DEMO_HERO_HEADLINE_LINE2 = 'Video demo'
 export const DEMO_HERO_SUBHEADLINE = ''
 
 // ============================================
