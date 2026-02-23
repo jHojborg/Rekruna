@@ -26,6 +26,6 @@ export const DEMO_VIDEO_TITLE = ''
 // TEKSTFELT "Se hele demovideo.."
 // ============================================
 // Bruges to linjer for tvungen linjeskift – LINE1 vises før <br/>, LINE2 efter.
-export const DEMO_VIDEO_CTA_TEXT_LINE1 = 'Book tid til online demo af hele løsningen.'
-export const DEMO_VIDEO_CTA_TEXT_LINE2 = 'Få overblik over, hvordan Rekruna kan hjælpe jer når I ansætter.'
+export const DEMO_VIDEO_CTA_TEXT_LINE1 = 'Book tid til online demo af hele løsningen. Få overblik over, hvordan Rekruna kan hjælpe jer når I ansætter.'
+export const DEMO_VIDEO_CTA_TEXT_LINE2 = ''
 export const DEMO_VIDEO_CTA_TEXT_LINE3 = ''
