@@ -10,8 +10,8 @@
 // ============================================
 // Headline og undertekst til bjælken øverst (som på Kontakt-siden).
 // Bruges to linjer for tvungen linjeskift – LINE1 vises før <br/>, LINE2 efter.
-export const DEMO_HERO_HEADLINE_LINE1 = 'Kort video af Rekruna CV'
-export const DEMO_HERO_HEADLINE_LINE2 = 'screening og rangering.'
+export const DEMO_HERO_HEADLINE_LINE1 = 'Rekruna CV screener.'
+export const DEMO_HERO_HEADLINE_LINE2 = 'Se vido demo.'
 export const DEMO_HERO_SUBHEADLINE = ''
 
 // ============================================
@@ -20,7 +20,7 @@ export const DEMO_HERO_SUBHEADLINE = ''
 // Lokal MP4-fil fra public/images. Bruges direkte i HTML5 <video>.
 // Alternativt: YouTube "https://www.youtube.com/embed/VIDEO_ID" eller Vimeo URL.
 export const DEMO_VIDEO_URL = '/images/RekrunaDemo.mp4'
-export const DEMO_VIDEO_TITLE = 'Se Rekruna i aktion'
+export const DEMO_VIDEO_TITLE = ''
 
 // ============================================
 // TEKSTFELT "Se hele demovideo.."
