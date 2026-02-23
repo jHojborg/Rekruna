@@ -198,16 +198,6 @@ export default function KontaktPage() {
                 </div>
               </form>
             </div>
-
-            {/* Alternative kontakt info */}
-            <div className="mt-8 text-center text-gray-600">
-              <p className="text-sm">
-                Eller send direkte email til:{' '}
-                <a href="mailto:support@rekruna.dk" className="text-primary-600 hover:text-primary-700 font-medium">
-                  support@rekruna.dk
-                </a>
-              </p>
-            </div>
           </div>
         </div>
       </section>
