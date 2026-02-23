@@ -9,6 +9,7 @@
  * For lokale videoer: containeren tilpasser sig automatisk videoens
  * aspect ratio (vertikal/portrait eller horisontal/landscape), så der
  * ikke vises sorte bjælker.
+ * pt-4 reducerer afstanden fra hero-headline (yderligere 50% mindre end oprindeligt).
  */
 import { useState, useCallback } from 'react'
 import { DEMO_VIDEO_URL, DEMO_VIDEO_TITLE } from '@/lib/demo-content'
@@ -28,7 +29,7 @@ export function DemoVideoSection() {
   }, [])
 
   return (
-    <section className="py-16 bg-brand-base">
+    <section className="pt-4 pb-16 bg-brand-base">
       {/* max-w-md ≈ 50% af tidligere max-w-4xl – videoen vises mindre og mere diskret */}
       <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
