@@ -63,7 +63,7 @@ export default function LandingPage() {
                     <Check className="w-3 h-3 text-white" />
                   </div>
                 </div>
-                <span>Engangsbetaling</span>
+                <span>Opret gratis profil</span>
               </div>
               <div className="flex items-center">
                 <div className="flex-shrink-0 mr-3">
@@ -71,7 +71,7 @@ export default function LandingPage() {
                 <Check className="w-3 h-3 text-white" />
                   </div>
                 </div>
-                <span>Ingen opstartsfee</span>
+                <span>Betal først når I tager i brug</span>
               </div>
               <div className="flex items-center">
                 <div className="flex-shrink-0 mr-3">
@@ -103,9 +103,9 @@ export default function LandingPage() {
                 priceSuffix: "kr.",
                 features: [
                   "1 stillingsopslag",
-                  "Ubegrænsede CV'er pr. opslag",
-                  "Engangsbetaling",
-                  "75 dage pr. rekrutteringsflow",
+                  "Ubegrænset CV screeninger",
+                  "Ad hoc",
+                
                 ],
                 highlighted: false,
                 tier: 'rekruna_1',
@@ -114,12 +114,12 @@ export default function LandingPage() {
                 title: "Rekruna 5",
                 finalPrice: "9.995",
                 priceSuffix: "kr.",
-                savingsText: "Spar 2.480 kr.",
+                savingsText: "1.999,- pr. stillingsopslag",
                 features: [
                   "5 stillingsopslag",
-                  "Ubegrænsede CV'er pr. opslag",
-                  "Engangsbetaling",
-                  "75 dage pr. rekrutteringsflow",
+                  "Ubegrænsede CV screeninger",
+                  "Gælder 24 måneder",
+                  
                 ],
                 highlighted: true,
                 tier: 'rekruna_5',
@@ -128,12 +128,12 @@ export default function LandingPage() {
                 title: "Rekruna 10",
                 finalPrice: "17.995",
                 priceSuffix: "kr.",
-                savingsText: "Spar 4.955 kr.",
+                savingsText: "1.795,- pr. stillingsopslag",
                 features: [
                   "10 stillingsopslag",
-                  "Ubegrænsede CV'er pr. opslag",
-                  "Engangsbetaling",
-                  "75 dage pr. rekrutteringsflow",
+                  "Ubegrænsede CV screeninger",
+                  "Gælder 24 måneder",
+                  
                 ],
                 highlighted: false,
                 tier: 'rekruna_10',
@@ -151,7 +151,7 @@ export default function LandingPage() {
                     priceSuffix={plan.priceSuffix}
                     savingsText={plan.savingsText}
                     features={plan.features}
-                    ctaText="Start i dag"
+                    ctaText="Opret profil"
                     highlighted={plan.highlighted}
                     ctaHref="/signup"
                   />
@@ -159,7 +159,7 @@ export default function LandingPage() {
               </div>
             )
           })()}
-          <p className="mt-6 text-center text-sm text-gray-500">Alle priser eksl. moms. Engangsbetaling. 75 dage pr. rekrutteringsflow.</p>
+          <p className="mt-6 text-center text-sm text-gray-500">Alle priser er engangsbetaling og eksl. moms. Et rekrutteringsflow (et stillingsopslag) løber 75 dage.</p>
         </div>
       </section>
 
