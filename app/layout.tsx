@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import './globals.css'
 import { Header } from '@/components/shared/Header'
 import { Footer } from '@/components/shared/Footer'
+import { AuthErrorHandler } from '@/components/shared/AuthErrorHandler'
 import { HashRecoveryRouter } from '@/components/shared/HashRecoveryRouter'
 import { MetaPixelRouteTracker } from '@/components/shared/MetaPixelRouteTracker'
 import { Toaster } from 'react-hot-toast'
@@ -86,6 +87,8 @@ export default function RootLayout({
 
         {/* Fanger Supabase password-recovery links uanset hvilken route brugeren rammer */}
         <HashRecoveryRouter />
+        {/* Rydder ugyldig refresh token - forhindrer AuthApiError overlay */}
+        <AuthErrorHandler />
         {/* Toast notifications - vises i top-right hjørne */}
         <Toaster
           position="top-right"

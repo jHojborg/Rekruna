@@ -330,42 +330,44 @@ export function SignupForm({
         </div>
       )}
 
-      {/* Terms & Conditions + Opret konto - under kontooplysninger, centreret */}
-      <div className="flex justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6 space-y-4">
+      {/* Terms & Conditions + Opret konto - samme bredde som form, én linje: venstre = checkbox, højre = knap */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* Venstre: Jeg bekræfter... */}
             <div className="flex items-start gap-2">
               <input 
                 id="accept" 
                 required 
                 type="checkbox" 
-                className="mt-1 h-4 w-4 rounded border-gray-300" 
+                className="mt-1 h-4 w-4 rounded border-gray-300 shrink-0" 
                 checked={form.accept} 
                 onChange={(e) => setField('accept', e.target.checked)} 
               />
-              <Label htmlFor="accept" className="text-gray-700">
-                Jeg bekræfter at have læst og accepterer Rekruna{' '}
-                <Link href="/handelsbetingelser" className="text-primary underline underline-offset-2">
-                  handelsbetingelser
-                </Link>
-              </Label>
+              <div>
+                <Label htmlFor="accept" className="text-gray-700">
+                  Jeg bekræfter at have læst og accepterer Rekruna{' '}
+                  <Link href="/handelsbetingelser" className="text-primary underline underline-offset-2">
+                    handelsbetingelser
+                  </Link>
+                </Label>
+                {errors.accept && <p className="text-sm text-red-600 mt-2">{errors.accept}</p>}
+              </div>
             </div>
-            {errors.accept && <p className="text-sm text-red-600 mt-2">{errors.accept}</p>}
-            
-            {/* Button - Phase 2: "Opret konto" when deferPayment, else "Til betaling" */}
-            <div className="flex flex-col items-center">
-              <Button type="submit" disabled={isLoading} className="px-8 py-3 text-base font-semibold" style={{ maxWidth: '25%', minWidth: '200px' }}>
+            {/* Højre: Opret konto knap */}
+            <div className="flex flex-col items-end sm:shrink-0">
+              <Button type="submit" disabled={isLoading} className="px-8 py-3 text-base font-semibold min-w-[200px]">
                 {isLoading ? 'Behandler...' : (deferPayment ? 'Opret konto' : 'Til betaling')}
               </Button>
               {!deferPayment && (
-                <p className="text-sm text-gray-600 text-center mt-2">
+                <p className="text-sm text-gray-600 text-right mt-2">
                   Åbner ny vindue hos Stripe, vores betalingspartner
                 </p>
               )}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </form>
   )
 }

@@ -13,9 +13,20 @@ export function Header() {
 
   useEffect(() => {
     let mounted = true
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (mounted) setLoggedIn(!!user)
-    })
+
+    // Tjek om bruger er logget ind. Fang "Invalid Refresh Token" - ryd session hvis token er ugyldig.
+    supabase.auth.getUser()
+      .then(({ data: { user } }) => {
+        if (mounted) setLoggedIn(!!user)
+      })
+      .catch(async (err: { message?: string }) => {
+        // Ugyldig/udløbet refresh token i localStorage - ryd session for at undgå gentagen fejl
+        if (err?.message?.includes('Refresh Token') || err?.message?.includes('refresh_token')) {
+          await supabase.auth.signOut()
+        }
+        if (mounted) setLoggedIn(false)
+      })
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setLoggedIn(!!session?.user)
     })
