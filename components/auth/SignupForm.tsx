@@ -159,20 +159,26 @@ export function SignupForm({
     return Object.keys(e).length === 0
   }
   
-  // Plan configuration for display
-  const planNames = {
+  // Plan configuration for display (Phase 3: Rekruna 1/5/10)
+  const planNames: Record<string, string> = {
+    rekruna_1: 'Rekruna 1',
+    rekruna_5: 'Rekruna 5',
+    rekruna_10: 'Rekruna 10',
     pay_as_you_go: 'One',
     pro: 'Pro',
     business: 'Business'
   }
   
-  const planTypes = {
+  const planTypes: Record<string, string> = {
+    rekruna_1: 'one_time',
+    rekruna_5: 'one_time',
+    rekruna_10: 'one_time',
     pay_as_you_go: 'one_time',
     pro: 'subscription',
     business: 'subscription'
   }
   
-  const planName = planNames[plan]
+  const planName = planNames[plan] ?? plan
   const isSubscription = planTypes[plan] === 'subscription'
   
   // Calculate VAT (Danish moms = 25%)
