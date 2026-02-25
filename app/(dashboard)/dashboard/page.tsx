@@ -1231,7 +1231,7 @@ export default function DashboardPage() {
                   Rekrutteringsflow udløber snart
                 </h3>
                 <p className="text-amber-800">
-                  Du har <strong>{flowInfo.daysRemaining} dage</strong> tilbage af dette flow. Efter udløb kan du ikke tilføje flere CV'er. Historik forbliver tilgængelig.
+                  Du har <strong>{flowInfo.daysRemaining} dage</strong> tilbage af dette flow. Efter udløb kan du ikke tilføje flere CV&apos;er. Historik forbliver tilgængelig.
                 </p>
               </div>
             </div>
