@@ -15,7 +15,6 @@
 
 import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase/server'
-import { CreditsService } from './credits.service'
 
 // Lazy initialization - only create Stripe instance when needed (not during build)
 let stripeInstance: Stripe | null = null
@@ -37,7 +36,8 @@ function getStripe(): Stripe {
 // TYPE DEFINITIONS
 // =====================================================
 
-type ProductTier = 'pay_as_you_go' | 'pro' | 'business' | 'boost_50' | 'boost_100' | 'boost_250' | 'boost_500'
+// Phase 3: Rekruna 1/5/10 - alle engangsbetalinger
+type ProductTier = 'rekruna_1' | 'rekruna_5' | 'rekruna_10'
 
 // Extended Stripe types with missing properties
 interface StripeInvoiceExtended extends Stripe.Invoice {
@@ -46,61 +46,38 @@ interface StripeInvoiceExtended extends Stripe.Invoice {
 }
 
 // =====================================================
-// CREDIT CONFIGURATION
-// Map Price IDs to credit amounts (since we're not using Stripe metadata)
+// PRODUCT CONFIGURATION
+// Phase 3: Rekruna 1 (2495 kr), 5 (9995 kr), 10 (17995 kr)
+// Alle engangsbetalinger. job_slots = antal stillingsopslag.
 // =====================================================
 
 type ProductConfig = {
-  credits: number
   tier: ProductTier
-  type: 'one_time' | 'subscription' | 'top_up'
+  type: 'one_time' | 'subscription'
   isSubscription: boolean
+  jobSlots: number
 }
 
 function getPriceConfig(priceId: string): ProductConfig | null {
   const config: Record<string, ProductConfig> = {
-    [process.env.STRIPE_PAYG_PRICE_ID || '']: {
-      credits: 200,
-      tier: 'pay_as_you_go',
+    [process.env.STRIPE_REKRUNA_1_PRICE_ID || '']: {
+      tier: 'rekruna_1',
       type: 'one_time',
-      isSubscription: false
+      isSubscription: false,
+      jobSlots: 1
     },
-    [process.env.STRIPE_PRO_PRICE_ID || '']: {
-      credits: 400,
-      tier: 'pro',
-      type: 'subscription',
-      isSubscription: true
+    [process.env.STRIPE_REKRUNA_5_PRICE_ID || '']: {
+      tier: 'rekruna_5',
+      type: 'one_time',
+      isSubscription: false,
+      jobSlots: 5
     },
-    [process.env.STRIPE_BUSINESS_PRICE_ID || '']: {
-      credits: 1000,
-      tier: 'business',
-      type: 'subscription',
-      isSubscription: true
+    [process.env.STRIPE_REKRUNA_10_PRICE_ID || '']: {
+      tier: 'rekruna_10',
+      type: 'one_time',
+      isSubscription: false,
+      jobSlots: 10
     },
-    [process.env.STRIPE_BOOST_50_PRICE_ID || '']: {
-      credits: 50,
-      tier: 'boost_50',
-      type: 'top_up',
-      isSubscription: false
-    },
-    [process.env.STRIPE_BOOST_100_PRICE_ID || '']: {
-      credits: 100,
-      tier: 'boost_100',
-      type: 'top_up',
-      isSubscription: false
-    },
-    [process.env.STRIPE_BOOST_250_PRICE_ID || '']: {
-      credits: 250,
-      tier: 'boost_250',
-      type: 'top_up',
-      isSubscription: false
-    },
-    [process.env.STRIPE_BOOST_500_PRICE_ID || '']: {
-      credits: 500,
-      tier: 'boost_500',
-      type: 'top_up',
-      isSubscription: false
-    }
   }
   
   return config[priceId] || null
@@ -181,7 +158,7 @@ export class StripeService {
         .upsert({
           user_id: userId,
           stripe_customer_id: customer.id,
-          product_tier: 'pay_as_you_go', // Default, will update when they subscribe
+          product_tier: 'rekruna_1', // Default placeholder, will update when they purchase
           status: 'incomplete'
         }, {
           onConflict: 'user_id' // Update existing record if user_id already exists
@@ -412,193 +389,29 @@ export class StripeService {
         }
       }
       
-      const credits = productConfig.credits
       const tier = productConfig.tier
-      const type = productConfig.type
+      const jobSlots = productConfig.jobSlots
       
-      // Handle based on type
-      if (type === 'subscription') {
-        // This is a subscription (Pro or Business)
-        const subscriptionId = session.subscription as string
-        
-        // Update user_subscriptions table
-        const { error: subError } = await supabaseAdmin
-          .from('user_subscriptions')
-          .update({
-            stripe_subscription_id: subscriptionId,
-            stripe_price_id: priceId,
-            product_tier: tier,
-            monthly_credit_allocation: credits,
-            status: 'active',
-            current_period_start: new Date().toISOString(),
-            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // ~30 days
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId)
-        
-        if (subError) {
-          console.error('Failed to update subscription:', subError)
-          return {
-            success: false,
-            error: 'Failed to update subscription'
-          }
-        }
-        
-        // Get or create credit balance for subscription
-        let { data: balance } = await supabaseAdmin
-          .from('credit_balances')
-          .select('*')
-          .eq('user_id', userId)
-          .single()
-        
-        // Initialize balance if doesn't exist
-        if (!balance) {
-          console.log(`Initializing credit balance for subscription user ${userId}`)
-          await CreditsService.initializeBalance(userId)
-          
-          // Re-fetch the balance after initialization
-          const { data: newBalance } = await supabaseAdmin
-            .from('credit_balances')
-            .select('*')
-            .eq('user_id', userId)
-            .single()
-          
-          balance = newBalance
-        }
-        
-        // Safety check
-        if (!balance) {
-          console.error('Failed to get or create balance for user:', userId)
-          return {
-            success: false,
-            error: 'Failed to initialize credit balance'
-          }
-        }
-        
-        // Set subscription credits (not add, but set to allocation)
-        const { error: creditError } = await supabaseAdmin
-          .from('credit_balances')
-          .update({
-            subscription_credits: credits,
-            last_subscription_reset: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId)
-        
-        if (creditError) {
-          console.error('Failed to update subscription credits:', creditError)
-          return {
-            success: false,
-            error: 'Failed to update credits'
-          }
-        }
-        
-        // Calculate new total (subscription credits + existing purchased credits)
-        const newTotalCredits = credits + balance.purchased_credits
-        
-        // Log transaction
-        await supabaseAdmin
-          .from('credit_transactions')
-          .insert({
-            user_id: userId,
-            amount: credits,
-            balance_after: newTotalCredits,
-            credit_type: 'subscription',
-            transaction_type: 'subscription_allocation',
-            stripe_payment_intent_id: session.payment_intent as string,
-            description: `${tier.toUpperCase()} subscription activated (${credits} credits)`
-          })
-        
-        console.log(`✅ Subscription activated for user ${userId}: ${credits} credits`)
-        console.log(`   Subscription: ${credits} | Purchased: ${balance.purchased_credits} | Total: ${newTotalCredits}`)
-        
-      } else {
-        // This is a one-time payment (Pay as you go or Top-up)
-        
-        // Step 1: Get or create credit balance
-        let { data: balance } = await supabaseAdmin
-          .from('credit_balances')
-          .select('*')
-          .eq('user_id', userId)
-          .single()
-        
-        // If balance doesn't exist, initialize it
-        if (!balance) {
-          console.log(`Initializing credit balance for user ${userId}`)
-          await CreditsService.initializeBalance(userId)
-          
-          // Re-fetch the balance after initialization
-          const { data: newBalance } = await supabaseAdmin
-            .from('credit_balances')
-            .select('*')
-            .eq('user_id', userId)
-            .single()
-          
-          balance = newBalance
-        }
-        
-        // Safety check - balance should exist now
-        if (!balance) {
-          console.error('Failed to get or create balance for user:', userId)
-          return {
-            success: false,
-            error: 'Failed to initialize credit balance'
-          }
-        }
-        
-        // Step 2: Add credits to purchased_credits
-        const newPurchasedCredits = balance.purchased_credits + credits
-        
-        const { error: creditError } = await supabaseAdmin
-          .from('credit_balances')
-          .update({
-            purchased_credits: newPurchasedCredits,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', userId)
-        
-        if (creditError) {
-          console.error('Failed to add credits:', creditError)
-          return {
-            success: false,
-            error: 'Failed to add credits'
-          }
-        }
-        
-        // Step 3: Calculate new total for transaction log
-        const newTotalCredits = balance.subscription_credits + newPurchasedCredits
-        
-        // Step 4: Update user_subscriptions status to 'active' for pay_as_you_go
-        // This ensures the user's plan shows as active after purchase
-        if (type === 'one_time' && tier === 'pay_as_you_go') {
-          await supabaseAdmin
-            .from('user_subscriptions')
-            .update({
-              product_tier: 'pay_as_you_go',
-              status: 'active',
-              updated_at: new Date().toISOString()
-            })
-            .eq('user_id', userId)
-          
-          console.log(`✅ Updated subscription status to 'active' for pay_as_you_go user ${userId}`)
-        }
-        
-        // Step 5: Log transaction
-        await supabaseAdmin
-          .from('credit_transactions')
-          .insert({
-            user_id: userId,
-            amount: credits,
-            balance_after: newTotalCredits,
-            credit_type: 'purchased',
-            transaction_type: 'purchase',
-            stripe_payment_intent_id: session.payment_intent as string,
-            description: `Purchased ${credits} credits (${tier})`
-          })
-        
-        console.log(`✅ One-time purchase for user ${userId}: ${credits} credits added`)
-        console.log(`   Previous: ${balance.purchased_credits} | New: ${newPurchasedCredits} | Total: ${newTotalCredits}`)
+      // Phase 3: All packages are one-time. Set job_slots_available for Phase 4 (75-day flow).
+      const { error: subError } = await supabaseAdmin
+        .from('user_subscriptions')
+        .update({
+          stripe_subscription_id: null,
+          stripe_price_id: priceId,
+          product_tier: tier,
+          monthly_credit_allocation: null,
+          job_slots_available: jobSlots,
+          status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+      
+      if (subError) {
+        console.error('Failed to update purchase:', subError)
+        return { success: false, error: 'Failed to update purchase' }
       }
+      
+      console.log(`✅ Purchase completed for user ${userId}: ${tier} (${jobSlots} job slots)`)
       
       return { success: true }
       
@@ -613,9 +426,7 @@ export class StripeService {
   
   /**
    * Handle subscription renewal (monthly payment)
-   * 
-   * Called from webhook when invoice is paid.
-   * Resets subscription credits to monthly allocation.
+   * Phase 1: Credits removed - just log renewal
    */
   static async handleInvoicePaid(invoice: StripeInvoiceExtended): Promise<{
     success: boolean
@@ -625,109 +436,31 @@ export class StripeService {
       const subscriptionId = invoice.subscription as string
       
       if (!subscriptionId) {
-        return { success: true } // Not a subscription invoice, skip
+        return { success: true }
       }
       
-      // Find user by subscription ID
       const { data: subscription } = await supabaseAdmin
         .from('user_subscriptions')
-        .select('*')
+        .select('user_id, product_tier')
         .eq('stripe_subscription_id', subscriptionId)
         .single()
       
       if (!subscription) {
-        return {
-          success: false,
-          error: 'Subscription not found'
-        }
+        return { success: false, error: 'Subscription not found' }
       }
       
-      const userId = subscription.user_id
-      const credits = subscription.monthly_credit_allocation
-      
-      // Get or create credit balance
-      let { data: balance } = await supabaseAdmin
-        .from('credit_balances')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
-      
-      // Initialize if doesn't exist (shouldn't happen, but safety check)
-      if (!balance) {
-        console.log(`Initializing credit balance for renewal user ${userId}`)
-        await CreditsService.initializeBalance(userId)
-        
-        // Re-fetch
-        const { data: newBalance } = await supabaseAdmin
-          .from('credit_balances')
-          .select('*')
-          .eq('user_id', userId)
-          .single()
-        
-        balance = newBalance
-      }
-      
-      if (!balance) {
-        console.error('Failed to get balance for renewal:', userId)
-        return {
-          success: false,
-          error: 'Failed to get credit balance'
-        }
-      }
-      
-      // Reset subscription credits to monthly allocation (not add!)
-      const { error: creditError } = await supabaseAdmin
-        .from('credit_balances')
-        .update({
-          subscription_credits: credits, // RESET to allocation
-          last_subscription_reset: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId)
-      
-      if (creditError) {
-        console.error('Failed to reset subscription credits:', creditError)
-        return {
-          success: false,
-          error: 'Failed to reset credits'
-        }
-      }
-      
-      // Calculate new total after reset
-      const newTotalCredits = credits + balance.purchased_credits
-      
-      // Log transaction
-      await supabaseAdmin
-        .from('credit_transactions')
-        .insert({
-          user_id: userId,
-          amount: credits,
-          balance_after: newTotalCredits,
-          credit_type: 'subscription',
-          transaction_type: 'subscription_reset',
-          stripe_payment_intent_id: invoice.payment_intent as string,
-          description: `Monthly ${subscription.product_tier.toUpperCase()} subscription renewed (${credits} credits)`
-        })
-      
-      console.log(`✅ Subscription renewed for user ${userId}: ${credits} credits`)
-      console.log(`   Old subscription credits lost, new allocation: ${credits} | Purchased kept: ${balance.purchased_credits} | Total: ${newTotalCredits}`)
-      
+      console.log(`✅ Subscription renewed for user ${subscription.user_id}: ${subscription.product_tier}`)
       return { success: true }
       
     } catch (error: any) {
       console.error('handleInvoicePaid error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { success: false, error: error.message }
     }
   }
   
   /**
    * Handle subscription cancellation
-   * 
-   * Called from webhook when subscription is deleted.
-   * Removes subscription credits but keeps purchased credits.
+   * Phase 1: Credits removed - only update subscription status
    */
   static async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<{
     success: boolean
@@ -736,7 +469,6 @@ export class StripeService {
     try {
       const subscriptionId = subscription.id
       
-      // Find user by subscription ID
       const { data: userSub } = await supabaseAdmin
         .from('user_subscriptions')
         .select('user_id')
@@ -744,15 +476,9 @@ export class StripeService {
         .single()
       
       if (!userSub) {
-        return {
-          success: false,
-          error: 'Subscription not found'
-        }
+        return { success: false, error: 'Subscription not found' }
       }
       
-      const userId = userSub.user_id
-      
-      // Update subscription status
       await supabaseAdmin
         .from('user_subscriptions')
         .update({
@@ -761,25 +487,12 @@ export class StripeService {
         })
         .eq('stripe_subscription_id', subscriptionId)
       
-      // Remove subscription credits (keep purchased!)
-      await supabaseAdmin
-        .from('credit_balances')
-        .update({
-          subscription_credits: 0,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId)
-      
-      console.log(`✅ Subscription canceled for user ${userId}`)
-      
+      console.log(`✅ Subscription canceled for user ${userSub.user_id}`)
       return { success: true }
       
     } catch (error: any) {
       console.error('handleSubscriptionDeleted error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { success: false, error: error.message }
     }
   }
   

@@ -2,9 +2,7 @@
  * STRIPE WEBHOOK ENDPOINT
  * 
  * Receives events from Stripe when payments happen.
- * 
- * CRITICAL: This is how we know when to add credits!
- * When user pays → Stripe calls this endpoint → We add credits
+ * Phase 1: Credits removed - updates subscription/payment status only.
  * 
  * Events we handle:
  * - checkout.session.completed: Payment succeeded (one-time or first subscription payment)

@@ -35,15 +35,11 @@ export async function POST(req: Request) {
       }, { status: 400 })
     }
     
-    // Map tier to priceId from environment variables
+    // Map tier to priceId - Phase 3: Rekruna 1/5/10
     const priceIdMap: Record<string, string> = {
-      'pay_as_you_go': process.env.STRIPE_PAYG_PRICE_ID || '',
-      'pro': process.env.STRIPE_PRO_PRICE_ID || '',
-      'business': process.env.STRIPE_BUSINESS_PRICE_ID || '',
-      'boost_50': process.env.STRIPE_BOOST_50_PRICE_ID || '',
-      'boost_100': process.env.STRIPE_BOOST_100_PRICE_ID || '',
-      'boost_250': process.env.STRIPE_BOOST_250_PRICE_ID || '',
-      'boost_500': process.env.STRIPE_BOOST_500_PRICE_ID || '',
+      'rekruna_1': process.env.STRIPE_REKRUNA_1_PRICE_ID || '',
+      'rekruna_5': process.env.STRIPE_REKRUNA_5_PRICE_ID || '',
+      'rekruna_10': process.env.STRIPE_REKRUNA_10_PRICE_ID || '',
     }
     
     const priceId = priceIdMap[tier]
@@ -82,13 +78,9 @@ export async function POST(req: Request) {
     
     // Validate tier against environment variables
     const validTiers: Record<string, string> = {
-      pay_as_you_go: process.env.STRIPE_PAYG_PRICE_ID || '',
-      pro: process.env.STRIPE_PRO_PRICE_ID || '',
-      business: process.env.STRIPE_BUSINESS_PRICE_ID || '',
-      boost_50: process.env.STRIPE_BOOST_50_PRICE_ID || '',
-      boost_100: process.env.STRIPE_BOOST_100_PRICE_ID || '',
-      boost_250: process.env.STRIPE_BOOST_250_PRICE_ID || '',
-      boost_500: process.env.STRIPE_BOOST_500_PRICE_ID || '',
+      rekruna_1: process.env.STRIPE_REKRUNA_1_PRICE_ID || '',
+      rekruna_5: process.env.STRIPE_REKRUNA_5_PRICE_ID || '',
+      rekruna_10: process.env.STRIPE_REKRUNA_10_PRICE_ID || '',
     }
     
     if (!validTiers[tier] || validTiers[tier] !== priceId) {
@@ -113,7 +105,7 @@ export async function POST(req: Request) {
       userEmail,
       priceId,
       tier,
-      successUrl: `${appUrl}/dinprofil?payment=success`,
+      successUrl: `${appUrl}/dashboard?payment=success`,
       cancelUrl: `${appUrl}/?payment=canceled`,
       // Pass profile data to pre-fill Stripe billing
       profile: profile ? {

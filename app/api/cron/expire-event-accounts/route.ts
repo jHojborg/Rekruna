@@ -125,33 +125,7 @@ export async function GET(request: NextRequest) {
           continue
         }
         
-        // Step 2: Set credits to 0
-        const { error: creditsError } = await supabaseAdmin
-          .from('credit_balances')
-          .update({
-            subscription_credits: 0,
-            purchased_credits: 0,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', account.user_id)
-        
-        if (creditsError) {
-          console.error(`    Failed to reset credits: ${creditsError.message}`)
-          // Continue anyway - profile is deactivated
-        }
-        
-        // Step 3: Log transaction
-        await supabaseAdmin
-          .from('credit_transactions')
-          .insert({
-            user_id: account.user_id,
-            amount: 0,
-            balance_after: 0,
-            credit_type: 'purchased',
-            transaction_type: 'expiration',
-            description: 'EVENT account expired - credits reset to 0'
-          })
-        
+        // Phase 1: Credit system removed - no credit reset needed
         console.log(`    ✅ Successfully deactivated: ${account.email}`)
         results.success.push(account.email)
         

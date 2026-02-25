@@ -1,35 +1,18 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { SignupForm } from '@/components/auth/SignupForm'
 import { supabase } from '@/lib/supabase/client'
 
-// Component that uses useSearchParams (must be wrapped in Suspense)
+// Phase 2: Signup without payment - profile only. User pays when they first use the system.
 function SignupContent() {
-  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
-  
-  // Parse URL parameters for plan selection
-  const plan = (searchParams.get('plan') || 'pro') as 'pay_as_you_go' | 'pro' | 'business'
-  const price = parseInt(searchParams.get('price') || '349')
-  const credits = parseInt(searchParams.get('credits') || '400')
-  
-  // Plan configuration
-  const planConfig = {
-    pay_as_you_go: { tier: 'pay_as_you_go', name: 'One' },
-    pro: { tier: 'pro', name: 'Pro' },
-    business: { tier: 'business', name: 'Business' }
-  }
-  
-  const selectedPlan = planConfig[plan]
   
   const handleSubmit = async (data: any) => {
     setIsLoading(true)
     
     try {
       // 1. Create Supabase auth user
-      // emailRedirectTo prevents email confirmation requirement
       const { data: authData, error: signupError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -55,26 +38,16 @@ function SignupContent() {
         return
       }
       
-      // Debug logging to understand what we got from signUp
-      console.log('Auth data from signUp:', {
-        hasUser: !!authData.user,
-        hasSession: !!authData.session,
-        userEmail: authData.user?.email
-      })
-      
-      // Use the session that was returned directly from signUp
-      // This is more reliable than calling getSession() again
       const token = authData.session?.access_token
       
       if (!token) {
-        // If no session, check if email confirmation is required
-        console.error('No session token received. This likely means email confirmation is required.')
+        console.error('No session token received.')
         alert('Der blev oprettet en bruger, men systemet kræver email-bekræftelse. Kontakt support@rekruna.dk')
         setIsLoading(false)
         return
       }
       
-      // 2. Create user profile
+      // 2. Create user profile (no payment - Phase 2)
       const profileResponse = await fetch('/api/profile', {
         method: 'POST',
         headers: {
@@ -100,29 +73,8 @@ function SignupContent() {
         return
       }
       
-      // 3. Create Stripe checkout session
-      const checkoutResponse = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          tier: selectedPlan.tier
-        })
-      })
-      
-      if (!checkoutResponse.ok) {
-        const errorData = await checkoutResponse.json()
-        alert(`Checkout fejl: ${errorData.error || 'Ukendt fejl'}`)
-        setIsLoading(false)
-        return
-      }
-      
-      const { url } = await checkoutResponse.json()
-      
-      // 4. Redirect to Stripe Checkout
-      window.location.href = url
+      // 3. Redirect to dashboard (no Stripe checkout - user pays when they first use)
+      window.location.href = '/dashboard'
       
     } catch (error: any) {
       console.error('Signup error:', error)
@@ -135,17 +87,18 @@ function SignupContent() {
     <main className="min-h-screen bg-brand-base py-16 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-900">Kom i gang med Rekruna</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Opret din Rekruna konto</h1>
           <p className="text-gray-600 mt-2">
-            Udfyld dine oplysninger og fortsæt til sikker betaling
+            Udfyld dine oplysninger og kom i gang. Du betaler først når du køber en pakke.
           </p>
         </div>
         <SignupForm 
           onSubmit={handleSubmit} 
           isLoading={isLoading}
-          plan={plan}
-          price={price}
-          credits={credits}
+          plan="pro"
+          price={0}
+          credits={0}
+          deferPayment
         />
       </div>
     </main>

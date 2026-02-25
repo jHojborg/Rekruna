@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     // ==========================================
     
     const body = await request.json()
-    const { pendingId, credits = 100 } = body
+    const { pendingId } = body
     
     if (!pendingId) {
       return NextResponse.json(
@@ -153,39 +153,8 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // ==========================================
-    // OPRET CREDIT BALANCE
-    // ==========================================
-    
-    const { error: creditError } = await supabaseAdmin
-      .from('credit_balances')
-      .insert({
-        user_id: userId,
-        subscription_credits: 0,
-        purchased_credits: credits // Tildel demo credits som "purchased"
-      })
-    
-    if (creditError) {
-      console.error('Error creating credit balance:', creditError)
-      // Rollback ikke nødvendig - admin kan manuelt tildele credits
-    }
-    
-    // ==========================================
-    // LOG CREDIT TRANSACTION
-    // ==========================================
-    
-    if (!creditError) {
-      await supabaseAdmin
-        .from('credit_transactions')
-        .insert({
-          user_id: userId,
-          amount: credits,
-          balance_after: credits,
-          credit_type: 'purchased',
-          transaction_type: 'admin_grant',
-          description: `EVENT demo credits - Approved by admin`
-        })
-    }
+    // Phase 1: Credit system removed - EVENT accounts get 14 days demo access
+    // (No credit balance created - analysis runs without credit check in Phase 1)
     
     // ==========================================
     // OPDATER PENDING SIGNUP STATUS
@@ -228,12 +197,11 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      message: `Bruger ${pendingSignup.email} er godkendt og oprettet med ${credits} credits`,
+      message: `Bruger ${pendingSignup.email} er godkendt og oprettet`,
       data: {
         userId,
         email: pendingSignup.email,
         companyName: pendingSignup.company_name,
-        credits,
         expiryDate: expiryDate.toISOString(),
         passwordResetSent: !resetError
       }

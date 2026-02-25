@@ -11,9 +11,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 interface SignupFormProps {
   onSubmit?: (data: any) => void
   isLoading?: boolean
-  plan?: 'pay_as_you_go' | 'pro' | 'business'
+  plan?: 'rekruna_1' | 'rekruna_5' | 'rekruna_10' | 'pay_as_you_go' | 'pro' | 'business'
   price?: number
   credits?: number
+  /** Phase 2: When true, hide plan selection - user pays later when they first use */
+  deferPayment?: boolean
 }
 
 const passwordOk = (pwd: string) => /[A-Z]/.test(pwd) && /[a-z]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd) && pwd.length >= 8
@@ -23,7 +25,8 @@ export function SignupForm({
   isLoading = false, 
   plan = 'pro',
   price = 349,
-  credits = 400
+  credits = 400,
+  deferPayment = false
 }: SignupFormProps) {
   const [form, setForm] = useState({
     companyName: '',
@@ -290,39 +293,36 @@ export function SignupForm({
         </Card>
 
         <div className="space-y-6">
-          {/* Plan Display */}
-          <Card className="relative">
-            <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-bold text-gray-900">Rekruna {planName}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="p-4 border-2 rounded-lg border-primary">
-                <div className="grid grid-cols-2 gap-y-3 items-baseline">
-                  <p className="text-gray-600 font-bold">
-                    {isSubscription 
-                      ? `Pris pr. måned incl. ${credits} CVer:` 
-                      : `Pris incl. ${credits} CVer:`
-                    }
-                  </p>
-                  <p className="text-right text-2xl font-bold text-gray-900">{priceExVat} kr.</p>
-                  
-                  <p className="text-gray-600">Moms:</p>
-                  <p className="text-right text-gray-900">{vatAmount.toFixed(2)} kr.</p>
-                  
-                  <p className="text-gray-900">
-                    {isSubscription ? 'Månedlige pris incl. moms:' : 'Total incl. moms:'}
-                  </p>
-                  <p className="text-right text-gray-900">{totalInclVat.toFixed(2)} kr.</p>
+          {/* Plan Display - hidden when deferPayment (Phase 2: pay later) */}
+          {!deferPayment && (
+            <Card className="relative">
+              <CardHeader className="text-center">
+                <CardTitle className="text-3xl font-bold text-gray-900">Rekruna {planName}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-4 border-2 rounded-lg border-primary">
+                  <div className="grid grid-cols-2 gap-y-3 items-baseline">
+                    <p className="text-gray-600 font-bold">
+                      {isSubscription ? 'Pris pr. måned:' : 'Pris:'}
+                    </p>
+                    <p className="text-right text-2xl font-bold text-gray-900">{priceExVat} kr.</p>
+                    <p className="text-gray-600">Moms:</p>
+                    <p className="text-right text-gray-900">{vatAmount.toFixed(2)} kr.</p>
+                    <p className="text-gray-900">
+                      {isSubscription ? 'Månedlige pris incl. moms:' : 'Total incl. moms:'}
+                    </p>
+                    <p className="text-right text-gray-900">{totalInclVat.toFixed(2)} kr.</p>
+                  </div>
                 </div>
-              </div>
-              <p className="text-sm text-gray-600 mt-4 text-center">
-                {isSubscription 
-                  ? 'Fortløbende abonnementet indtil det opsiges. Opsigelsesfrist: Ibn mdr + 30 dage.'
-                  : 'Engangsbetaling. Ingen abonnement.'
-                }
-              </p>
-            </CardContent>
-          </Card>
+                <p className="text-sm text-gray-600 mt-4 text-center">
+                  {isSubscription 
+                    ? 'Fortløbende abonnement indtil opsigelse. Opsigelsesfrist: Løbende mdr + 30 dage.'
+                    : 'Engangsbetaling. Ingen abonnement.'
+                  }
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Terms & Conditions */}
           <Card>
@@ -345,14 +345,16 @@ export function SignupForm({
               </div>
               {errors.accept && <p className="text-sm text-red-600 mt-2">{errors.accept}</p>}
               
-              {/* Button moved here - max 25% width, centered */}
+              {/* Button - Phase 2: "Opret konto" when deferPayment, else "Til betaling" */}
               <div className="flex flex-col items-center">
                 <Button type="submit" disabled={isLoading} className="px-8 py-3 text-base font-semibold" style={{ maxWidth: '25%', minWidth: '200px' }}>
-                  {isLoading ? 'Behandler...' : 'Til betaling'}
+                  {isLoading ? 'Behandler...' : (deferPayment ? 'Opret konto' : 'Til betaling')}
                 </Button>
-                <p className="text-sm text-gray-600 text-center mt-2">
-                  Åbner ny vindue hos Stripe, vores betalingspartner
-                </p>
+                {!deferPayment && (
+                  <p className="text-sm text-gray-600 text-center mt-2">
+                    Åbner ny vindue hos Stripe, vores betalingspartner
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

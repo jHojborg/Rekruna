@@ -23,14 +23,6 @@ interface UserProfile {
   marketing_consent: boolean
 }
 
-// Credits data structure
-interface CreditsData {
-  total: number
-  subscription: number
-  purchased: number
-  tier?: string
-}
-
 // Analysis result structure
 interface AnalysisResult {
   id: string
@@ -55,12 +47,8 @@ export default function ProfilPage() {
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [savingProfile, setSavingProfile] = useState(false)
   
-  // Credits state
-  const [credits, setCredits] = useState<CreditsData | null>(null)
-  const [loadingCredits, setLoadingCredits] = useState(true)
-  const [loadingTopup, setLoadingTopup] = useState(false)
-  const [selectedBoostTier, setSelectedBoostTier] = useState<'boost_50' | 'boost_100' | 'boost_250' | 'boost_500' | null>(null)
-  const [creditsUsedThisMonth, setCreditsUsedThisMonth] = useState<number>(0)
+  // Plan/tier state (Phase 1: credits removed)
+  const [userTier, setUserTier] = useState<string>('')
   
   // Recent analyses state
   const [recentAnalyses, setRecentAnalyses] = useState<AnalysisResult[]>([])
@@ -89,7 +77,7 @@ export default function ProfilPage() {
   useEffect(() => {
     if (userId) {
       loadProfile()
-      loadCredits()
+      loadPlanInfo()
       loadRecentAnalyses()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -155,24 +143,9 @@ export default function ProfilPage() {
     }
   }
 
-  // Load credits information
-  const loadCredits = async () => {
+  // Load plan/tier info (Phase 1: credits removed)
+  const loadPlanInfo = async () => {
     try {
-      setLoadingCredits(true)
-      
-      // Get credit balance
-      const { data: balance, error } = await supabase
-        .from('credit_balances')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
-      
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error loading credits:', error)
-        return
-      }
-      
-      // Get subscription info
       const { data: subscription } = await supabase
         .from('user_subscriptions')
         .select('product_tier, status')
@@ -180,37 +153,11 @@ export default function ProfilPage() {
         .eq('status', 'active')
         .single()
       
-      if (balance) {
-        setCredits({
-          total: balance.total_credits,
-          subscription: balance.subscription_credits,
-          purchased: balance.purchased_credits,
-          tier: subscription?.product_tier
-        })
-        
-        // Calculate credits used this month from transactions
-        // Get all deduction transactions since last subscription reset
-        const resetDate = balance.last_subscription_reset || balance.created_at
-        
-        const { data: transactions, error: txError } = await supabase
-          .from('credit_transactions')
-          .select('amount, transaction_type, created_at')
-          .eq('user_id', userId)
-          .eq('transaction_type', 'deduction')
-          .gte('created_at', resetDate)
-        
-        if (txError) {
-          console.error('Error loading transactions:', txError)
-        } else if (transactions) {
-          // Sum up all deductions (amounts are negative, so we use abs)
-          const totalUsed = transactions.reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
-          setCreditsUsedThisMonth(totalUsed)
-        }
+      if (subscription) {
+        setUserTier(subscription.product_tier)
       }
     } catch (error) {
-      console.error('Error loading credits:', error)
-    } finally {
-      setLoadingCredits(false)
+      console.error('Error loading plan info:', error)
     }
   }
 
@@ -317,67 +264,6 @@ export default function ProfilPage() {
     }
   }
 
-  // Handle boost selection (just select, don't purchase yet)
-  const handleBoostSelect = (tier: 'boost_50' | 'boost_100' | 'boost_250' | 'boost_500') => {
-    setSelectedBoostTier(tier)
-  }
-
-  // Handle topup purchase (called when user clicks "Betalt")
-  const handleTopupPurchase = async () => {
-    if (!selectedBoostTier) {
-      errorToast.show({
-        type: 'validation',
-        message: 'Vælg en boost pakke først',
-        technical: 'No boost tier selected'
-      })
-      return
-    }
-    
-    try {
-      setLoadingTopup(true)
-      
-      // Get authentication token
-      const { data: sessionData } = await supabase.auth.getSession()
-      const accessToken = sessionData.session?.access_token
-      
-      if (!accessToken) {
-        errorToast.show({
-          type: 'auth',
-          message: 'Din session er udløbet. Log venligst ind igen.',
-          technical: 'No access token',
-          action: 'login'
-        })
-        setTimeout(() => router.push('/login'), 2000)
-        return
-      }
-      
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({ tier: selectedBoostTier }),
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session')
-      }
-      
-      if (data.url) {
-        window.location.href = data.url
-      }
-    } catch (error: any) {
-      console.error('Topup error:', error)
-      const parsedError = parseError(error)
-      errorToast.show(parsedError)
-    } finally {
-      setLoadingTopup(false)
-    }
-  }
-  
   // Handle viewing report for an analysis
   const handleViewReport = async (analysisId: string) => {
     if (!userId || !analysisId) {
@@ -408,18 +294,16 @@ export default function ProfilPage() {
     return <main className="min-h-screen bg-brand-base" />
   }
 
-  // Credits calculation
-  // Credits remaining = what's in the balance (subscription + purchased)
-  // Credits used = calculated from transactions since last reset
-  const creditsRemaining = credits?.total || 0
-  const creditsUsed = creditsUsedThisMonth
-
-  // Format tier name for display
+  // Format tier name for display (Phase 3: Rekruna 1/5/10)
   const getTierDisplayName = (tier?: string) => {
     if (!tier) return 'Ingen plan'
-    if (tier === 'pay_as_you_go') return 'Rekruna One incl. 200 CVer'
-    if (tier === 'pro') return 'Rekruna Pro incl. 400 CVer'
-    if (tier === 'business') return 'Rekruna Business incl. 1000 CVer'
+    if (tier === 'rekruna_1') return 'Rekruna 1'
+    if (tier === 'rekruna_5') return 'Rekruna 5'
+    if (tier === 'rekruna_10') return 'Rekruna 10'
+    // Legacy tiers (backward compat)
+    if (tier === 'pay_as_you_go') return 'Rekruna One'
+    if (tier === 'pro') return 'Rekruna Pro'
+    if (tier === 'business') return 'Rekruna Business'
     return tier
   }
 
@@ -434,86 +318,9 @@ export default function ProfilPage() {
           </h1>
         </div>
 
-        {/* Credits Section */}
+        {/* Plan Section - Phase 1: Credits removed */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="mb-6">
-            <p className="text-sm text-gray-600">Din plan: <span className="font-semibold text-gray-900">{getTierDisplayName(credits?.tier)}</span></p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            {/* Column 1: Credits brugt */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-1">Credits brugt</p>
-              <p className="text-3xl font-bold text-gray-900">{creditsUsed}</p>
-            </div>
-            
-            {/* Column 2: Credits tilbage */}
-            <div className="bg-blue-50 rounded-lg p-4">
-              <p className="text-sm text-blue-600 mb-1">Credits tilbage</p>
-              <p className="text-3xl font-bold text-blue-900">{creditsRemaining}</p>
-              {credits && credits.purchased > 0 && (
-                <p className="text-xs text-blue-600 mt-1">Heraf tilkøbte: {credits.purchased}</p>
-              )}
-            </div>
-
-            {/* Column 3: Køb ekstra credits */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600 mb-3">Køb ekstra credits:</p>
-              
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Button
-                  variant={selectedBoostTier === 'boost_50' ? 'default' : 'outline'}
-                  onClick={() => handleBoostSelect('boost_50')}
-                  disabled={loadingTopup}
-                  className="flex-1 min-w-[60px]"
-                  size="sm"
-                >
-                  50
-                </Button>
-                
-                <Button
-                  variant={selectedBoostTier === 'boost_100' ? 'default' : 'outline'}
-                  onClick={() => handleBoostSelect('boost_100')}
-                  disabled={loadingTopup}
-                  className="flex-1 min-w-[60px]"
-                  size="sm"
-                >
-                  100
-                </Button>
-                
-                <Button
-                  variant={selectedBoostTier === 'boost_250' ? 'default' : 'outline'}
-                  onClick={() => handleBoostSelect('boost_250')}
-                  disabled={loadingTopup}
-                  className="flex-1 min-w-[60px]"
-                  size="sm"
-                >
-                  250
-                </Button>
-                
-                <Button
-                  variant={selectedBoostTier === 'boost_500' ? 'default' : 'outline'}
-                  onClick={() => handleBoostSelect('boost_500')}
-                  disabled={loadingTopup}
-                  className="flex-1 min-w-[60px]"
-                  size="sm"
-                >
-                  500
-                </Button>
-              </div>
-
-              <Button
-                onClick={handleTopupPurchase}
-                disabled={!selectedBoostTier || loadingTopup}
-                className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50"
-                size="sm"
-              >
-                {loadingTopup ? 'Behandler...' : 'Betal'}
-              </Button>
-              
-              <p className="text-xs text-gray-500 mt-2">1 credit = 1 CV</p>
-            </div>
-          </div>
+          <p className="text-sm text-gray-600">Din plan: <span className="font-semibold text-gray-900">{getTierDisplayName(userTier)}</span></p>
         </div>
 
         {/* Recent Analyses Section */}

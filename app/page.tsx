@@ -27,15 +27,15 @@ export default function LandingPage() {
     }
   }, [])
   
-  // Plan configuration for signup redirect
+  // Plan configuration - Phase 3: Rekruna 1/5/10 (antal stillingsopslag)
   const planPricing = {
-    pay_as_you_go: { price: 499, credits: 200 },
-    pro: { price: 349, credits: 400 },
-    business: { price: 699, credits: 1000 }
+    rekruna_1: { price: 2495, slots: 1 },
+    rekruna_5: { price: 9995, slots: 5 },
+    rekruna_10: { price: 17995, slots: 10 }
   }
   
   // Handle Stripe checkout
-  const handleCheckout = async (tier: 'pay_as_you_go' | 'pro' | 'business') => {
+  const handleCheckout = async (tier: 'rekruna_1' | 'rekruna_5' | 'rekruna_10') => {
     try {
       setLoadingPlan(tier)
       
@@ -44,9 +44,9 @@ export default function LandingPage() {
       const user = session?.user
       
       if (!user) {
-        // Redirect to signup with plan parameters
+        // Redirect to signup with plan parameters (Phase 3)
         const pricing = planPricing[tier]
-        window.location.href = `/signup?plan=${tier}&price=${pricing.price}&credits=${pricing.credits}`
+        window.location.href = `/signup?plan=${tier}&price=${pricing.price}&slots=${pricing.slots}`
         return
       }
       
@@ -117,7 +117,7 @@ export default function LandingPage() {
                     <Check className="w-3 h-3 text-white" />
                   </div>
                 </div>
-                <span>Én lav månedlig pris</span>
+                <span>Engangsbetaling</span>
               </div>
               <div className="flex items-center">
                 <div className="flex-shrink-0 mr-3">
@@ -147,49 +147,50 @@ export default function LandingPage() {
               savingsText?: string
               features: ReadonlyArray<string>
               highlighted: boolean
-              tier: 'pay_as_you_go' | 'pro' | 'business'
+              tier: 'rekruna_1' | 'rekruna_5' | 'rekruna_10'
             }
+            // Phase 3: Rekruna 1/5/10 - antal stillingsopslag, ubegrænsede CV'er
             const plans: Plan[] = [
               {
-                title: "Rekruna One",
-                finalPrice: "499",
+                title: "Rekruna 1",
+                finalPrice: "2.495",
                 priceSuffix: "kr.",
                 features: [
-                  "200 credits",
-                  "Ad hoc ansættelser",
+                  "1 stillingsopslag",
+                  "Ubegrænsede CV'er pr. opslag",
                   "Engangsbetaling",
-                  "Ingen bindingsperiode",
+                  "75 dage pr. rekrutteringsflow",
                 ],
                 highlighted: false,
-                tier: 'pay_as_you_go',
+                tier: 'rekruna_1',
               },
               {
-                title: "Rekruna Pro",
-                originalPrice: "549 kr/mdr.",
-                finalPrice: "349",
-                priceSuffix: "kr/mdr.",
-                savingsText: "Spar 200 kr./mdr.",
+                title: "Rekruna 5",
+                finalPrice: "9.995",
+                priceSuffix: "kr.",
+                savingsText: "Spar 2.480 kr.",
                 features: [
-                  "400 credits pr. mdr.",
-                  "Typisk 1-2 ansættelser pr. måned",
-                  "Muligt at tilkøb ekstra credits",
-                  "Ingen bindingsperiode",
+                  "5 stillingsopslag",
+                  "Ubegrænsede CV'er pr. opslag",
+                  "Engangsbetaling",
+                  "75 dage pr. rekrutteringsflow",
                 ],
                 highlighted: true,
-                tier: 'pro',
+                tier: 'rekruna_5',
               },
               {
-                title: "Rekruna Business",
-                finalPrice: "699",
-                priceSuffix: "kr/mdr.",
+                title: "Rekruna 10",
+                finalPrice: "17.995",
+                priceSuffix: "kr.",
+                savingsText: "Spar 4.955 kr.",
                 features: [
-                  "1000 credits pr. mdr.",
-                  "Recruiter eller 2+ ansættelser/måned",
-                  "Muligt at tilkøb ekstra credits",
-                  "Ingen bindingsperiode",
+                  "10 stillingsopslag",
+                  "Ubegrænsede CV'er pr. opslag",
+                  "Engangsbetaling",
+                  "75 dage pr. rekrutteringsflow",
                 ],
                 highlighted: false,
-                tier: 'business',
+                tier: 'rekruna_10',
               },
             ]
 
@@ -212,7 +213,7 @@ export default function LandingPage() {
               </div>
             )
           })()}
-          <p className="mt-6 text-center text-sm text-gray-500">Alle priser eksl. moms. Ubrugte ekstra credits overløber til følgende måned. Abonnement opsigelsesfrist er løbende mdr. + 30 dage.</p>
+          <p className="mt-6 text-center text-sm text-gray-500">Alle priser eksl. moms. Engangsbetaling. 75 dage pr. rekrutteringsflow.</p>
         </div>
       </section>
 

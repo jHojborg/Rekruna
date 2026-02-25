@@ -19,6 +19,69 @@ import { useRouter } from 'next/navigation'
 import { UPLOAD_LIMITS, uploadHelpers } from '@/lib/constants'
 import { downloadCompareReportPdf } from '@/lib/pdf'
 
+// Phase 2: Locked dashboard - package selection for users who haven't paid yet
+function LockedDashboardContent({ userId, userName }: { userId: string; userName: string }) {
+  const [loadingTier, setLoadingTier] = useState<string | null>(null)
+  
+  const handleBuyPackage = async (tier: 'rekruna_1' | 'rekruna_5' | 'rekruna_10') => {
+    try {
+      setLoadingTier(tier)
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData.session?.access_token
+      if (!token) {
+        window.location.href = '/login'
+        return
+      }
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ tier })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Checkout fejl')
+      if (data.url) window.location.href = data.url
+    } catch (e: any) {
+      alert(e.message || 'Der opstod en fejl')
+    } finally {
+      setLoadingTier(null)
+    }
+  }
+
+  // Phase 3: Rekruna 1/5/10 - antal stillingsopslag, ubegrænsede CV'er
+  const plans = [
+    { tier: 'rekruna_1' as const, name: 'Rekruna 1', price: '2.495 kr', desc: '1 stillingsopslag · Engangsbetaling' },
+    { tier: 'rekruna_5' as const, name: 'Rekruna 5', price: '9.995 kr', desc: '5 stillingsopslag · Engangsbetaling' },
+    { tier: 'rekruna_10' as const, name: 'Rekruna 10', price: '17.995 kr', desc: '10 stillingsopslag · Engangsbetaling' }
+  ]
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900">Køb en pakke for at komme i gang</h2>
+        <p className="text-gray-600 mt-2">
+          Vælg en pakke nedenfor for at få adgang til CV screening
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {plans.map((p) => (
+          <div key={p.tier} className="border rounded-lg p-6 hover:border-primary transition-colors">
+            <h3 className="font-bold text-lg text-gray-900">{p.name}</h3>
+            <p className="text-2xl font-bold text-primary mt-2">{p.price}</p>
+            <p className="text-sm text-gray-500 mt-1">{p.desc}</p>
+            <Button
+              className="w-full mt-4"
+              onClick={() => handleBuyPackage(p.tier)}
+              disabled={!!loadingTier}
+            >
+              {loadingTier === p.tier ? 'Indlæser...' : 'Køb'}
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   
@@ -76,14 +139,16 @@ export default function DashboardPage() {
   const [recent, setRecent] = useState<Array<{ id: string; createdAt: Date; title: string; name: string; analysisId?: string; reportPath?: string; candidateCount?: number }>>([])
   const [loadingRecent, setLoadingRecent] = useState(false)
   
-  // Credits info state
-  const [creditsUsedThisMonth, setCreditsUsedThisMonth] = useState(0)
-  const [creditsRemaining, setCreditsRemaining] = useState(0)
-  
-  // Credits and boost purchase state
+  // Plan/tier state (Phase 1: credits removed)
   const [userTier, setUserTier] = useState<string>('')
-  const [selectedBoostTier, setSelectedBoostTier] = useState<'boost_50' | 'boost_100' | 'boost_250' | 'boost_500' | null>(null)
-  const [loadingTopup, setLoadingTopup] = useState(false)
+  
+  // Phase 4: Current analysis ID for flow tracking (75-day expiry, 14-day warning)
+  const [currentAnalysisId, setCurrentAnalysisId] = useState<string>('')
+  const [flowInfo, setFlowInfo] = useState<{ daysRemaining: number; warning14Days: boolean } | null>(null)
+  
+  // Phase 2: Payment gate - has user bought a package? (or EVENT demo active)
+  const [hasPaid, setHasPaid] = useState(false)
+  const [accessCheckDone, setAccessCheckDone] = useState(false)
   
   // Template state
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false)
@@ -147,55 +212,43 @@ export default function DashboardPage() {
     loadUserProfile()
   }, [userId])
   
-  // Load credits information
+  // Load plan/tier + Phase 2: Check if user has paid (subscription or EVENT demo)
   useEffect(() => {
     if (!userId) return
     
-    const loadCreditsInfo = async () => {
+    const loadPlanAndAccess = async () => {
       try {
-        // Get credit balance for remaining credits
-        const { data: balance } = await supabase
-          .from('credit_balances')
-          .select('total_credits, last_subscription_reset, created_at')
-          .eq('user_id', userId)
-          .single()
+        const { data: sessionData } = await supabase.auth.getSession()
+        const accessToken = sessionData.session?.access_token
+        if (!accessToken) return
         
-        if (balance) {
-          setCreditsRemaining(balance.total_credits)
-          
-          // Calculate credits used this month from transactions
-          const resetDate = balance.last_subscription_reset || balance.created_at
-          
-          const { data: transactions } = await supabase
-            .from('credit_transactions')
-            .select('amount, transaction_type')
-            .eq('user_id', userId)
-            .eq('transaction_type', 'deduction')
-            .gte('created_at', resetDate)
-          
-          if (transactions) {
-            const totalUsed = transactions.reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
-            setCreditsUsedThisMonth(totalUsed)
-          }
-        }
+        // Fetch profile (for EVENT check) and subscription (for payment check) in parallel
+        const [profileRes, { data: subscription }] = await Promise.all([
+          fetch('/api/profile', { headers: { 'Authorization': `Bearer ${accessToken}` }, cache: 'no-store' }),
+          supabase.from('user_subscriptions').select('product_tier, status').eq('user_id', userId).eq('status', 'active').single()
+        ])
         
-        // Get subscription info for tier
-        const { data: subscription } = await supabase
-          .from('user_subscriptions')
-          .select('product_tier, status')
-          .eq('user_id', userId)
-          .eq('status', 'active')
-          .single()
+        const profileResult = await profileRes.json()
+        const profile = profileResult.success ? profileResult.data : null
         
-        if (subscription) {
-          setUserTier(subscription.product_tier)
-        }
+        // EVENT account with active demo = has access
+        const isEventActive = profile?.account_type === 'EVENT' && profile?.is_active
+        const eventNotExpired = profile?.event_expiry_date ? new Date(profile.event_expiry_date) > new Date() : false
+        const eventHasAccess = isEventActive && eventNotExpired
+        
+        // Active subscription/purchase = has paid
+        const hasActiveSubscription = !!subscription?.product_tier
+        
+        setHasPaid(eventHasAccess || hasActiveSubscription)
+        if (subscription) setUserTier(subscription.product_tier)
       } catch (error) {
-        console.error('Error loading credits info:', error)
+        console.error('Error loading plan/access:', error)
+      } finally {
+        setAccessCheckDone(true)
       }
     }
     
-    loadCreditsInfo()
+    loadPlanAndAccess()
   }, [userId])
   
   // Load recent analyses from database
@@ -255,78 +308,64 @@ export default function DashboardPage() {
     loadRecentAnalyses()
   }, [userId])
 
+  // Phase 4: Fetch flow info for 14-day warning banner (when in analysis flow)
+  useEffect(() => {
+    if (step < 2 || !currentAnalysisId || !userId) {
+      setFlowInfo(null)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData.session?.access_token
+      if (!accessToken || cancelled) return
+      try {
+        const res = await fetch(`/api/flows?analysisId=${encodeURIComponent(currentAnalysisId)}`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        })
+        const data = await res.json()
+        if (cancelled) return
+        if (data?.ok && data?.flow?.exists && data?.flow?.daysRemaining !== undefined) {
+          setFlowInfo({
+            daysRemaining: data.flow.daysRemaining,
+            warning14Days: !!data.flow.warning14Days
+          })
+        } else {
+          setFlowInfo(null)
+        }
+      } catch {
+        if (!cancelled) setFlowInfo(null)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [step, currentAnalysisId, userId, results.length]) // Refresh when results change (flow created after first batch)
+
   // Block rendering until auth checked
   if (checkingAuth) {
     return <main className="min-h-screen bg-brand-base" />
   }
 
-  // Handle boost selection (just select, don't purchase yet)
-  const handleBoostSelect = (tier: 'boost_50' | 'boost_100' | 'boost_250' | 'boost_500') => {
-    setSelectedBoostTier(tier)
+  // Phase 2: Show loading while checking payment status
+  if (!accessCheckDone) {
+    return (
+      <main className="min-h-screen bg-brand-base flex items-center justify-center">
+        <p className="text-gray-600">Indlæser...</p>
+      </main>
+    )
   }
 
-  // Handle topup purchase (called when user clicks "Betal")
-  const handleTopupPurchase = async () => {
-    if (!selectedBoostTier) {
-      errorToast.show({
-        type: 'validation',
-        message: 'Vælg en boost pakke først',
-        technical: 'No boost tier selected'
-      })
-      return
-    }
-    
-    try {
-      setLoadingTopup(true)
-      
-      // Get authentication token
-      const { data: sessionData } = await supabase.auth.getSession()
-      const accessToken = sessionData.session?.access_token
-      
-      if (!accessToken) {
-        errorToast.show({
-          type: 'auth',
-          message: 'Din session er udløbet. Log venligst ind igen.',
-          technical: 'No access token',
-          action: 'login'
-        })
-        setTimeout(() => router.push('/login'), 2000)
-        return
-      }
-      
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({ tier: selectedBoostTier }),
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session')
-      }
-      
-      if (data.url) {
-        window.location.href = data.url
-      }
-    } catch (error: any) {
-      console.error('Topup error:', error)
-      const parsedError = parseError(error)
-      errorToast.show(parsedError)
-    } finally {
-      setLoadingTopup(false)
-    }
-  }
-  
-  // Format tier name for display
+  // Phase 2: Locked dashboard - user must buy package before using screening
+  const showLockedDashboard = !hasPaid
+
+  // Format tier name for display (Phase 3: Rekruna 1/5/10)
   const getTierDisplayName = (tier?: string) => {
     if (!tier) return 'Ingen plan'
-    if (tier === 'pay_as_you_go') return 'Rekruna One incl. 200 CVer'
-    if (tier === 'pro') return 'Rekruna Pro incl. 400 CVer'
-    if (tier === 'business') return 'Rekruna Business incl. 1000 CVer'
+    if (tier === 'rekruna_1') return 'Rekruna 1'
+    if (tier === 'rekruna_5') return 'Rekruna 5'
+    if (tier === 'rekruna_10') return 'Rekruna 10'
+    if (tier === 'pay_as_you_go') return 'Rekruna One'
+    if (tier === 'pro') return 'Rekruna Pro'
+    if (tier === 'business') return 'Rekruna Business'
     return tier
   }
 
@@ -377,6 +416,7 @@ export default function DashboardPage() {
       // Set up analysis session
       ;(window as any).__analysisId = analysisId
       ;(window as any).__userId = user.id
+      setCurrentAnalysisId(analysisId)
       
     } catch (e: any) {
       console.error('Requirements extraction failed:', e)
@@ -392,6 +432,7 @@ export default function DashboardPage() {
       // Still set up analysis session
       ;(window as any).__analysisId = analysisId
       ;(window as any).__userId = user.id
+      setCurrentAnalysisId(analysisId)
     } finally {
       setLoadingRequirements(false)
     }
@@ -399,7 +440,11 @@ export default function DashboardPage() {
 
   const toggleReq = (id: string) => setRequirements(prev => prev.map(r => r.id === id ? { ...r, selected: !r.selected } : r))
   const contFromReq = () => setStep(3)
-  const goBackFromReq = () => setStep(1)
+  const goBackFromReq = () => {
+    setStep(1)
+    setCurrentAnalysisId('')
+    setFlowInfo(null)
+  }
 
   // Add custom requirement
   const addCustomRequirement = (text: string) => {
@@ -978,6 +1023,8 @@ export default function DashboardPage() {
     // Clear results and reset to main dashboard
     setResults([])
     setStep(1)
+    setCurrentAnalysisId('')
+    setFlowInfo(null)
     setTotal(0)
     setProcessed(0)
     setCurrentFile(undefined)
@@ -989,6 +1036,8 @@ export default function DashboardPage() {
 
   const startNewAnalysis = () => {
     setStep(1)
+    setCurrentAnalysisId('')
+    setFlowInfo(null)
     setJobFile(null)
     setRequirements((prev) => prev.map((r) => ({ ...r, selected: false })))
     setCvFiles([])
@@ -1067,34 +1116,7 @@ export default function DashboardPage() {
       const analyses = Array.from(analysesMap.values())
       setRecent(analyses)
       
-      // Also reload credits info to reflect new analysis
-      // Get credit balance for remaining credits
-      const { data: balance } = await supabase
-        .from('credit_balances')
-        .select('total_credits, last_subscription_reset, created_at')
-        .eq('user_id', userId)
-        .single()
-      
-      if (balance) {
-        setCreditsRemaining(balance.total_credits)
-        
-        // Calculate credits used this month from transactions
-        const resetDate = balance.last_subscription_reset || balance.created_at
-        
-        const { data: transactions } = await supabase
-          .from('credit_transactions')
-          .select('amount, transaction_type')
-          .eq('user_id', userId)
-          .eq('transaction_type', 'deduction')
-          .gte('created_at', resetDate)
-        
-        if (transactions) {
-          const totalUsed = transactions.reduce((sum, tx) => sum + Math.abs(tx.amount), 0)
-          setCreditsUsedThisMonth(totalUsed)
-        }
-      }
-      
-      // Get subscription info for tier
+      // Reload plan/tier info
       const { data: subscription } = await supabase
         .from('user_subscriptions')
         .select('product_tier, status')
@@ -1106,8 +1128,64 @@ export default function DashboardPage() {
         setUserTier(subscription.product_tier)
       }
     } catch (error) {
-      console.error('Error reloading analyses and credits:', error)
+      console.error('Error reloading analyses and plan:', error)
     }
+  }
+
+  // Phase 2: Locked dashboard - match mockup: Welcome, Din plan, Upload preview, Package selection
+  // Demo banner shows ONLY for EVENT accounts (they have hasPaid=true, so never see this locked view)
+  if (showLockedDashboard) {
+    return (
+      <main className="min-h-screen bg-brand-base">
+        <AnalysisProgress currentStep={1} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+          {/* Welcome Header - match mockup */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {userName ? `Hej ${userName}` : 'Dashboard'}
+                </h1>
+                <p className="text-gray-600 mt-1">Velkommen til dit CV screening dashboard</p>
+              </div>
+              <Button asChild variant="outline" className="flex items-center gap-2">
+                <Link href="/dinprofil">
+                  <User className="w-4 h-4" />
+                  Min Profil
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Din plan: Ingen plan */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <p className="text-sm text-gray-600">Din plan: <span className="font-semibold text-gray-900">Ingen plan</span></p>
+          </div>
+
+          {/* Upload section - preview/teaser (disabled until payment) */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">(1) Upload Stillingsbeskrivelsen</h3>
+            <p className="text-gray-600 mb-4">Upload stillingsbeskrivelsen som PDF og klik Start analyse</p>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center bg-gray-50">
+              <div className="flex flex-col items-center gap-2 text-gray-500">
+                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Klik for at vælge fil</span>
+                <span className="text-sm">Kun PDF-filer accepteres</span>
+              </div>
+            </div>
+            <Button disabled className="mt-4 w-full bg-gray-400 cursor-not-allowed">
+              Start Analyse
+            </Button>
+            <p className="text-sm text-gray-500 mt-2 text-center">Køb en pakke for at aktivere screening</p>
+          </div>
+
+          {/* Package selection - Køb en pakke for at komme i gang */}
+          <LockedDashboardContent userId={userId} userName={userName} />
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -1134,13 +1212,32 @@ export default function DashboardPage() {
               </div>
               <Button asChild className="bg-blue-600 hover:bg-blue-700">
                 <Link href="/">
-                  Køb credits for at fortsætte
+                  Køb en pakke for at fortsætte
                 </Link>
               </Button>
             </div>
           </div>
         )}
         
+        {/* Phase 4: 14-day flow expiry warning */}
+        {flowInfo?.warning14Days && flowInfo.daysRemaining > 0 && (
+          <div className="bg-gradient-to-r from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-amber-500 text-white flex items-center justify-center text-xl font-bold">
+                {flowInfo.daysRemaining}
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-amber-900">
+                  Rekrutteringsflow udløber snart
+                </h3>
+                <p className="text-amber-800">
+                  Du har <strong>{flowInfo.daysRemaining} dage</strong> tilbage af dette flow. Efter udløb kan du ikke tilføje flere CV'er. Historik forbliver tilgængelig.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* EVENT Account Expired Banner */}
         {isEventAccount && eventExpired && (
           <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 rounded-xl p-5 shadow-sm">
@@ -1154,13 +1251,13 @@ export default function DashboardPage() {
                     Din demo er udløbet
                   </h3>
                   <p className="text-red-700">
-                    For at fortsætte skal du købe credits eller vælge en plan
+                    For at fortsætte skal du købe en pakke
                   </p>
                 </div>
               </div>
               <Button asChild className="bg-red-600 hover:bg-red-700">
                 <Link href="/">
-                  Køb credits her
+                  Køb pakke her
                 </Link>
               </Button>
             </div>
@@ -1188,83 +1285,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Credits Section - Identical to profile page */}
+            {/* Plan Section - Phase 1: Credits removed */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="mb-6">
-                <p className="text-sm text-gray-600">Din plan: <span className="font-semibold text-gray-900">{getTierDisplayName(userTier)}</span></p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                {/* Column 1: Credits brugt */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Credits brugt</p>
-                  <p className="text-3xl font-bold text-gray-900">{creditsUsedThisMonth}</p>
-                </div>
-                
-                {/* Column 2: Credits tilbage */}
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <p className="text-sm text-blue-600 mb-1">Credits tilbage</p>
-                  <p className="text-3xl font-bold text-blue-900">{creditsRemaining}</p>
-                </div>
-
-                {/* Column 3: Køb ekstra credits */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-3">Køb ekstra credits:</p>
-                  
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <Button
-                      variant={selectedBoostTier === 'boost_50' ? 'default' : 'outline'}
-                      onClick={() => handleBoostSelect('boost_50')}
-                      disabled={loadingTopup}
-                      className="flex-1 min-w-[60px]"
-                      size="sm"
-                    >
-                      50
-                    </Button>
-                    
-                    <Button
-                      variant={selectedBoostTier === 'boost_100' ? 'default' : 'outline'}
-                      onClick={() => handleBoostSelect('boost_100')}
-                      disabled={loadingTopup}
-                      className="flex-1 min-w-[60px]"
-                      size="sm"
-                    >
-                      100
-                    </Button>
-                    
-                    <Button
-                      variant={selectedBoostTier === 'boost_250' ? 'default' : 'outline'}
-                      onClick={() => handleBoostSelect('boost_250')}
-                      disabled={loadingTopup}
-                      className="flex-1 min-w-[60px]"
-                      size="sm"
-                    >
-                      250
-                    </Button>
-                    
-                    <Button
-                      variant={selectedBoostTier === 'boost_500' ? 'default' : 'outline'}
-                      onClick={() => handleBoostSelect('boost_500')}
-                      disabled={loadingTopup}
-                      className="flex-1 min-w-[60px]"
-                      size="sm"
-                    >
-                      500
-                    </Button>
-                  </div>
-
-                  <Button
-                    onClick={handleTopupPurchase}
-                    disabled={!selectedBoostTier || loadingTopup}
-                    className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50"
-                    size="sm"
-                  >
-                    {loadingTopup ? 'Behandler...' : 'Betal'}
-                  </Button>
-                  
-                  <p className="text-xs text-gray-500 mt-2">1 credit = 1 CV</p>
-                </div>
-              </div>
+              <p className="text-sm text-gray-600">Din plan: <span className="font-semibold text-gray-900">{getTierDisplayName(userTier)}</span></p>
             </div>
           </>
         )}

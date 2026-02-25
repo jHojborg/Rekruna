@@ -2,7 +2,6 @@ import { supabaseAdmin } from '@/lib/supabase/server'
 import OpenAI from 'openai'
 import { PerformanceTimer } from '@/lib/performance'
 import { createHash } from 'crypto'
-import { CreditsService } from '@/lib/services/credits.service'
 import { anonymizeCVText } from '@/lib/anonymization'
 
 export const runtime = 'nodejs'
@@ -396,6 +395,15 @@ export async function POST(req: Request) {
           return
         }
 
+        // Phase 4: Rekrutteringsflow - tjek job_slots / flow udløb
+        const { ensureFlowAccessSafe } = await import('@/lib/services/recruitment-flow.service')
+        const flowCheck = await ensureFlowAccessSafe(userId, analysisId)
+        if (!flowCheck.ok) {
+          sendSSE(controller, 'error', { error: flowCheck.error })
+          controller.close()
+          return
+        }
+
         // Extract job description
         let jobText = ''
         const jobTextField = form.get('jobText')
@@ -429,53 +437,8 @@ export async function POST(req: Request) {
           return
         }
 
-        // Credit check and deduction
+        // Phase 1: Credit system removed. Analysis runs without credit check.
         const cvCount = cvBlobs.length
-        console.log(`💳 Checking credits for ${cvCount} CVs...`)
-        
-        const creditCheck = await CreditsService.hasEnoughCredits(userId, cvCount)
-        
-        if (!creditCheck.success) {
-          console.warn('⚠️ Credit check failed, attempting to initialize balance...')
-          const initResult = await CreditsService.initializeBalance(userId)
-          
-          if (initResult.success) {
-            const retryCheck = await CreditsService.hasEnoughCredits(userId, cvCount)
-            if (!retryCheck.success || (retryCheck.success && !retryCheck.data.hasCredits)) {
-              sendSSE(controller, 'error', { 
-                error: 'Insufficient credits',
-                required: retryCheck.success ? retryCheck.data.required : cvCount,
-                available: retryCheck.success ? retryCheck.data.currentBalance : 0
-              })
-              controller.close()
-              return
-            }
-          } else {
-            sendSSE(controller, 'error', { error: 'Failed to check credit balance' })
-            controller.close()
-            return
-          }
-        } else if (!creditCheck.data.hasCredits) {
-          sendSSE(controller, 'error', { 
-            error: 'Insufficient credits',
-            required: creditCheck.data.required,
-            available: creditCheck.data.currentBalance,
-            message: `Du mangler ${creditCheck.data.shortfall} credits`
-          })
-          controller.close()
-          return
-        }
-        
-        console.log(`💳 Deducting ${cvCount} credits...`)
-        const deductResult = await CreditsService.deductCredits(userId, analysisId, cvCount)
-        
-        if (!deductResult.success) {
-          sendSSE(controller, 'error', { error: 'Failed to deduct credits' })
-          controller.close()
-          return
-        }
-        
-        console.log(`✅ Deducted ${deductResult.data.deducted} credits. New balance: ${deductResult.data.balanceAfter}`)
 
         // Send initial progress event
         sendSSE(controller, 'progress', { 

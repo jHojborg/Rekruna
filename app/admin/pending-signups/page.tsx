@@ -88,7 +88,7 @@ export default function AdminPendingSignupsPage() {
   // APPROVE SIGNUP
   // =====================================================
   
-  const handleApprove = async (signupId: string, credits: number = 100) => {
+  const handleApprove = async (signupId: string) => {
     setProcessingId(signupId)
     
     try {
@@ -107,8 +107,7 @@ export default function AdminPendingSignupsPage() {
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          pendingId: signupId,
-          credits
+          pendingId: signupId
         })
       })
       
@@ -313,7 +312,7 @@ export default function AdminPendingSignupsPage() {
                       {signup.status === 'pending' && (
                         <div className="flex gap-2">
                           <Button
-                            onClick={() => handleApprove(signup.id, 100)}
+                            onClick={() => handleApprove(signup.id)}
                             disabled={processingId === signup.id}
                             className="bg-green-600 hover:bg-green-700"
                           >
@@ -322,7 +321,7 @@ export default function AdminPendingSignupsPage() {
                             ) : (
                               <>
                                 <CheckCircle className="h-4 w-4 mr-2" />
-                                Godkend (100 credits)
+                                Godkend
                               </>
                             )}
                           </Button>
