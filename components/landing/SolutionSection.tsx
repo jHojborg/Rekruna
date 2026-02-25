@@ -62,7 +62,7 @@ export function SolutionSection() {
               <h3 className="text-2xl font-semibold text-gray-900">Vælg de vigtigste krav</h3>
             </div>
             <p className="text-gray-700 leading-relaxed">
-            Vælg op til fem, eller skriv jeres egne, krav, som ansøgeren skal opfylde. Upload CV’er og Start analyse - resten klarer Rekruna.
+            Vælg op til fem, eller skriv jeres egne krav, som ansøgeren skal opfylde. Upload CV’er og Start analyse - resten klarer Rekruna.
             </p>
             <p className="mt-4 text-gray-700">➔ 6 sek. gns analysetid med et to-siders jobopslag.</p>
           </div>

@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Check, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -10,11 +10,8 @@ import { SolutionSection } from '@/components/landing/SolutionSection'
 import { PricingCard } from '@/components/landing/PricingCard'
 import { FAQAccordion } from '@/components/landing/FAQAccordion'
 import { CTASection } from '@/components/landing/CTASection'
-import { supabase } from '@/lib/supabase/client'
 
 export default function LandingPage() {
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
-  
   // Handle Supabase password recovery links coming to the Site URL root.
   // Supabase sends tokens in the URL hash (after #), which the server cannot read.
   // We detect `type=recovery` on the client and forward the user to
@@ -27,57 +24,6 @@ export default function LandingPage() {
     }
   }, [])
   
-  // Plan configuration - Phase 3: Rekruna 1/5/10 (antal stillingsopslag)
-  const planPricing = {
-    rekruna_1: { price: 2495, slots: 1 },
-    rekruna_5: { price: 9995, slots: 5 },
-    rekruna_10: { price: 17995, slots: 10 }
-  }
-  
-  // Handle Stripe checkout
-  const handleCheckout = async (tier: 'rekruna_1' | 'rekruna_5' | 'rekruna_10') => {
-    try {
-      setLoadingPlan(tier)
-      
-      // Check if user is authenticated (use getSession to avoid errors on landing page)
-      const { data: { session } } = await supabase.auth.getSession()
-      const user = session?.user
-      
-      if (!user) {
-        // Redirect to signup with plan parameters (Phase 3)
-        const pricing = planPricing[tier]
-        window.location.href = `/signup?plan=${tier}&price=${pricing.price}&slots=${pricing.slots}`
-        return
-      }
-      
-      // Call checkout API (for existing users)
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ tier }),
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session')
-      }
-      
-      if (data.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = data.url
-      }
-    } catch (error) {
-      console.error('Checkout error:', error)
-      alert('Der skete en fejl. Prøv igen.')
-    } finally {
-      setLoadingPlan(null)
-    }
-  }
-
   // Handle hero CTA click - scroll to pricing section
   const handleHeroCta = () => {
     const pricingSection = document.getElementById('pricing')
@@ -205,9 +151,9 @@ export default function LandingPage() {
                     priceSuffix={plan.priceSuffix}
                     savingsText={plan.savingsText}
                     features={plan.features}
-                    ctaText={loadingPlan === plan.tier ? "Indlæser..." : "Start i dag"}
+                    ctaText="Start i dag"
                     highlighted={plan.highlighted}
-                    onCtaClick={() => handleCheckout(plan.tier)}
+                    ctaHref="/signup"
                   />
                 ))}
               </div>

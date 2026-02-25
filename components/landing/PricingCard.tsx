@@ -15,6 +15,8 @@ interface PricingCardProps {
   features: ReadonlyArray<string>
   ctaText: string
   highlighted?: boolean
+  /** Optional: use Link with this href instead of onClick. Used for signup flow. */
+  ctaHref?: string
   onCtaClick?: () => void
 }
 
@@ -27,6 +29,7 @@ export function PricingCard({
   features, 
   ctaText, 
   highlighted = false,
+  ctaHref,
   onCtaClick 
 }: PricingCardProps) {
   return (
@@ -69,13 +72,14 @@ export function PricingCard({
         ))}
       </div>
       
-      {onCtaClick ? (
-        <Button onClick={onCtaClick} className="w-full py-4 text-lg font-semibold h-auto" variant={highlighted ? 'default' : 'outline'}>
-          {ctaText}
+      {/* Use Link when ctaHref is provided or no onCtaClick (signup flow). Otherwise use onClick. */}
+      {(ctaHref || !onCtaClick) ? (
+        <Button asChild className="w-full py-4 text-lg font-semibold h-auto" variant={highlighted ? 'default' : 'outline'}>
+          <Link href={ctaHref ?? '/signup'}>{ctaText}</Link>
         </Button>
       ) : (
-        <Button asChild className="w-full py-4 text-lg font-semibold h-auto" variant={highlighted ? 'default' : 'outline'}>
-          <Link href="/signup">{ctaText}</Link>
+        <Button onClick={onCtaClick} className="w-full py-4 text-lg font-semibold h-auto" variant={highlighted ? 'default' : 'outline'}>
+          {ctaText}
         </Button>
       )}
 

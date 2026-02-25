@@ -58,7 +58,7 @@ Først gennemgås alle andre ændringer og rettelser.
 - [x] Kør `phase3_rekruna_packages.sql` ✅
 - [x] Opret Stripe-produkter
 - [x] Opdater env med Price IDs
-- [ ] Test checkout i produktion
+- [x] Test checkout i produktion
 
 ---
 

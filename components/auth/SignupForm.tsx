@@ -223,8 +223,7 @@ export function SignupForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="grid lg:grid-cols-2 gap-8">
-        {/* Kontooplysninger */}
+      {/* Kontooplysninger - øverst */}
         <Card>
           <CardHeader>
             <CardTitle>Kontooplysninger</CardTitle>
@@ -298,73 +297,74 @@ export function SignupForm({
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
-          {/* Plan Display - hidden when deferPayment (Phase 2: pay later) */}
-          {!deferPayment && (
-            <Card className="relative">
-              <CardHeader className="text-center">
-                <CardTitle className="text-3xl font-bold text-gray-900">Rekruna {planName}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="p-4 border-2 rounded-lg border-primary">
-                  <div className="grid grid-cols-2 gap-y-3 items-baseline">
-                    <p className="text-gray-600 font-bold">
-                      {isSubscription ? 'Pris pr. måned:' : 'Pris:'}
-                    </p>
-                    <p className="text-right text-2xl font-bold text-gray-900">{priceExVat} kr.</p>
-                    <p className="text-gray-600">Moms:</p>
-                    <p className="text-right text-gray-900">{vatAmount.toFixed(2)} kr.</p>
-                    <p className="text-gray-900">
-                      {isSubscription ? 'Månedlige pris incl. moms:' : 'Total incl. moms:'}
-                    </p>
-                    <p className="text-right text-gray-900">{totalInclVat.toFixed(2)} kr.</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 mt-4 text-center">
-                  {isSubscription 
-                    ? 'Fortløbende abonnement indtil opsigelse. Opsigelsesfrist: Løbende mdr + 30 dage.'
-                    : 'Engangsbetaling. Ingen abonnement.'
-                  }
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Terms & Conditions */}
-          <Card>
-            <CardContent className="pt-6 space-y-4">
-              <div className="flex items-start gap-2">
-                <input 
-                  id="accept" 
-                  required 
-                  type="checkbox" 
-                  className="mt-1 h-4 w-4 rounded border-gray-300" 
-                  checked={form.accept} 
-                  onChange={(e) => setField('accept', e.target.checked)} 
-                />
-                <Label htmlFor="accept" className="text-gray-700">
-                  Jeg bekræfter at have læst og accepterer Rekruna{' '}
-                  <Link href="/handelsbetingelser" className="text-primary underline underline-offset-2">
-                    handelsbetingelser
-                  </Link>
-                </Label>
-              </div>
-              {errors.accept && <p className="text-sm text-red-600 mt-2">{errors.accept}</p>}
-              
-              {/* Button - Phase 2: "Opret konto" when deferPayment, else "Til betaling" */}
-              <div className="flex flex-col items-center">
-                <Button type="submit" disabled={isLoading} className="px-8 py-3 text-base font-semibold" style={{ maxWidth: '25%', minWidth: '200px' }}>
-                  {isLoading ? 'Behandler...' : (deferPayment ? 'Opret konto' : 'Til betaling')}
-                </Button>
-                {!deferPayment && (
-                  <p className="text-sm text-gray-600 text-center mt-2">
-                    Åbner ny vindue hos Stripe, vores betalingspartner
+      {/* Plan Display - hidden when deferPayment (Phase 2: pay later) */}
+      {!deferPayment && (
+        <div className="flex justify-center">
+          <Card className="relative w-full max-w-md">
+            <CardHeader className="text-center">
+              <CardTitle className="text-3xl font-bold text-gray-900">Rekruna {planName}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="p-4 border-2 rounded-lg border-primary">
+                <div className="grid grid-cols-2 gap-y-3 items-baseline">
+                  <p className="text-gray-600 font-bold">
+                    {isSubscription ? 'Pris pr. måned:' : 'Pris:'}
                   </p>
-                )}
+                  <p className="text-right text-2xl font-bold text-gray-900">{priceExVat} kr.</p>
+                  <p className="text-gray-600">Moms:</p>
+                  <p className="text-right text-gray-900">{vatAmount.toFixed(2)} kr.</p>
+                  <p className="text-gray-900">
+                    {isSubscription ? 'Månedlige pris incl. moms:' : 'Total incl. moms:'}
+                  </p>
+                  <p className="text-right text-gray-900">{totalInclVat.toFixed(2)} kr.</p>
+                </div>
               </div>
+              <p className="text-sm text-gray-600 mt-4 text-center">
+                {isSubscription 
+                  ? 'Fortløbende abonnement indtil opsigelse. Opsigelsesfrist: Løbende mdr + 30 dage.'
+                  : 'Engangsbetaling. Ingen abonnement.'
+                }
+              </p>
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Terms & Conditions + Opret konto - under kontooplysninger, centreret */}
+      <div className="flex justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 space-y-4">
+            <div className="flex items-start gap-2">
+              <input 
+                id="accept" 
+                required 
+                type="checkbox" 
+                className="mt-1 h-4 w-4 rounded border-gray-300" 
+                checked={form.accept} 
+                onChange={(e) => setField('accept', e.target.checked)} 
+              />
+              <Label htmlFor="accept" className="text-gray-700">
+                Jeg bekræfter at have læst og accepterer Rekruna{' '}
+                <Link href="/handelsbetingelser" className="text-primary underline underline-offset-2">
+                  handelsbetingelser
+                </Link>
+              </Label>
+            </div>
+            {errors.accept && <p className="text-sm text-red-600 mt-2">{errors.accept}</p>}
+            
+            {/* Button - Phase 2: "Opret konto" when deferPayment, else "Til betaling" */}
+            <div className="flex flex-col items-center">
+              <Button type="submit" disabled={isLoading} className="px-8 py-3 text-base font-semibold" style={{ maxWidth: '25%', minWidth: '200px' }}>
+                {isLoading ? 'Behandler...' : (deferPayment ? 'Opret konto' : 'Til betaling')}
+              </Button>
+              {!deferPayment && (
+                <p className="text-sm text-gray-600 text-center mt-2">
+                  Åbner ny vindue hos Stripe, vores betalingspartner
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </form>
   )
