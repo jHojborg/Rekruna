@@ -2,17 +2,13 @@
  * Demo booked – Tak-side efter form submit på /demo
  *
  * Bruger lander her efter succesfuld indsendelse af demo-video formular.
- * TrackCompleteRegistration sender kun CompleteRegistration event fra denne side.
+ * Kun Lead-event sendes (fra DemoContactForm ved submit) – ingen CompleteRegistration.
  */
 import Link from 'next/link'
-import TrackCompleteRegistration from '@/components/shared/TrackCompleteRegistration'
 
 export default function DemoBookedPage() {
   return (
-    <>
-      <TrackCompleteRegistration />
-
-      <main className="min-h-screen bg-white flex items-center justify-center">
+    <main className="min-h-screen bg-white flex items-center justify-center">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-white rounded-2xl border border-gray-100 p-12 shadow-[4px_6px_16px_rgba(0,0,0,0.25)]">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -31,6 +27,5 @@ export default function DemoBookedPage() {
           </div>
         </div>
       </main>
-    </>
   )
 }

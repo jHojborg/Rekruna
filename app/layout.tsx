@@ -48,7 +48,8 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-31RMZC70DP');
+            var debugMode = typeof window !== 'undefined' && window.location.search.includes('debug_mode=true');
+            gtag('config', 'G-31RMZC70DP', debugMode ? { debug_mode: true } : {});
           `}
         </Script>
 
