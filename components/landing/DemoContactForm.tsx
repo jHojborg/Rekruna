@@ -5,11 +5,36 @@
  *
  * Matcher formularen på /demo-signup: Firmanavn, Dit navn, Tel.nr, E-mail,
  * Træffes bedst dag, Træffes bedst tidspunkt. Sender til /api/demo-signup.
+ *
+ * GA4 + Meta: demo_form_submit / Lead – fires kun ved succesfuld submit (alle felter OK + API OK).
+ * Markér som conversion i GA4 Admin og Meta Events Manager.
  */
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import toast from 'react-hot-toast'
+
+/** GA4 + Meta – defineret i layout.tsx */
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void
+    fbq?: (...args: unknown[]) => void
+  }
+}
+
+/** Sender demo_form_submit til GA4 og Lead til Meta. Kun ved succesfuld submit. */
+function trackDemoFormSubmit() {
+  try {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'demo_form_submit', { form_name: 'Demo Contact Form' })
+    }
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Lead', { content_name: 'Demo Form Submit' })
+    }
+  } catch {
+    // Ignorer – analytics må aldrig crashe appen
+  }
+}
 
 export function DemoContactForm() {
   const router = useRouter()
@@ -62,6 +87,9 @@ export function DemoContactForm() {
       if (!response.ok) {
         throw new Error(data.error || 'Noget gik galt')
       }
+
+      // GA4 + Meta: fire submit-event kun ved succesfuld submit (validering OK + API OK)
+      trackDemoFormSubmit()
 
       toast.success('Tak! Vi kontakter dig snarest.')
       router.push('/demo-booked')
