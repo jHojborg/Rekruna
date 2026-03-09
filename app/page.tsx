@@ -36,7 +36,7 @@ export default function LandingPage() {
     <main className="min-h-screen">
       <HeroSection 
         title="Screen ansøgere 90% hurtigere med AI"
-        subtitle="- en mere objektiv og fair prioritering, der sikrer, at ingen ansøgere eller kompetencer bliver overset."
+        subtitle="- en mere objektiv og fair prioritering, der sikrer, at ingen ansøgere bliver overset."
         ctaText="Start allerede i dag"
         onCtaClick={handleHeroCta}
         secondaryCtaText="Book en demo"
@@ -103,7 +103,7 @@ export default function LandingPage() {
                 priceSuffix: "kr.",
                 features: [
                   "1 stillingsopslag",
-                  "Ubegrænset CV screeninger",
+                  "Ubegrænset CV'er",
                   "Ad hoc",
                 
                 ],
@@ -114,10 +114,10 @@ export default function LandingPage() {
                 title: "Rekruna 5",
                 finalPrice: "9.995",
                 priceSuffix: "kr.",
-                savingsText: "1.999,- pr. stillingsopslag",
+                savingsText: "Spar 2.480,-",
                 features: [
                   "5 stillingsopslag",
-                  "Ubegrænsede CV screeninger",
+                  "Ubegrænset CV'er",
                   "Gælder 24 måneder",
                   
                 ],
@@ -128,10 +128,10 @@ export default function LandingPage() {
                 title: "Rekruna 10",
                 finalPrice: "17.995",
                 priceSuffix: "kr.",
-                savingsText: "1.795,- pr. stillingsopslag",
+                savingsText: "Spar 6.955,-",
                 features: [
                   "10 stillingsopslag",
-                  "Ubegrænsede CV screeninger",
+                  "Ubegrænset CV'er",
                   "Gælder 24 måneder",
                   
                 ],

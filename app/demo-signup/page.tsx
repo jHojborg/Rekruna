@@ -135,10 +135,10 @@ export default function DemoSignupPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
-              Velkommen til Rekruna Demo
+              Vi du se en demo af Rekruna?
             </h1>
             <p className="text-xl text-gray-700">
-              Udfyld formularen nedenfor, så kontakter vi dig for aftale af et tidspunkt.
+              Udfyld formularen nedenfor, så kontakter vi dig indenfor 24 timer.
             </p>
           </div>
         </div>

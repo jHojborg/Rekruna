@@ -18,7 +18,7 @@ export function ProblemSolution() {
       icon: HeartHandshakeIcon,
       title: 'Ingen opstartsgebyr',
       description:
-        'Du betaler en fast månedlige ydelse. Ingen opstartsfee eller andre ekstraomkostninger.'
+        'Ingen opstartsfee eller andre ekstraomkostninger - Du betaler kun for aktive stillingsopslag.'
     },
     {
       icon: Clock,
@@ -40,7 +40,8 @@ export function ProblemSolution() {
   ]
 
   return (
-    <section className="py-25 bg-brand-softGrey">
+    <section className="pt-25 pb-12 bg-brand-softGrey">
+      {/* pt-25: top padding uændret. pb-12: bund-padding halveret (fra 6.25rem til 3rem) for at reducere afstand til DemoContactForm med 50% */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Øverste sektion: centralt headline + intro-tekst */}
         <div className="max-w-4xl mx-auto text-center">

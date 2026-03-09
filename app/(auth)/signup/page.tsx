@@ -87,9 +87,9 @@ function SignupContent() {
     <main className="min-h-screen bg-brand-base py-16 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-900">Opret din Rekruna konto</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Opret gratis Rekruna profil i dag.</h1>
           <p className="text-gray-600 mt-2">
-            Udfyld dine oplysninger og kom i gang. Du betaler først når du køber en pakke.
+            Ingen kreditkort nødvendig. Du betaler først når du begynder at screene CV'er.
           </p>
         </div>
         <SignupForm 
