@@ -89,7 +89,7 @@ function SignupContent() {
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-gray-900">Opret gratis Rekruna profil i dag.</h1>
           <p className="text-gray-600 mt-2">
-            Ingen kreditkort nødvendig. Du betaler først når du begynder at screene CV'er.
+            Ingen kreditkort nødvendig. Du betaler først når du begynder at screene CV&apos;er.
           </p>
         </div>
         <SignupForm 
